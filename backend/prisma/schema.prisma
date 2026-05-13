@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum UserRole {
+  RESEARCHER
+  FUNDER
+  ADMIN
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  CANCELLED
+  COMPLETED
+}
+
+enum MilestoneStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  password      String
+  walletAddress String    @unique
+  role          UserRole  @default(FUNDER)
+  reputation    Float     @default(0)
+  createdAt     DateTime  @default(now())
+
+  projects      ResearchProject[]
+  contributions Contribution[]
+  votes         Vote[]
+}
+
+model ResearchProject {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  totalAmount Decimal       @db.Decimal(18, 6) // compatível com USDC
+  status      ProjectStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  creatorId   String
+  creator     User          @relation(fields: [creatorId], references: [id])
+
+  milestones  Milestone[]
+  contributions Contribution[]
+}
+
+model Milestone {
+  id          String          @id @default(uuid())
+  title       String
+  description String
+  amount      Decimal         @db.Decimal(18, 6)
+  order       Int
+  status      MilestoneStatus @default(PENDING)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  projectId   String
+  project     ResearchProject @relation(fields: [projectId], references: [id])
+
+  votes       Vote[]
+
+  @@unique([projectId, order]) // ordem única por projeto
+}
+
+model Contribution {
+  id        String   @id @default(uuid())
+  amount    Decimal  @db.Decimal(18, 6)
+  createdAt DateTime @default(now())
+
+  wallet    String
+  funder    User            @relation(fields: [wallet], references: [walletAddress])
+
+  projectId String
+  project   ResearchProject @relation(fields: [projectId], references: [id])
+
+  @@unique([wallet, projectId]) // um registro por funder por projeto
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  approve   Boolean
+  createdAt DateTime @default(now())
+
+  voterWallet String
+  voter       User      @relation(fields: [voterWallet], references: [walletAddress])
+
+  milestoneId String
+  milestone   Milestone @relation(fields: [milestoneId], references: [id])
+
+  @@unique([voterWallet, milestoneId]) // um voto por wallet por milestone
+}
