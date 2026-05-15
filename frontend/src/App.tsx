@@ -7,6 +7,7 @@ const HomePage = lazy(() => import('@/pages/HomePage'))
 const ExploreResearchPage = lazy(() => import('@/pages/ExploreResearchPage'))
 const ResearchDetailsPage = lazy(() => import('@/pages/ResearchDetailsPage'))
 const CreateResearchPage = lazy(() => import('@/pages/CreateResearchPage'))
+const DemoPage = lazy(() => import('@/pages/DemoPage'))
 
 function PageFallback() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
               <Route path="explore" element={<ExploreResearchPage />} />
               <Route path="research/:id" element={<ResearchDetailsPage />} />
               <Route path="create" element={<CreateResearchPage />} />
+              <Route path="demo" element={<DemoPage />} />
             </Route>
           </Routes>
         </Suspense>

@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { ContributionsModule } from './contributions/contributions.module';
+import { DemoModule } from './demo/demo.module';
 import { MilestonesModule } from './milestones/milestones.module';
 import { ResearchModule } from './research/research.module';
 import { VotesModule } from './votes/votes.module';
@@ -20,6 +21,7 @@ import { VotesModule } from './votes/votes.module';
     MilestonesModule,
     ContributionsModule,
     VotesModule,
+    DemoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
