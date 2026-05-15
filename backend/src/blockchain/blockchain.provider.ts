@@ -9,7 +9,7 @@ import { AnchorProvider, Idl, Program, Wallet } from '@coral-xyz/anchor';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import type { ResearchEscrow } from '../../../solana/target/types/research_escrow';
+import type { ResearchEscrow } from './research-escrow.idl';
 
 @Injectable()
 export class BlockchainProvider implements OnModuleInit {
