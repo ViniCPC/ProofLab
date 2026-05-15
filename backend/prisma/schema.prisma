@@ -11,7 +11,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 enum UserRole {
   RESEARCHER
   FUNDER
@@ -27,20 +26,21 @@ enum ProjectStatus {
 
 enum MilestoneStatus {
   PENDING
+  PENDING_REVIEW
   SUBMITTED
   APPROVED
   REJECTED
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
   name          String
-  email         String    @unique
+  email         String   @unique
   password      String?
-  walletAddress String    @unique
-  role          UserRole  @default(FUNDER)
-  reputation    Float     @default(0)
-  createdAt     DateTime  @default(now())
+  walletAddress String   @unique
+  role          UserRole @default(FUNDER)
+  reputation    Float    @default(0)
+  createdAt     DateTime @default(now())
 
   projects      ResearchProject[]
   contributions Contribution[]
@@ -48,35 +48,54 @@ model User {
 }
 
 model ResearchProject {
-  id          String        @id @default(uuid())
-  title       String
-  description String
-  totalAmount Decimal       @db.Decimal(18, 6) // compatível com USDC
-  status      ProjectStatus @default(DRAFT)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id               String        @id @default(uuid())
+  title            String
+  description      String
+  totalAmount      Decimal       @db.Decimal(18, 6) // compatível com USDC
+  aiSummary        String?
+  innovationScore  Int?
+  feasibilityScore Int?
+  riskLevel        String?
+  complexityLevel  String?
+  status           ProjectStatus @default(DRAFT)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
-  creatorId   String
-  creator     User          @relation(fields: [creatorId], references: [id])
+  onChainProjectNonce   BigInt? // u64 seed usado no PDA Solana
+  onChainProjectAddress String? // PDA base58 do projeto
+  escrowVaultAddress    String? // PDA base58 do vault de escrow
+  onChainStatus         String? // "Funding" | "Active" | "Completed" | "Cancelled"
 
-  milestones  Milestone[]
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+
+  milestones    Milestone[]
   contributions Contribution[]
 }
 
 model Milestone {
-  id          String          @id @default(uuid())
-  title       String
-  description String
-  amount      Decimal         @db.Decimal(18, 6)
-  order       Int
-  status      MilestoneStatus @default(PENDING)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id                 String          @id @default(uuid())
+  title              String
+  description        String
+  amount             Decimal         @db.Decimal(18, 6)
+  order              Int
+  status             MilestoneStatus @default(PENDING)
+  aiSummary          String?
+  consistencyScore   Int?
+  completionEstimate Int?
+  aiRiskLevel        String?
+  submittedReport    String?
+  submittedAt        DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
 
-  projectId   String
-  project     ResearchProject @relation(fields: [projectId], references: [id])
+  onChainMilestoneAddress String? // PDA base58 do milestone
+  releaseTransactionHash  String? // assinatura da tx de release_funds
 
-  votes       Vote[]
+  projectId String
+  project   ResearchProject @relation(fields: [projectId], references: [id])
+
+  votes Vote[]
 
   @@unique([projectId, order]) // ordem única por projeto
 }
@@ -86,8 +105,12 @@ model Contribution {
   amount    Decimal  @db.Decimal(18, 6)
   createdAt DateTime @default(now())
 
-  wallet    String
-  funder    User            @relation(fields: [wallet], references: [walletAddress])
+
+  transactionHash            String? // assinatura da tx de fund_project
+  onChainContributionAddress String? // PDA base58 da contribution
+
+  wallet String
+  funder User   @relation(fields: [wallet], references: [walletAddress])
 
   projectId String
   project   ResearchProject @relation(fields: [projectId], references: [id])
@@ -101,7 +124,7 @@ model Vote {
   createdAt DateTime @default(now())
 
   voterWallet String
-  voter       User      @relation(fields: [voterWallet], references: [walletAddress])
+  voter       User   @relation(fields: [voterWallet], references: [walletAddress])
 
   milestoneId String
   milestone   Milestone @relation(fields: [milestoneId], references: [id])
