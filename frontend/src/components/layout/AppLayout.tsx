@@ -9,7 +9,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <footer className="border-t border-slate-800/60 py-4 text-center text-xs text-slate-600">
-        ProofLab — Decentralized Research Funding on Solana
+        ProofLab | Financiamento científico descentralizado na Solana
       </footer>
     </div>
   )

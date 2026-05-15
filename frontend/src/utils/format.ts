@@ -6,6 +6,10 @@ export function formatUsdc(amount: string | number): string {
   }).format(num)
 }
 
+export function normalizeDecimal(value: string): string {
+  return Number(value).toFixed(6)
+}
+
 export function shortenAddress(address: string, chars = 4): string {
   return `${address.slice(0, chars)}...${address.slice(-chars)}`
 }

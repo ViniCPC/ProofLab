@@ -3,10 +3,10 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { SolanaWalletProvider } from '@/components/wallet/WalletProvider'
 
-const HomePage            = lazy(() => import('@/pages/Home'))
-const ExploreResearchPage = lazy(() => import('@/pages/ExploreResearch'))
-const ResearchDetailsPage = lazy(() => import('@/pages/ResearchDetails'))
-const CreateResearchPage  = lazy(() => import('@/pages/CreateResearch'))
+const HomePage = lazy(() => import('@/pages/HomePage'))
+const ExploreResearchPage = lazy(() => import('@/pages/ExploreResearchPage'))
+const ResearchDetailsPage = lazy(() => import('@/pages/ResearchDetailsPage'))
+const CreateResearchPage = lazy(() => import('@/pages/CreateResearchPage'))
 
 function PageFallback() {
   return (

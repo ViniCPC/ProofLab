@@ -1,4 +1,4 @@
-import type { ApiError } from '@/types'
+import type { ApiError } from '@/types/api'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -23,6 +23,10 @@ async function request<T>(
       message: res.statusText,
     }))) as ApiError
     throw error
+  }
+
+  if (res.status === 204) {
+    return undefined as T
   }
 
   return res.json() as Promise<T>

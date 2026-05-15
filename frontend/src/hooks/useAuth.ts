@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { api } from '@/services/api'
-
-interface AuthUser {
-  id: string
-  name: string
-  walletAddress: string
-  role: string
-}
+import { authService } from '@/services/auth.service'
+import { walletStore } from '@/store/walletStore'
+import type { AuthUser } from '@/types/user'
 
 export function useAuth() {
-  const { publicKey, connected, disconnect } = useWallet()
+  const { publicKey, connected, connecting, disconnect } = useWallet()
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -19,12 +14,12 @@ export function useAuth() {
 
     setLoading(true)
     try {
-      const { token, user: authUser } = await api.post<{ token: string; user: AuthUser }>(
-        '/auth/wallet-login',
-        { walletAddress: publicKey.toBase58() },
+      const { accessToken, user: authUser } = await authService.walletLogin(
+        publicKey.toBase58(),
       )
-      localStorage.setItem('prooflab_token', token)
+      localStorage.setItem('prooflab_token', accessToken)
       setUser(authUser)
+      walletStore.setUser(authUser)
     } finally {
       setLoading(false)
     }
@@ -33,17 +28,30 @@ export function useAuth() {
   const logout = useCallback(() => {
     localStorage.removeItem('prooflab_token')
     setUser(null)
+    walletStore.reset()
     disconnect()
   }, [disconnect])
 
   useEffect(() => {
+    const walletAddress = publicKey?.toBase58() ?? null
+    const connectionStatus =
+      connecting ? 'connecting' : connected && walletAddress ? 'connected' : 'disconnected'
+
+    queueMicrotask(() => {
+      walletStore.setConnection(walletAddress, connectionStatus)
+    })
+
     if (connected && publicKey && !user) {
-      login()
+      queueMicrotask(() => void login())
     }
     if (!connected) {
-      setUser(null)
+      queueMicrotask(() => {
+        localStorage.removeItem('prooflab_token')
+        setUser(null)
+        walletStore.setUser(null)
+      })
     }
-  }, [connected, publicKey, user, login])
+  }, [connected, connecting, publicKey, user, login])
 
   return { user, loading, login, logout, isAuthenticated: !!user }
 }

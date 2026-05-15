@@ -53,6 +53,32 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes prooflab-scanline {
+  0% { transform: translateY(-100%); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes prooflab-flow-card {
+  0%, 100% {
+    border-color: rgba(30, 41, 59, 0.85);
+    box-shadow: 0 0 0 rgba(34, 211, 238, 0);
+  }
+  45% {
+    border-color: rgba(34, 211, 238, 0.35);
+    box-shadow: 0 0 28px -18px rgba(34, 211, 238, 0.8);
+  }
+}
+
+.prooflab-scanline {
+  animation: prooflab-scanline 8s linear infinite;
+}
+
+.prooflab-flow-card {
+  animation: prooflab-flow-card 4s ease-in-out infinite;
+  animation-delay: var(--flow-delay, 0ms);
+}
+
 *,
 *::before,
 *::after {
