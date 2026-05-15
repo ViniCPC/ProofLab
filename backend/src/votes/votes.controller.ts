@@ -10,13 +10,14 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import type { AuthenticatedRequest } from '../auth/types/authenticated-request';
 import { CreateVoteDto } from './dto/create-vote.dto';
+import { VoteOnChainDto } from './dto/vote-on-chain.dto';
 import { VotesService } from './votes.service';
 
-@Controller('research/:projectId/milestones/:milestoneId/votes')
+@Controller('research/:projectId/milestones/:milestoneId')
 export class VotesController {
   constructor(private readonly votesService: VotesService) {}
 
-  @Post()
+  @Post('votes')
   @UseGuards(AuthGuard)
   vote(
     @Param('projectId') projectId: string,
@@ -27,11 +28,27 @@ export class VotesController {
     return this.votesService.vote(projectId, milestoneId, body, request.user!);
   }
 
-  @Get()
+  @Get('votes')
   findByMilestone(
     @Param('projectId') projectId: string,
     @Param('milestoneId') milestoneId: string,
   ) {
     return this.votesService.findByMilestone(projectId, milestoneId);
+  }
+
+  @Post('vote-on-chain')
+  @UseGuards(AuthGuard)
+  voteOnChain(
+    @Param('projectId') projectId: string,
+    @Param('milestoneId') milestoneId: string,
+    @Body() body: VoteOnChainDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.votesService.voteOnChain(
+      projectId,
+      milestoneId,
+      body,
+      request.user!,
+    );
   }
 }
