@@ -154,6 +154,7 @@ export class ContributionsService {
       createdAt: contribution.createdAt,
       wallet: contribution.wallet,
       projectId: contribution.projectId,
+      onChainContributionAddress: contribution.onChainContributionAddress,
       funder: contribution.funder,
     };
   }

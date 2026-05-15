@@ -10,10 +10,10 @@ import { AiService } from '../ai/ai.service';
 import { BlockchainService } from '../blockchain/blockchain.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { PublicUser } from '../users/users.service';
+import type { CreateMilestoneOnChainDto } from './dto/create-milestone-on-chain.dto';
 import type { CreateMilestoneDto } from './dto/create-milestone.dto';
 import type { SubmitMilestoneReviewDto } from './dto/submit-milestone-review.dto';
 import type { SubmitOnChainDto } from './dto/submit-on-chain.dto';
-import type { VoteOnChainDto } from '../votes/dto/vote-on-chain.dto';
 
 @Injectable()
 export class MilestonesService {
@@ -29,6 +29,17 @@ export class MilestonesService {
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
         'Only the project creator can add milestones',
+      );
+    }
+
+    const milestoneCount = await this.prisma.milestone.count({
+      where: { projectId },
+    });
+    const expectedOrder = milestoneCount + 1;
+
+    if (dto.order !== expectedOrder) {
+      throw new BadRequestException(
+        `Next milestone order must be ${expectedOrder}`,
       );
     }
 
@@ -197,7 +208,12 @@ export class MilestonesService {
 
     const milestone = await this.prisma.milestone.findFirst({
       where: { id: milestoneId, projectId },
-      select: { id: true, order: true, status: true, onChainMilestoneAddress: true },
+      select: {
+        id: true,
+        order: true,
+        status: true,
+        onChainMilestoneAddress: true,
+      },
     });
 
     if (!milestone) {
@@ -214,6 +230,12 @@ export class MilestonesService {
       project.onChainProjectAddress,
       milestone.order,
     );
+
+    if (!milestone.onChainMilestoneAddress) {
+      throw new BadRequestException(
+        'Milestone has not been created on-chain yet',
+      );
+    }
 
     const transaction = await this.blockchain.submitMilestoneOnChain(
       user.walletAddress,
@@ -233,13 +255,19 @@ export class MilestonesService {
     };
   }
 
-  async voteOnChain(
+  async createOnChain(
     projectId: string,
     milestoneId: string,
-    dto: VoteOnChainDto,
+    dto: CreateMilestoneOnChainDto,
     user: PublicUser,
   ) {
     const project = await this.findProjectOrThrow(projectId);
+
+    if (project.creatorId !== user.id) {
+      throw new ForbiddenException(
+        'Only the project creator can create milestones on-chain',
+      );
+    }
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
@@ -247,35 +275,48 @@ export class MilestonesService {
       );
     }
 
-    if (project.creatorId === user.id) {
-      throw new ForbiddenException(
-        'Project creator cannot vote on their own milestones',
-      );
-    }
-
     const milestone = await this.prisma.milestone.findFirst({
       where: { id: milestoneId, projectId },
-      select: { id: true, order: true, onChainMilestoneAddress: true },
+      select: {
+        id: true,
+        amount: true,
+        order: true,
+        onChainMilestoneAddress: true,
+      },
     });
 
     if (!milestone) {
       throw new NotFoundException('Milestone not found');
     }
 
-    if (!milestone.onChainMilestoneAddress) {
-      throw new BadRequestException(
-        'Milestone has not been submitted on-chain yet',
-      );
+    if (milestone.onChainMilestoneAddress) {
+      throw new ConflictException('Milestone is already created on-chain');
     }
 
-    const transaction = await this.blockchain.voteMilestoneOnChain(
+    const deadline =
+      dto.deadlineUnixTimestamp ??
+      Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+    const onChainMilestoneAddress = this.blockchain.getMilestonePda(
+      project.onChainProjectAddress,
+      milestone.order,
+    );
+    const transaction = await this.blockchain.createMilestoneOnChain(
       user.walletAddress,
       project.onChainProjectAddress,
       milestone.order,
-      dto.approve,
+      Number(milestone.amount),
+      deadline,
     );
 
-    return { transaction: transaction.toString('base64') };
+    await this.prisma.milestone.update({
+      where: { id: milestoneId },
+      data: { onChainMilestoneAddress },
+    });
+
+    return {
+      transaction: transaction.toString('base64'),
+      onChainMilestoneAddress,
+    };
   }
 
   async releaseOnChain(
@@ -299,7 +340,12 @@ export class MilestonesService {
 
     const milestone = await this.prisma.milestone.findFirst({
       where: { id: milestoneId, projectId },
-      select: { id: true, order: true, status: true, onChainMilestoneAddress: true },
+      select: {
+        id: true,
+        order: true,
+        status: true,
+        onChainMilestoneAddress: true,
+      },
     });
 
     if (!milestone) {
@@ -318,7 +364,7 @@ export class MilestonesService {
       );
     }
 
-    const transaction = await this.blockchain.releaseFundsOnChain(
+    const transaction = await this.blockchain.releaseMilestoneOnChain(
       user.walletAddress,
       project.onChainProjectAddress,
       milestone.order,

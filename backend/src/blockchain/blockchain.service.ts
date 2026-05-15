@@ -282,16 +282,24 @@ export class BlockchainService {
     });
   }
 
-  async releaseFundsOnChain(
+  async cancelProjectOnChain(
     ownerPubkey: string,
     projectPda: string,
-    milestoneOrder: ChainAmount,
   ): Promise<Buffer> {
-    return this.releaseMilestoneOnChain(
-      ownerPubkey,
-      projectPda,
-      milestoneOrder,
-    );
+    return this.wrapChainCall(async () => {
+      const owner = toPublicKey(ownerPubkey);
+      const project = toPublicKey(projectPda);
+
+      const instruction = await this.provider.program.methods
+        .cancelProject()
+        .accountsStrict({
+          project,
+          owner,
+        })
+        .instruction();
+
+      return this.serializeForWallet(owner, [instruction]);
+    });
   }
 
   async claimRefundOnChain(
@@ -399,7 +407,10 @@ export class BlockchainService {
         ),
       };
     } catch (error) {
-      throw this.mapChainError(error, `Project not found on-chain: ${project}`);
+      throw this.mapChainError(
+        error,
+        `Project not found on-chain: ${project.toBase58()}`,
+      );
     }
   }
 

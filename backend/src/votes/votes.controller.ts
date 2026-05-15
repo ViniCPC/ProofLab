@@ -51,4 +51,18 @@ export class VotesController {
       request.user!,
     );
   }
+
+  @Post('finalize-vote-on-chain')
+  @UseGuards(AuthGuard)
+  finalizeVoteOnChain(
+    @Param('projectId') projectId: string,
+    @Param('milestoneId') milestoneId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.votesService.finalizeVoteOnChain(
+      projectId,
+      milestoneId,
+      request.user!,
+    );
+  }
 }

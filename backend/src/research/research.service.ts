@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { AiService } from '../ai/ai.service';
 import { BlockchainService } from '../blockchain/blockchain.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,6 +13,12 @@ import type { PublicUser } from '../users/users.service';
 import type { CreateResearchDto } from './dto/create-research.dto';
 import type { FundOnChainDto } from './dto/fund-on-chain.dto';
 import type { ListResearchQueryDto } from './dto/list-research-query.dto';
+
+const creatorSelect = {
+  id: true,
+  name: true,
+  walletAddress: true,
+} satisfies Prisma.UserSelect;
 
 @Injectable()
 export class ResearchService {
@@ -69,12 +76,17 @@ export class ResearchService {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          creator: {
+            select: creatorSelect,
+          },
+        },
       }),
       this.prisma.researchProject.count(),
     ]);
 
     return {
-      data,
+      data: data.map((research) => this.serializeResearch(research)),
       meta: {
         page,
         limit,
@@ -88,6 +100,9 @@ export class ResearchService {
     const research = await this.prisma.researchProject.findUnique({
       where: { id },
       include: {
+        creator: {
+          select: creatorSelect,
+        },
         milestones: {
           orderBy: { order: 'asc' },
         },
@@ -98,7 +113,7 @@ export class ResearchService {
       throw new NotFoundException('Research project not found');
     }
 
-    return research;
+    return this.serializeResearch(research);
   }
 
   async createOnChain(projectId: string, user: PublicUser) {
@@ -160,11 +175,7 @@ export class ResearchService {
     };
   }
 
-  async fundOnChain(
-    projectId: string,
-    dto: FundOnChainDto,
-    user: PublicUser,
-  ) {
+  async fundOnChain(projectId: string, dto: FundOnChainDto, user: PublicUser) {
     const project = await this.prisma.researchProject.findUnique({
       where: { id: projectId },
       select: {
@@ -248,5 +259,75 @@ export class ResearchService {
     );
 
     return { transaction: transaction.toString('base64') };
+  }
+
+  async cancelOnChain(projectId: string, user: PublicUser) {
+    const project = await this.prisma.researchProject.findUnique({
+      where: { id: projectId },
+      select: {
+        id: true,
+        creatorId: true,
+        status: true,
+        onChainProjectAddress: true,
+        onChainStatus: true,
+      },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Research project not found');
+    }
+
+    if (project.creatorId !== user.id) {
+      throw new ForbiddenException(
+        'Only the project creator can cancel the project on-chain',
+      );
+    }
+
+    if (!project.onChainProjectAddress) {
+      throw new BadRequestException(
+        'Project has not been registered on-chain yet',
+      );
+    }
+
+    if (
+      project.status === 'COMPLETED' ||
+      project.onChainStatus === 'Completed'
+    ) {
+      throw new BadRequestException('Completed projects cannot be cancelled');
+    }
+
+    if (
+      project.status === 'CANCELLED' ||
+      project.onChainStatus === 'Cancelled'
+    ) {
+      throw new BadRequestException('Project is already cancelled');
+    }
+
+    const transaction = await this.blockchain.cancelProjectOnChain(
+      user.walletAddress,
+      project.onChainProjectAddress,
+    );
+
+    await this.prisma.researchProject.update({
+      where: { id: projectId },
+      data: {
+        status: 'CANCELLED',
+        onChainStatus: 'Cancelled',
+      },
+    });
+
+    return { transaction: transaction.toString('base64') };
+  }
+
+  private serializeResearch<T extends { onChainProjectNonce: bigint | null }>(
+    research: T,
+  ): Omit<T, 'onChainProjectNonce'> {
+    const safeResearch = { ...research } as Omit<T, 'onChainProjectNonce'> & {
+      onChainProjectNonce?: bigint | null;
+    };
+
+    delete safeResearch.onChainProjectNonce;
+
+    return safeResearch;
   }
 }

@@ -45,7 +45,7 @@ export class BlockchainProvider implements OnModuleInit {
       preflightCommitment: 'confirmed',
     });
 
-    this.program = new Program<ResearchEscrow>(idl as ResearchEscrow, provider);
+    this.program = new Program<ResearchEscrow>(idl, provider);
     this.logger.log(
       `Solana program ${this.programId.toBase58()} configured for ${rpcUrl}`,
     );
@@ -84,7 +84,19 @@ export class BlockchainProvider implements OnModuleInit {
     }
 
     try {
-      return Keypair.fromSecretKey(Uint8Array.from(JSON.parse(rawKeypair)));
+      const parsedKeypair: unknown = JSON.parse(rawKeypair);
+
+      if (
+        !Array.isArray(parsedKeypair) ||
+        !parsedKeypair.every(
+          (value): value is number =>
+            Number.isInteger(value) && value >= 0 && value <= 255,
+        )
+      ) {
+        throw new Error('Invalid keypair');
+      }
+
+      return Keypair.fromSecretKey(Uint8Array.from(parsedKeypair));
     } catch {
       throw new ServiceUnavailableException(
         'SOLANA_ADMIN_KEYPAIR must be a JSON array secret key',

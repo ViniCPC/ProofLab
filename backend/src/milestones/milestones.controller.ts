@@ -10,12 +10,12 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import type { AuthenticatedRequest } from '../auth/types/authenticated-request';
+import { CreateMilestoneOnChainDto } from './dto/create-milestone-on-chain.dto';
 import { CreateMilestoneDto } from './dto/create-milestone.dto';
 import { SubmitMilestoneReviewDto } from './dto/submit-milestone-review.dto';
 import { SubmitOnChainDto } from './dto/submit-on-chain.dto';
 import { UpdateMilestoneStatusDto } from './dto/update-milestone-status.dto';
 import { MilestonesService } from './milestones.service';
-import { VoteOnChainDto } from '../votes/dto/vote-on-chain.dto';
 
 @Controller('research/:id/milestones')
 export class MilestonesController {
@@ -84,15 +84,15 @@ export class MilestonesController {
     );
   }
 
-  @Post(':milestoneId/vote-on-chain')
+  @Post(':milestoneId/create-on-chain')
   @UseGuards(AuthGuard)
-  voteOnChain(
+  createOnChain(
     @Param('id') projectId: string,
     @Param('milestoneId') milestoneId: string,
-    @Body() body: VoteOnChainDto,
+    @Body() body: CreateMilestoneOnChainDto,
     @Req() request: AuthenticatedRequest,
   ) {
-    return this.milestonesService.voteOnChain(
+    return this.milestonesService.createOnChain(
       projectId,
       milestoneId,
       body,

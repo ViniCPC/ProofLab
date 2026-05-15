@@ -118,6 +118,43 @@ export class VotesService {
     return { transaction: transaction.toString('base64') };
   }
 
+  async finalizeVoteOnChain(
+    projectId: string,
+    milestoneId: string,
+    user: PublicUser,
+  ) {
+    const milestone = await this.findMilestoneOrThrow(projectId, milestoneId);
+
+    if (
+      milestone.status !== 'SUBMITTED' &&
+      milestone.status !== 'PENDING_REVIEW'
+    ) {
+      throw new BadRequestException(
+        'Can only finalize milestones pending review',
+      );
+    }
+
+    if (!milestone.project.onChainProjectAddress) {
+      throw new BadRequestException(
+        'Project has not been registered on-chain yet',
+      );
+    }
+
+    if (!milestone.onChainMilestoneAddress) {
+      throw new BadRequestException(
+        'Milestone has not been created on-chain yet',
+      );
+    }
+
+    const transaction = await this.blockchain.finalizeMilestoneVoteOnChain(
+      milestone.project.onChainProjectAddress,
+      milestone.order,
+      user.walletAddress,
+    );
+
+    return { transaction: transaction.toString('base64') };
+  }
+
   private async findMilestoneOrThrow(projectId: string, milestoneId: string) {
     const milestone = await this.prisma.milestone.findFirst({
       where: { id: milestoneId, projectId },

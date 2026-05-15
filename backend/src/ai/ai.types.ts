@@ -119,7 +119,9 @@ export function isResearchAnalysis(value: unknown): value is ResearchAnalysis {
   );
 }
 
-export function isMilestoneAnalysis(value: unknown): value is MilestoneAnalysis {
+export function isMilestoneAnalysis(
+  value: unknown,
+): value is MilestoneAnalysis {
   if (!value || typeof value !== 'object') return false;
 
   const a = value as Partial<MilestoneAnalysis>;

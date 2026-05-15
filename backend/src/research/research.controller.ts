@@ -65,4 +65,13 @@ export class ResearchController {
   ) {
     return this.researchService.claimRefund(projectId, request.user!);
   }
+
+  @Post(':id/cancel-on-chain')
+  @UseGuards(AuthGuard)
+  cancelOnChain(
+    @Param('id') projectId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.researchService.cancelOnChain(projectId, request.user!);
+  }
 }

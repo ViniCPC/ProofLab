@@ -19,7 +19,12 @@ export class AiClient {
     schema: object,
     guard: (value: unknown) => value is T,
   ): Promise<T> {
-    const data = await this.fetchOpenAi(systemInstruction, input, schemaName, schema);
+    const data = await this.fetchOpenAi(
+      systemInstruction,
+      input,
+      schemaName,
+      schema,
+    );
     const text = this.extractOutputText(data);
     return this.parseAnalysis(text, guard);
   }
