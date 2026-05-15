@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  /* Background scale */
+  --color-bg-base:    #080c14;
+  --color-bg-surface: #0d1220;
+  --color-bg-card:    #111827;
+  --color-bg-hover:   #1a2235;
+
+  /* Border */
+  --color-border:     #1e293b;
+  --color-border-dim: #0f172a;
+
+  /* Brand accents */
+  --color-purple:     #a855f7;
+  --color-purple-dim: #7c3aed;
+  --color-cyan:       #22d3ee;
+  --color-cyan-dim:   #0891b2;
+  --color-green:      #4ade80;
+  --color-green-dim:  #16a34a;
+
+  /* Text */
+  --color-text:       #94a3b8;
+  --color-text-bright:#e2e8f0;
+  --color-text-muted: #475569;
+
+  /* Status */
+  --color-status-funding:  #22d3ee;
+  --color-status-review:   #a855f7;
+  --color-status-approved: #4ade80;
+  --color-status-rejected: #f87171;
+  --color-status-refunded: #fb923c;
+
+  /* Font */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Radius */
+  --radius-card: 0.75rem;
+
+  /* Animation */
+  --animate-fade-in: fade-in 0.4s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg-base);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-base); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
