@@ -14,9 +14,9 @@ import {
 export const homePageContent = {
   hero: {
     badge: 'Demo Solana Devnet',
-    title: 'Financie ciência com cripto, sem perder controle do capital.',
+    title: 'Funding science with programmable trust.',
     subtitle:
-      'A ProofLab trava recursos em custódia on-chain, divide pesquisas em etapas e usa IA para traduzir entregas técnicas em linguagem simples para a comunidade votar.',
+      'ProofLab uses AI, community governance and Solana escrow to fund scientific research by milestones.',
     primaryAction: {
       label: 'Explorar pesquisas',
       to: '/explore',
@@ -43,13 +43,13 @@ export const homePageContent = {
       icon: Bot,
       title: 'Revisar',
       description:
-        'A IA resume riscos, progresso e evidências para qualquer pessoa entender.',
+        'A IA resume riscos, progresso e evidencias para qualquer pessoa entender.',
     },
     {
       icon: Vote,
       title: 'Votar',
       description:
-        'Financiadores validam cada milestone antes da liberação de recursos.',
+        'Financiadores validam cada milestone antes da liberacao de recursos.',
     },
     {
       icon: GitCommitVertical,
@@ -61,14 +61,14 @@ export const homePageContent = {
   features: [
     {
       icon: ShieldCheck,
-      title: 'Custódia por etapa',
+      title: 'Custodia por etapa',
       description:
-        'O dinheiro nunca vai direto ao pesquisador. Ele fica condicionado a entregas verificáveis.',
+        'O dinheiro nunca vai direto ao pesquisador. Ele fica condicionado a entregas verificaveis.',
       tone: 'cyan' as const,
     },
     {
       icon: Sparkles,
-      title: 'IA explicável',
+      title: 'IA explicavel',
       description:
         'Propostas e entregas viram resumos claros, com sinais de risco e viabilidade.',
       tone: 'green' as const,
@@ -77,26 +77,26 @@ export const homePageContent = {
       icon: Vote,
       title: 'DAO simples',
       description:
-        'A comunidade financia e vota sem precisar entender todo o paper técnico.',
+        'A comunidade financia e vota sem precisar entender todo o paper tecnico.',
       tone: 'purple' as const,
     },
     {
       icon: Network,
       title: 'Solana first',
       description:
-        'Arquitetura pensada para wallets, baixo custo e execução rápida on-chain.',
+        'Arquitetura pensada para wallets, baixo custo e execucao rapida on-chain.',
       tone: 'cyan' as const,
     },
     {
       icon: Coins,
       title: 'USDC ready',
       description:
-        'Valores modelados com precisão decimal para funding em stablecoin.',
+        'Valores modelados com precisao decimal para funding em stablecoin.',
       tone: 'green' as const,
     },
     {
       icon: Landmark,
-      title: 'Sem intermediários',
+      title: 'Sem intermediarios',
       description:
         'Regras transparentes substituem processos manuais e gatekeepers opacos.',
       tone: 'purple' as const,
