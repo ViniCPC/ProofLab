@@ -17,7 +17,11 @@ const fallbackSize = {
   height: 520,
 }
 
-export function ScienceGlobe() {
+interface ScienceGlobeProps {
+  onReady?: () => void
+}
+
+export function ScienceGlobe({ onReady }: ScienceGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const globeRef = useRef<GlobeMethods | undefined>(undefined)
   const [size, setSize] = useState(fallbackSize)
@@ -60,7 +64,13 @@ export function ScienceGlobe() {
     controls.autoRotateSpeed = 0.55
     controls.enableZoom = false
     controls.enablePan = false
-  }, [])
+
+    const frameId = window.requestAnimationFrame(() => {
+      onReady?.()
+    })
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [onReady])
 
   function nodeColor(node: object) {
     return nodeColors[(node as GlobeNode).type]
@@ -68,7 +78,7 @@ export function ScienceGlobe() {
 
   function nodeLabel(node: object) {
     const globeNode = node as GlobeNode
-    return `${globeNode.name} · ${globeNode.type}`
+    return `${globeNode.name} - ${globeNode.type}`
   }
 
   function arcColor(arc: object) {

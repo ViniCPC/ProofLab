@@ -58,7 +58,7 @@ export function HeroSection({
         </div>
       </div>
 
-      <div className="relative -mx-4 min-h-[420px] sm:mx-0 lg:min-h-[560px]">
+      <div className="relative min-h-[420px] md:min-h-[460px] lg:min-h-[560px]">
         {visual}
       </div>
     </section>
