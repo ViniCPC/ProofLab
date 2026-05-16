@@ -1,0 +1,161 @@
+import {
+  BadRequestException,
+  type HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  PublicKey,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
+} from '@solana/web3.js';
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
+import { BlockchainProvider } from './blockchain.provider';
+import { publicKeyField, toPublicKey } from './blockchain.utils';
+
+export interface ResearchProjectAccount {
+  usdcMint: PublicKey;
+  escrowTokenAccount: PublicKey;
+}
+
+@Injectable()
+export class BlockchainTx {
+  constructor(
+    private readonly provider: BlockchainProvider,
+    private readonly config: ConfigService,
+  ) {}
+
+  async serialize(
+    feePayer: PublicKey,
+    instructions: TransactionInstruction[],
+  ): Promise<Buffer> {
+    const { blockhash } =
+      await this.provider.connection.getLatestBlockhash('confirmed');
+    const message = new TransactionMessage({
+      payerKey: feePayer,
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToV0Message();
+
+    return Buffer.from(new VersionedTransaction(message).serialize());
+  }
+
+  async fetchProject(project: PublicKey): Promise<ResearchProjectAccount> {
+    try {
+      const account =
+        await this.provider.program.account.researchProject.fetch(project);
+
+      return {
+        usdcMint: publicKeyField(account, 'usdcMint', 'usdc_mint'),
+        escrowTokenAccount: publicKeyField(
+          account,
+          'escrowTokenAccount',
+          'escrow_token_account',
+        ),
+      };
+    } catch (error) {
+      throw this.mapChainError(
+        error,
+        `Project not found on-chain: ${project.toBase58()}`,
+      );
+    }
+  }
+
+  async createAtaIfMissing(
+    payer: PublicKey,
+    ata: PublicKey,
+    owner: PublicKey,
+    mint: PublicKey,
+  ): Promise<TransactionInstruction[]> {
+    const existingAccount = await this.provider.connection.getAccountInfo(ata);
+
+    if (existingAccount) {
+      return [];
+    }
+
+    return [
+      createAssociatedTokenAccountInstruction(
+        payer,
+        ata,
+        owner,
+        mint,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+      ),
+    ];
+  }
+
+  getAssociatedTokenAccount(mint: PublicKey, owner: PublicKey) {
+    return getAssociatedTokenAddressSync(
+      mint,
+      owner,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+  }
+
+  getUsdcMint(): PublicKey {
+    const mint = this.config.get<string>('USDC_MINT_ADDRESS');
+
+    if (!mint) {
+      throw new ServiceUnavailableException('USDC_MINT_ADDRESS is required');
+    }
+
+    return toPublicKey(mint);
+  }
+
+  async wrapChainCall<T>(operation: () => Promise<T>): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      throw this.mapChainError(error);
+    }
+  }
+
+  mapChainError(error: unknown, notFoundMessage?: string): HttpException {
+    if (
+      error instanceof BadRequestException ||
+      error instanceof NotFoundException ||
+      error instanceof ServiceUnavailableException
+    ) {
+      return error;
+    }
+
+    const message =
+      error instanceof Error ? error.message : 'Unknown Solana RPC error';
+
+    if (
+      message.includes('Account does not exist') ||
+      message.includes('has no data')
+    ) {
+      return new NotFoundException(notFoundMessage ?? message);
+    }
+
+    if (
+      message.includes('Invalid public key') ||
+      message.includes('Non-base58')
+    ) {
+      return new BadRequestException(message);
+    }
+
+    if (
+      message.includes('blockhash') ||
+      message.includes('fetch failed') ||
+      message.includes('429')
+    ) {
+      return new ServiceUnavailableException(message);
+    }
+
+    return new InternalServerErrorException(message);
+  }
+}

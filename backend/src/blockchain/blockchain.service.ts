@@ -1,24 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-  ServiceUnavailableException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import {
-  PublicKey,
-  SystemProgram,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction,
-} from '@solana/web3.js';
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
-  getAssociatedTokenAddressSync,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+import { Injectable } from '@nestjs/common';
+import { SystemProgram } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { BlockchainProvider } from './blockchain.provider';
 import {
   deriveContributionPda,
@@ -28,23 +10,14 @@ import {
   deriveProjectPda,
   deriveVotePda,
 } from './blockchain.pda';
-import {
-  ChainAmount,
-  publicKeyField,
-  toBN,
-  toPublicKey,
-} from './blockchain.utils';
-
-interface ResearchProjectAccount {
-  usdcMint: PublicKey;
-  escrowTokenAccount: PublicKey;
-}
+import { BlockchainTx } from './blockchain.tx';
+import { ChainAmount, toBN, toPublicKey } from './blockchain.utils';
 
 @Injectable()
 export class BlockchainService {
   constructor(
     private readonly provider: BlockchainProvider,
-    private readonly config: ConfigService,
+    private readonly tx: BlockchainTx,
   ) {}
 
   async createProjectOnChain(
@@ -53,7 +26,7 @@ export class BlockchainService {
     title: string,
     totalAmount: ChainAmount,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const owner = toPublicKey(ownerPubkey);
       const project = deriveProjectPda(
         owner,
@@ -74,7 +47,7 @@ export class BlockchainService {
         .accountsStrict({
           project,
           escrowVault,
-          usdcMint: this.getUsdcMint(),
+          usdcMint: this.tx.getUsdcMint(),
           escrowTokenAccount,
           owner,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -82,7 +55,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(owner, [instruction]);
+      return this.tx.serialize(owner, [instruction]);
     });
   }
 
@@ -93,7 +66,7 @@ export class BlockchainService {
     amount: ChainAmount,
     deadline: ChainAmount,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const owner = toPublicKey(ownerPubkey);
       const project = toPublicKey(projectPda);
       const milestone = deriveMilestonePda(
@@ -112,7 +85,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(owner, [instruction]);
+      return this.tx.serialize(owner, [instruction]);
     });
   }
 
@@ -121,17 +94,17 @@ export class BlockchainService {
     projectPda: string,
     amount: ChainAmount,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const contributor = toPublicKey(contributorPubkey);
       const project = toPublicKey(projectPda);
-      const projectAccount = await this.fetchProject(project);
+      const projectAccount = await this.tx.fetchProject(project);
 
       const instruction = await this.provider.program.methods
         .fundProject(toBN(amount))
         .accountsStrict({
           project,
           escrowVault: deriveEscrowVaultPda(project, this.provider.programId),
-          donorTokenAccount: this.getAssociatedTokenAccount(
+          donorTokenAccount: this.tx.getAssociatedTokenAccount(
             projectAccount.usdcMint,
             contributor,
           ),
@@ -147,7 +120,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(contributor, [instruction]);
+      return this.tx.serialize(contributor, [instruction]);
     });
   }
 
@@ -157,7 +130,7 @@ export class BlockchainService {
     milestoneOrder: ChainAmount,
     votingDurationSeconds: ChainAmount,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const owner = toPublicKey(ownerPubkey);
       const project = toPublicKey(projectPda);
 
@@ -174,7 +147,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(owner, [instruction]);
+      return this.tx.serialize(owner, [instruction]);
     });
   }
 
@@ -184,7 +157,7 @@ export class BlockchainService {
     milestoneOrder: ChainAmount,
     approve: boolean,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const voter = toPublicKey(voterPubkey);
       const project = toPublicKey(projectPda);
       const milestone = deriveMilestonePda(
@@ -209,7 +182,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(voter, [instruction]);
+      return this.tx.serialize(voter, [instruction]);
     });
   }
 
@@ -218,7 +191,7 @@ export class BlockchainService {
     milestoneOrder: ChainAmount,
     feePayerPubkey: string,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const feePayer = toPublicKey(feePayerPubkey);
       const project = toPublicKey(projectPda);
 
@@ -234,7 +207,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(feePayer, [instruction]);
+      return this.tx.serialize(feePayer, [instruction]);
     });
   }
 
@@ -243,15 +216,15 @@ export class BlockchainService {
     projectPda: string,
     milestoneOrder: ChainAmount,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const owner = toPublicKey(ownerPubkey);
       const project = toPublicKey(projectPda);
-      const projectAccount = await this.fetchProject(project);
-      const researcherTokenAccount = this.getAssociatedTokenAccount(
+      const projectAccount = await this.tx.fetchProject(project);
+      const researcherTokenAccount = this.tx.getAssociatedTokenAccount(
         projectAccount.usdcMint,
         owner,
       );
-      const setupInstructions = await this.createAtaIfMissing(
+      const setupInstructions = await this.tx.createAtaIfMissing(
         owner,
         researcherTokenAccount,
         owner,
@@ -275,10 +248,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(owner, [
-        ...setupInstructions,
-        instruction,
-      ]);
+      return this.tx.serialize(owner, [...setupInstructions, instruction]);
     });
   }
 
@@ -286,7 +256,7 @@ export class BlockchainService {
     ownerPubkey: string,
     projectPda: string,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const owner = toPublicKey(ownerPubkey);
       const project = toPublicKey(projectPda);
 
@@ -298,7 +268,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(owner, [instruction]);
+      return this.tx.serialize(owner, [instruction]);
     });
   }
 
@@ -306,15 +276,15 @@ export class BlockchainService {
     contributorPubkey: string,
     projectPda: string,
   ): Promise<Buffer> {
-    return this.wrapChainCall(async () => {
+    return this.tx.wrapChainCall(async () => {
       const contributor = toPublicKey(contributorPubkey);
       const project = toPublicKey(projectPda);
-      const projectAccount = await this.fetchProject(project);
-      const donorTokenAccount = this.getAssociatedTokenAccount(
+      const projectAccount = await this.tx.fetchProject(project);
+      const donorTokenAccount = this.tx.getAssociatedTokenAccount(
         projectAccount.usdcMint,
         contributor,
       );
-      const setupInstructions = await this.createAtaIfMissing(
+      const setupInstructions = await this.tx.createAtaIfMissing(
         contributor,
         donorTokenAccount,
         contributor,
@@ -338,7 +308,7 @@ export class BlockchainService {
         })
         .instruction();
 
-      return this.serializeForWallet(contributor, [
+      return this.tx.serialize(contributor, [
         ...setupInstructions,
         instruction,
       ]);
@@ -374,132 +344,5 @@ export class BlockchainService {
       toPublicKey(contributorPubkey),
       this.provider.programId,
     ).toBase58();
-  }
-
-  private async serializeForWallet(
-    feePayer: PublicKey,
-    instructions: TransactionInstruction[],
-  ): Promise<Buffer> {
-    const { blockhash } =
-      await this.provider.connection.getLatestBlockhash('confirmed');
-    const message = new TransactionMessage({
-      payerKey: feePayer,
-      recentBlockhash: blockhash,
-      instructions,
-    }).compileToV0Message();
-
-    return Buffer.from(new VersionedTransaction(message).serialize());
-  }
-
-  private async fetchProject(
-    project: PublicKey,
-  ): Promise<ResearchProjectAccount> {
-    try {
-      const account =
-        await this.provider.program.account.researchProject.fetch(project);
-
-      return {
-        usdcMint: publicKeyField(account, 'usdcMint', 'usdc_mint'),
-        escrowTokenAccount: publicKeyField(
-          account,
-          'escrowTokenAccount',
-          'escrow_token_account',
-        ),
-      };
-    } catch (error) {
-      throw this.mapChainError(
-        error,
-        `Project not found on-chain: ${project.toBase58()}`,
-      );
-    }
-  }
-
-  private async createAtaIfMissing(
-    payer: PublicKey,
-    ata: PublicKey,
-    owner: PublicKey,
-    mint: PublicKey,
-  ): Promise<TransactionInstruction[]> {
-    const existingAccount = await this.provider.connection.getAccountInfo(ata);
-
-    if (existingAccount) {
-      return [];
-    }
-
-    return [
-      createAssociatedTokenAccountInstruction(
-        payer,
-        ata,
-        owner,
-        mint,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-      ),
-    ];
-  }
-
-  private getAssociatedTokenAccount(mint: PublicKey, owner: PublicKey) {
-    return getAssociatedTokenAddressSync(
-      mint,
-      owner,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-    );
-  }
-
-  private getUsdcMint(): PublicKey {
-    const mint = this.config.get<string>('USDC_MINT_ADDRESS');
-
-    if (!mint) {
-      throw new ServiceUnavailableException('USDC_MINT_ADDRESS is required');
-    }
-
-    return toPublicKey(mint);
-  }
-
-  private async wrapChainCall<T>(operation: () => Promise<T>): Promise<T> {
-    try {
-      return await operation();
-    } catch (error) {
-      throw this.mapChainError(error);
-    }
-  }
-
-  private mapChainError(error: unknown, notFoundMessage?: string) {
-    if (
-      error instanceof BadRequestException ||
-      error instanceof NotFoundException ||
-      error instanceof ServiceUnavailableException
-    ) {
-      return error;
-    }
-
-    const message =
-      error instanceof Error ? error.message : 'Unknown Solana RPC error';
-
-    if (
-      message.includes('Account does not exist') ||
-      message.includes('has no data')
-    ) {
-      return new NotFoundException(notFoundMessage ?? message);
-    }
-
-    if (
-      message.includes('Invalid public key') ||
-      message.includes('Non-base58')
-    ) {
-      return new BadRequestException(message);
-    }
-
-    if (
-      message.includes('blockhash') ||
-      message.includes('fetch failed') ||
-      message.includes('429')
-    ) {
-      return new ServiceUnavailableException(message);
-    }
-
-    return new InternalServerErrorException(message);
   }
 }
