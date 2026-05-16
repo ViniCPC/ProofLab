@@ -2,9 +2,11 @@ import { useState } from 'react'
 import type { ResearchFormValues } from '@/components/research/ResearchForm'
 import { researchService } from '@/services/research.service'
 import { demoStore } from '@/store/demoStore'
+import { useWalletStore } from '@/store/walletStore'
 import type { ResearchProject } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
 import { normalizeDecimal } from '@/utils/format'
+import { ensureWalletSession } from '@/utils/wallet'
 
 interface CreateResearchState {
   loading: boolean
@@ -36,6 +38,7 @@ function validateResearch(values: ResearchFormValues) {
 }
 
 export function useCreateResearch() {
+  const { walletAddress } = useWalletStore()
   const [state, setState] = useState<CreateResearchState>({
     loading: false,
     error: null,
@@ -64,6 +67,11 @@ export function useCreateResearch() {
     }))
 
     try {
+      await ensureWalletSession(
+        walletAddress,
+        'Conecte sua wallet para criar uma pesquisa.',
+      )
+
       const createdResearch = await researchService.create({
         title: values.title.trim(),
         description: values.description.trim(),
