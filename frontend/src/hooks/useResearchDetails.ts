@@ -4,9 +4,11 @@ import { contributionService } from '@/services/contribution.service'
 import { milestoneService } from '@/services/milestone.service'
 import { researchService } from '@/services/research.service'
 import { demoStore } from '@/store/demoStore'
+import { useWalletStore } from '@/store/walletStore'
 import type { FundingStats, Milestone, ResearchProject } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
 import { normalizeDecimal } from '@/utils/format'
+import { ensureWalletSession } from '@/utils/wallet'
 
 interface ResearchDetailsState {
   project: ResearchProject | null
@@ -46,6 +48,7 @@ function getCurrentMilestoneId(milestones: Milestone[]) {
 
 export function useResearchDetails() {
   const { id } = useParams<{ id: string }>()
+  const { walletAddress } = useWalletStore()
   const [state, setState] = useState<ResearchDetailsState>(initialState)
 
   const loadDetails = useCallback(async () => {
@@ -100,6 +103,11 @@ export function useResearchDetails() {
       }))
 
       try {
+        await ensureWalletSession(
+          walletAddress,
+          'Conecte sua wallet para contribuir.',
+        )
+
         const response = await contributionService.contribute(id, {
           amount: normalizeDecimal(amount),
         })
@@ -118,7 +126,7 @@ export function useResearchDetails() {
         }))
       }
     },
-    [id],
+    [id, walletAddress],
   )
 
   const submitMilestoneReview = useCallback(
@@ -138,6 +146,11 @@ export function useResearchDetails() {
       }))
 
       try {
+        await ensureWalletSession(
+          walletAddress,
+          'Conecte sua wallet para submeter a milestone.',
+        )
+
         const updatedMilestone = await milestoneService.submitReview(
           id,
           milestoneId,
@@ -162,7 +175,7 @@ export function useResearchDetails() {
         throw error
       }
     },
-    [id],
+    [id, walletAddress],
   )
 
   useEffect(() => {
