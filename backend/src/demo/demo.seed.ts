@@ -4,8 +4,12 @@ type DemoPrisma = Prisma.TransactionClient;
 
 export const DEMO_PRIMARY_PROJECT_ID = '11111111-1111-4111-8111-111111111111';
 export const DEMO_SECONDARY_PROJECT_ID = '22222222-2222-4222-8222-222222222222';
+export const DEMO_DONOR_FLOW_PROJECT_ID =
+  '55555555-5555-4555-8555-555555555555';
 export const DEMO_PENDING_REVIEW_MILESTONE_ID =
   '33333333-3333-4333-8333-333333333331';
+export const DEMO_DONOR_FLOW_MILESTONE_ID =
+  '66666666-6666-4666-8666-666666666661';
 
 export const demoScenarios = [
   'baseline',
@@ -118,6 +122,36 @@ const secondaryMilestones = [
   },
 ];
 
+const donorFlowMilestones = [
+  {
+    id: DEMO_DONOR_FLOW_MILESTONE_ID,
+    title: 'Relatório de bancada pronto para votação',
+    description:
+      'Validar os primeiros resultados do protocolo, incluindo fotos do setup, tabela de amostras e comparação com o plano aprovado.',
+    amount: '15000.000000',
+    order: 1,
+    status: 'PENDING_REVIEW' as const,
+    aiSummary:
+      'A entrega está bem documentada para uma demo: o relatório descreve o setup, os resultados iniciais e os próximos riscos de validação. A IA recomenda votação comunitária antes de liberar a etapa.',
+    consistencyScore: 86,
+    completionEstimate: 81,
+    aiRiskLevel: 'LOW',
+    submittedReport:
+      'Relatório v1 entregue com imagens do setup experimental, 48 amostras simuladas analisadas e tabela comparativa contra o protocolo inicial.',
+    submittedAt: new Date('2026-05-12T16:00:00.000Z'),
+    onChainMilestoneAddress: null,
+  },
+  {
+    id: '66666666-6666-4666-8666-666666666662',
+    title: 'Publicação dos dados de validação',
+    description:
+      'Publicar dataset anonimizado, protocolo revisado e resumo aberto para auditoria da comunidade.',
+    amount: '10000.000000',
+    order: 2,
+    status: 'PENDING' as const,
+  },
+];
+
 const primaryContributions = [
   {
     wallet: users[1].walletAddress,
@@ -140,7 +174,11 @@ const primaryContributions = [
 ];
 
 async function clearDemoProjects(tx: DemoPrisma) {
-  const demoProjectIds = [DEMO_PRIMARY_PROJECT_ID, DEMO_SECONDARY_PROJECT_ID];
+  const demoProjectIds = [
+    DEMO_PRIMARY_PROJECT_ID,
+    DEMO_SECONDARY_PROJECT_ID,
+    DEMO_DONOR_FLOW_PROJECT_ID,
+  ];
 
   await tx.vote.deleteMany({
     where: { milestone: { projectId: { in: demoProjectIds } } },
@@ -217,6 +255,31 @@ async function createDemoProjects(tx: DemoPrisma) {
     },
   });
 
+  await tx.researchProject.create({
+    data: {
+      id: DEMO_DONOR_FLOW_PROJECT_ID,
+      title: 'Demo rápida para doação e voto',
+      description:
+        'Projeto preparado para gravar o fluxo do financiador: conecte sua wallet, faça uma contribuição mockada e vote na milestone em revisão.',
+      totalAmount: '25000.000000',
+      aiSummary:
+        'Projeto de demonstração com escopo curto, baixo risco e milestone já pronta para revisão. Ideal para mostrar como um financiador entra, contribui e vota com apoio de análise da IA.',
+      innovationScore: 74,
+      feasibilityScore: 92,
+      riskLevel: 'LOW',
+      complexityLevel: 'LOW',
+      status: 'ACTIVE',
+      onChainProjectNonce: null,
+      onChainProjectAddress: null,
+      escrowVaultAddress: null,
+      onChainStatus: null,
+      creatorId: users[0].id,
+      milestones: {
+        create: donorFlowMilestones,
+      },
+    },
+  });
+
   for (const contribution of primaryContributions) {
     await tx.contribution.create({
       data: {
@@ -266,7 +329,13 @@ async function seedPendingReviewVotes(
 export async function getDemoSummary(prisma: PrismaClient) {
   const projects = await prisma.researchProject.findMany({
     where: {
-      id: { in: [DEMO_PRIMARY_PROJECT_ID, DEMO_SECONDARY_PROJECT_ID] },
+      id: {
+        in: [
+          DEMO_PRIMARY_PROJECT_ID,
+          DEMO_SECONDARY_PROJECT_ID,
+          DEMO_DONOR_FLOW_PROJECT_ID,
+        ],
+      },
     },
     orderBy: { createdAt: 'asc' },
     include: {
