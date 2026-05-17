@@ -1,39 +1,39 @@
 # ProofLab
 
-ProofLab é uma plataforma experimental para financiar pesquisa científica com cripto, IA e governança comunitária. A ideia central é simples: qualquer pessoa pode apoiar projetos científicos, mas os recursos não vão diretamente para o pesquisador. O capital fica condicionado a entregas por etapas, chamadas de milestones, e a comunidade de financiadores valida se cada etapa foi cumprida.
+ProofLab é uma plataforma experimental para financiar pesquisa científica com cripto, IA e governança comunitária. A proposta é permitir que qualquer pessoa apoie projetos científicos, mas com liberação de recursos condicionada a entregas verificáveis por etapas, chamadas de milestones.
 
-No MVP atual, o projeto combina:
+No MVP atual, o ProofLab combina:
 
-- Autenticação por wallet mockada.
-- Backend NestJS com Prisma e PostgreSQL.
-- Frontend React com Solana Wallet Adapter.
-- Análise de propostas e entregas com IA.
-- Funding mockado no banco para demo.
-- Fluxo on-chain em Solana/Anchor para preparar transações de escrow, milestones, votos, release e refund.
+- autenticação mockada por wallet;
+- backend em NestJS com Prisma e PostgreSQL;
+- frontend em React, Vite e Solana Wallet Adapter;
+- análise de propostas e entregas com IA;
+- funding mockado no banco para demonstração;
+- preparação de transações on-chain em Solana/Anchor para escrow, milestones, votos, liberação de fundos e refund.
 
 ## Visão do Produto
 
-O ProofLab foi pensado para resolver três problemas comuns no financiamento científico:
+O ProofLab foi pensado para atacar três problemas recorrentes no financiamento científico:
 
-1. Falta de transparência sobre como o dinheiro é usado.
-2. Baixa accountability depois que o pesquisador recebe o recurso.
-3. Dificuldade de pessoas não técnicas entenderem se uma entrega científica é boa o suficiente.
+1. falta de transparência sobre o uso dos recursos;
+2. baixa accountability depois que o pesquisador recebe o financiamento;
+3. dificuldade de financiadores não técnicos avaliarem entregas científicas.
 
-O fluxo proposto é:
+O fluxo esperado é:
 
-1. O pesquisador cria uma pesquisa e divide o trabalho em milestones.
-2. A IA analisa a proposta e traduz o conteúdo técnico em linguagem mais simples.
-3. Financiadores contribuem com recursos.
-4. O pesquisador envia evidências de progresso a cada milestone.
-5. A IA analisa a entrega.
-6. A comunidade vota para aprovar ou rejeitar a liberação da próxima etapa.
-7. Se aprovado, os fundos são liberados. Se o projeto falhar ou for cancelado, os financiadores podem pedir refund.
+1. o pesquisador cria uma pesquisa e divide o trabalho em milestones;
+2. a IA analisa a proposta e traduz pontos técnicos em linguagem mais acessível;
+3. financiadores contribuem com recursos;
+4. o pesquisador envia evidências de progresso;
+5. a IA analisa a entrega da milestone;
+6. a comunidade vota para aprovar ou rejeitar a próxima liberação;
+7. os fundos são liberados em caso de aprovação ou podem ser devolvidos em cenários de falha/cancelamento.
 
 ## Status Atual
 
-Este repositório está em estágio de MVP/demo. Ele já tem backend, frontend, seed de apresentação e programa Anchor, mas algumas partes on-chain ainda são orientadas a preparação de transação para carteira, não execução custodial pelo servidor.
+Este repositório está em estágio de MVP/demo. Ele já contém backend, frontend, seed de apresentação e um programa Anchor. Parte do fluxo on-chain ainda é orientada à preparação de transações para assinatura pela wallet do usuário, não à custódia ou assinatura pelo servidor.
 
-O backend monta transações Solana serializadas em base64. O objetivo é que a wallet do usuário assine e envie a transação. O servidor não deve custodiar fundos nem assinar em nome do usuário final.
+O backend monta transações Solana serializadas em base64. A intenção é que a wallet do usuário assine e envie essas transações. O servidor não deve custodiar fundos nem assinar em nome do usuário final.
 
 ## Stack
 
@@ -115,45 +115,44 @@ proofLab/
 ### Autenticação
 
 - Login mockado por wallet address.
-- Criação automática de usuário se a wallet ainda não existir.
+- Criação automática de usuário quando a wallet ainda não existe.
 - JWT simples para rotas protegidas.
-- Endpoint para recuperar usuário autenticado.
+- Endpoint para recuperar o usuário autenticado.
 
 ### Pesquisas
 
-- Criar projeto científico.
-- Listar projetos com paginação.
-- Buscar projeto por ID.
-- Retornar milestones junto nos detalhes.
-- Análise de IA na criação da pesquisa.
-- Registro on-chain do projeto em Solana.
+- Criação de projetos científicos.
+- Listagem paginada.
+- Busca por ID com milestones.
+- Análise da proposta com IA.
+- Registro on-chain do projeto.
 
 ### Milestones
 
-- Criar milestones vinculadas a uma pesquisa.
-- Validar existência do projeto.
-- Garantir ordem sequencial.
-- Listar milestones ordenadas por `order`.
-- Submeter relatório de progresso.
-- Analisar entrega com IA.
-- Criar/submeter/release milestone on-chain.
+- Criação de milestones vinculadas a uma pesquisa.
+- Validação de existência do projeto.
+- Garantia de ordem sequencial.
+- Listagem ordenada por `order`.
+- Submissão de relatório de progresso.
+- Análise de entrega com IA.
+- Preparação de transações on-chain para criar, submeter, finalizar votação e liberar fundos.
 
 ### Contributions
 
-- Registrar funding mockado no banco.
-- Validar existência do projeto.
-- Somar total arrecadado.
-- Calcular porcentagem financiada.
-- Listar investidores com paginação.
-- Preparar funding on-chain.
+- Registro de funding mockado no banco.
+- Validação de existência do projeto.
+- Soma do total arrecadado.
+- Cálculo da porcentagem financiada.
+- Listagem paginada de investidores.
+- Preparação de funding on-chain.
 
 ### Votação
 
-- Votar approve/reject em milestones.
-- Impedir o pesquisador de votar na própria milestone.
-- Consultar resultado da votação.
-- Preparar voto on-chain.
-- Preparar finalização de votação on-chain.
+- Voto `approve` ou `reject` em milestones.
+- Bloqueio para impedir o pesquisador de votar na própria milestone.
+- Consulta do resultado da votação.
+- Preparação de voto on-chain.
+- Preparação da finalização de votação on-chain.
 
 ### Demo
 
@@ -172,9 +171,9 @@ proofLab/
 - Node.js
 - npm
 - Docker e Docker Compose
-- PostgreSQL, via Docker neste projeto
-- Solana CLI, recomendado para trabalhar com o programa Anchor
-- Anchor CLI, recomendado para build/test/deploy do programa
+- PostgreSQL, usado via Docker neste projeto
+- Solana CLI, recomendada para trabalhar com o programa Anchor
+- Anchor CLI, recomendada para build, teste e deploy do programa
 - Uma wallet Solana, como Phantom, para testar a integração no frontend
 
 ## Configuração de Ambiente
@@ -203,7 +202,7 @@ cd backend
 cp .env.example .env
 ```
 
-No PowerShell, use:
+No PowerShell:
 
 ```powershell
 cd backend
@@ -229,17 +228,17 @@ SOLANA_PROGRAM_ID="5q7tMMX6j5M4m6JQ2R4kGPZZ8sJ5bxFcxwJkmxfW4AcJ"
 SOLANA_IDL_PATH="../solana/target/idl/research_escrow.json"
 USDC_MINT_ADDRESS="<devnet-usdc-mint>"
 
-# Opcional. Só defina se tiver uma secret key real.
+# Opcional. Defina apenas se tiver uma secret key real.
 # SOLANA_ADMIN_KEYPAIR="[1,2,3]"
 ```
 
-Notas:
+Notas importantes:
 
 - `JWT_SECRET` deve ser definido. Não use o valor de exemplo em produção.
-- `OPENAI_API_KEY` é necessário para criar pesquisas e submeter análises reais de milestone, porque esses fluxos chamam a camada de IA.
+- `OPENAI_API_KEY` é necessária para fluxos que chamam análise real de IA.
 - `SOLANA_IDL_PATH` precisa apontar para o IDL gerado pelo Anchor.
 - `USDC_MINT_ADDRESS` precisa ser um mint válido para o ambiente Solana usado.
-- `SOLANA_ADMIN_KEYPAIR` é opcional no MVP. O backend usa uma wallet efêmera para construir transações quando essa variável não está configurada. Se definir essa variável, use uma secret key real em formato JSON array.
+- `SOLANA_ADMIN_KEYPAIR` é opcional no MVP. Sem essa variável, o backend usa uma wallet efêmera para construir transações.
 
 ### 3. Variáveis do Frontend
 
@@ -320,16 +319,16 @@ http://localhost:5173
 ## Fluxo Recomendado para Demo
 
 1. Suba o banco com Docker.
-2. Rode migrations.
+2. Rode as migrations.
 3. Rode `npm run seed` no backend.
 4. Inicie o backend.
 5. Inicie o frontend.
 6. Abra `http://localhost:5173/demo`.
 7. Use o painel de demo para alternar cenários.
-8. Vá para a listagem em `/explore`.
+8. Acesse `/explore`.
 9. Abra o projeto principal.
 10. Conecte uma wallet.
-11. Teste o fluxo de funding, review, voto, finalização e release/refund.
+11. Teste funding, review, voto, finalização e release/refund.
 
 ## Rotas do Frontend
 
@@ -372,6 +371,7 @@ http://localhost:5173
 | `PATCH` | `/research/:id/milestones/:milestoneId/status` | Sim | Atualiza status administrativo |
 | `POST` | `/research/:id/milestones/:milestoneId/create-on-chain` | Sim | Prepara criação da milestone on-chain |
 | `POST` | `/research/:id/milestones/:milestoneId/submit-on-chain` | Sim | Prepara submissão da milestone on-chain |
+| `POST` | `/research/:id/milestones/:milestoneId/finalize-vote-on-chain` | Sim | Prepara finalização da votação on-chain |
 | `POST` | `/research/:id/milestones/:milestoneId/release-on-chain` | Sim | Prepara release de fundos |
 
 ### Contributions
@@ -518,7 +518,7 @@ anchor build
 anchor test
 ```
 
-Após rodar `anchor build`, confira se o IDL existe em:
+Depois de rodar `anchor build`, confira se o IDL foi gerado em:
 
 ```txt
 solana/target/idl/research_escrow.json
@@ -538,7 +538,7 @@ blockchain.tx.ts        # infraestrutura de transação e erros Solana
 blockchain.service.ts   # regras de domínio e instruções on-chain
 ```
 
-O `BlockchainService` continua sendo o único serviço exportado pelo módulo para o restante da aplicação.
+O `BlockchainService` é o serviço exportado pelo módulo para o restante da aplicação.
 
 ## Scripts Úteis
 
@@ -602,7 +602,7 @@ Enums principais:
 
 ### `OPENAI_API_KEY is not configured`
 
-Defina `OPENAI_API_KEY` em `backend/.env`. Sem essa variável, fluxos que chamam análise de IA falham.
+Defina `OPENAI_API_KEY` em `backend/.env`. Sem essa variável, fluxos que chamam análise de IA vão falhar.
 
 ### `Anchor IDL not found`
 
@@ -623,7 +623,7 @@ Confirme se o container está rodando:
 docker compose ps
 ```
 
-E confira se `DATABASE_URL` aponta para a mesma porta configurada em `POSTGRES_PORT`.
+Também confira se `DATABASE_URL` aponta para a mesma porta configurada em `POSTGRES_PORT`.
 
 ### Frontend chamando API errada
 
@@ -637,22 +637,22 @@ VITE_API_URL=http://localhost:3000
 
 Confira:
 
-- `SOLANA_RPC_URL`
-- `SOLANA_PROGRAM_ID`
-- `SOLANA_IDL_PATH`
-- `USDC_MINT_ADDRESS`
-- Se o projeto já foi registrado on-chain antes de funding/milestones.
-- Se a milestone já foi criada/submetida on-chain antes de voto/release.
+- `SOLANA_RPC_URL`;
+- `SOLANA_PROGRAM_ID`;
+- `SOLANA_IDL_PATH`;
+- `USDC_MINT_ADDRESS`;
+- se o projeto já foi registrado on-chain antes de funding/milestones;
+- se a milestone já foi criada/submetida on-chain antes de voto/release.
 
 ## Roadmap Sugerido
 
 - Assinar e enviar transações Solana diretamente pelo frontend.
 - Mostrar assinatura real da transação na UI.
 - Criar mint USDC devnet controlado para demo.
-- Melhorar fluxo de permissões para admin.
+- Melhorar o fluxo de permissões para admin.
 - Adicionar testes e2e para o fluxo completo.
 - Adicionar documentação OpenAPI/Swagger.
-- Melhorar tratamento de cenários sem `OPENAI_API_KEY` com modo demo offline.
+- Melhorar o modo demo offline para cenários sem `OPENAI_API_KEY`.
 - Implantar backend, frontend e banco em ambiente público de staging.
 
 ## Licença

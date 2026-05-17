@@ -319,6 +319,48 @@ export class MilestonesService {
     };
   }
 
+  async finalizeVoteOnChain(
+    projectId: string,
+    milestoneId: string,
+    user: PublicUser,
+  ) {
+    const project = await this.findProjectOrThrow(projectId);
+
+    if (!project.onChainProjectAddress) {
+      throw new BadRequestException(
+        'Project has not been registered on-chain yet',
+      );
+    }
+
+    const milestone = await this.prisma.milestone.findFirst({
+      where: { id: milestoneId, projectId },
+      select: {
+        id: true,
+        order: true,
+        status: true,
+        onChainMilestoneAddress: true,
+      },
+    });
+
+    if (!milestone) {
+      throw new NotFoundException('Milestone not found');
+    }
+
+    if (!milestone.onChainMilestoneAddress) {
+      throw new BadRequestException(
+        'Milestone has not been submitted on-chain yet',
+      );
+    }
+
+    const transaction = await this.blockchain.finalizeMilestoneVoteOnChain(
+      project.onChainProjectAddress,
+      milestone.order,
+      user.walletAddress,
+    );
+
+    return { transaction: transaction.toString('base64') };
+  }
+
   async releaseOnChain(
     projectId: string,
     milestoneId: string,

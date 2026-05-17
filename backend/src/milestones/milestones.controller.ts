@@ -100,6 +100,20 @@ export class MilestonesController {
     );
   }
 
+  @Post(':milestoneId/finalize-vote-on-chain')
+  @UseGuards(AuthGuard)
+  finalizeVoteOnChain(
+    @Param('id') projectId: string,
+    @Param('milestoneId') milestoneId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.milestonesService.finalizeVoteOnChain(
+      projectId,
+      milestoneId,
+      request.user!,
+    );
+  }
+
   @Post(':milestoneId/release-on-chain')
   @UseGuards(AuthGuard)
   releaseOnChain(
