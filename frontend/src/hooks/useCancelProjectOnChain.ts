@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import {
   type TransactionStatusState,
 } from '@/components/blockchain/TransactionStatusToast'
@@ -6,7 +7,7 @@ import { blockchainService } from '@/services/blockchain.service'
 import { demoStore } from '@/store/demoStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
-import { ensureWalletSession } from '@/utils/wallet'
+import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
 
 interface UseCancelProjectOnChainOptions {
   projectId?: string
@@ -23,6 +24,8 @@ export function useCancelProjectOnChain({
   onCancelled,
 }: UseCancelProjectOnChainOptions) {
   const { walletAddress } = useWalletStore()
+  const { connection } = useConnection()
+  const { sendTransaction, signMessage } = useWallet()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [transactionStatus, setTransactionStatus] =
@@ -37,41 +40,74 @@ export function useCancelProjectOnChain({
     setTransactionStatus({
       status: 'pending',
       title: 'Cancelando projeto',
-      message: 'A transação de cancelamento está sendo montada.',
+      message: 'A transacao de cancelamento esta sendo montada.',
     })
 
     const transactionId = demoStore.addTransaction({
       type: 'cancel-project',
       status: 'pending',
       title: 'Cancelamento on-chain',
-      message: 'Preparando transação de cancelamento.',
+      message: 'Preparando transacao de cancelamento.',
       projectId,
     })
 
     try {
       await ensureWalletSession(
         walletAddress,
+        signMessage,
         'Conecte sua wallet para cancelar o projeto.',
       )
 
       const response = await blockchainService.cancelProjectOnChain(projectId)
+      setTransactionStatus({
+        status: 'pending',
+        title: 'Aguardando assinatura',
+        message: 'Confirme a transacao na sua wallet.',
+      })
+
+      const signature = await signAndSendTransaction(
+        response.transaction,
+        connection,
+        sendTransaction,
+      )
+      const confirmation = await blockchainService.confirmTransaction(
+        projectId,
+        response.requestId,
+        signature,
+      )
+
+      if (confirmation.status !== 'CONFIRMED') {
+        setTransactionStatus({
+          status: 'pending',
+          title: 'Cancelamento enviado',
+          message: 'Aguardando confirmacao final do backend.',
+          transaction: signature,
+        })
+        demoStore.updateTransaction(transactionId, {
+          status: 'pending',
+          message: 'Aguardando confirmacao final do backend.',
+          transaction: signature,
+        })
+        return
+      }
+
       await onCancelled?.()
 
       setTransactionStatus({
         status: 'confirmed',
-        title: 'Cancelamento preparado',
-        message: 'Transação on-chain preparada para assinatura.',
-        transaction: response.transaction,
+        title: 'Projeto cancelado',
+        message: 'Cancelamento confirmado on-chain.',
+        transaction: signature,
       })
       demoStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Transação on-chain preparada para assinatura.',
-        transaction: response.transaction,
+        message: 'Cancelamento confirmado on-chain.',
+        transaction: signature,
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
         caughtError,
-        'Não foi possível cancelar o projeto on-chain.',
+        'Nao foi possivel cancelar o projeto on-chain.',
       )
 
       setError(errorMessage)

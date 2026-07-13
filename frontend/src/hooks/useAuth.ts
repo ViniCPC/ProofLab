@@ -1,29 +1,27 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { authService } from '@/services/auth.service'
 import { walletStore } from '@/store/walletStore'
 import type { AuthUser } from '@/types/user'
+import { signInWithWallet } from '@/utils/wallet'
 
 export function useAuth() {
-  const { publicKey, connected, connecting, disconnect } = useWallet()
+  const { publicKey, connected, connecting, disconnect, signMessage } =
+    useWallet()
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(false)
 
   const login = useCallback(async () => {
-    if (!publicKey) return
+    if (!publicKey || !signMessage) return
 
     setLoading(true)
     try {
-      const { accessToken, user: authUser } = await authService.walletLogin(
-        publicKey.toBase58(),
-      )
-      localStorage.setItem('prooflab_token', accessToken)
+      await signInWithWallet(publicKey.toBase58(), signMessage)
+      const authUser = walletStore.getState().user
       setUser(authUser)
-      walletStore.setUser(authUser)
     } finally {
       setLoading(false)
     }
-  }, [publicKey])
+  }, [publicKey, signMessage])
 
   const logout = useCallback(() => {
     localStorage.removeItem('prooflab_token')

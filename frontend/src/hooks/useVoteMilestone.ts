@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import {
   type TransactionStatusState,
 } from '@/components/blockchain/TransactionStatusToast'
@@ -8,7 +9,7 @@ import { demoStore } from '@/store/demoStore'
 import { useWalletStore } from '@/store/walletStore'
 import type { Milestone, MilestoneVoteResult } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
-import { ensureWalletSession } from '@/utils/wallet'
+import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
 
 interface UseVoteMilestoneOptions {
   projectId?: string
@@ -35,7 +36,9 @@ const initialState: VoteMilestoneState = {
 }
 
 function isVoteOpen(milestone: Milestone) {
-  return milestone.status === 'PENDING_REVIEW' || milestone.status === 'SUBMITTED'
+  return (
+    milestone.status === 'PENDING_REVIEW' || milestone.status === 'SUBMITTED'
+  )
 }
 
 export function useVoteMilestone({
@@ -43,6 +46,8 @@ export function useVoteMilestone({
   milestones,
 }: UseVoteMilestoneOptions) {
   const { walletAddress } = useWalletStore()
+  const { connection } = useConnection()
+  const { sendTransaction, signMessage } = useWallet()
   const [state, setState] = useState<VoteMilestoneState>(initialState)
 
   const loadVotes = useCallback(async () => {
@@ -79,7 +84,7 @@ export function useVoteMilestone({
         ...currentState,
         error: getApiErrorMessage(
           error,
-          'Não foi possível registrar o voto agora.',
+          'Nao foi possivel carregar os votos agora.',
         ),
       }))
     }
@@ -97,39 +102,89 @@ export function useVoteMilestone({
       error: null,
       transactionStatus: {
         status: 'pending',
-        title: approve ? 'Registrando aprovação' : 'Registrando rejeição',
-        message: 'Seu voto está sendo enviado para a camada DAO.',
+        title: approve ? 'Registrando aprovacao' : 'Registrando rejeicao',
+        message: milestone.onChainMilestoneAddress
+          ? 'Seu voto on-chain esta sendo preparado.'
+          : 'Seu voto esta sendo salvo na demo.',
       },
     }))
 
     const transactionId = demoStore.addTransaction({
       type: 'vote',
       status: 'pending',
-      title: approve ? 'Voto de aprovação' : 'Voto de rejeição',
-      message: 'Enviando voto para a DAO da demo.',
+      title: approve ? 'Voto de aprovacao' : 'Voto de rejeicao',
+      message: milestone.onChainMilestoneAddress
+        ? 'Preparando voto on-chain.'
+        : 'Enviando voto para a DAO da demo.',
       projectId,
       milestoneId: milestone.id,
     })
 
     try {
-      await ensureWalletSession(walletAddress, 'Conecte sua wallet para votar.')
-      await votingService.vote(projectId, milestone.id, { approve })
+      await ensureWalletSession(
+        walletAddress,
+        signMessage,
+        'Conecte sua wallet para votar.',
+      )
 
-      const chainResponse = milestone.onChainMilestoneAddress
-        ? await blockchainService.voteMilestoneOnChain(
-            projectId,
-            milestone.id,
-            approve,
-          )
-        : null
+      let signature: string | undefined
+
+      if (milestone.onChainMilestoneAddress) {
+        const chainResponse = await blockchainService.voteMilestoneOnChain(
+          projectId,
+          milestone.id,
+          approve,
+        )
+
+        setState((currentState) => ({
+          ...currentState,
+          transactionStatus: {
+            status: 'pending',
+            title: 'Aguardando assinatura',
+            message: 'Confirme o voto na sua wallet.',
+          },
+        }))
+
+        signature = await signAndSendTransaction(
+          chainResponse.transaction,
+          connection,
+          sendTransaction,
+        )
+        const confirmation = await blockchainService.confirmTransaction(
+          projectId,
+          chainResponse.requestId,
+          signature,
+        )
+
+        if (confirmation.status !== 'CONFIRMED') {
+          setState((currentState) => ({
+            ...currentState,
+            loadingMilestoneId: null,
+            transactionStatus: {
+              status: 'pending',
+              title: 'Voto enviado',
+              message: 'Aguardando confirmacao final do backend.',
+              transaction: signature,
+            },
+          }))
+          demoStore.updateTransaction(transactionId, {
+            status: 'pending',
+            message: 'Aguardando confirmacao final do backend.',
+            transaction: signature,
+          })
+          return
+        }
+      } else {
+        await votingService.vote(projectId, milestone.id, { approve })
+      }
 
       const updatedVotes = await votingService.getByMilestone(
         projectId,
         milestone.id,
       )
 
-      const message = chainResponse
-        ? 'Voto salvo e transação on-chain preparada.'
+      const message = milestone.onChainMilestoneAddress
+        ? 'Voto confirmado on-chain.'
         : 'Voto salvo no backend da demo.'
 
       setState((currentState) => ({
@@ -143,19 +198,19 @@ export function useVoteMilestone({
           status: 'confirmed',
           title: 'Voto registrado',
           message,
-          transaction: chainResponse?.transaction,
+          transaction: signature,
         },
       }))
 
       demoStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message,
-        transaction: chainResponse?.transaction,
+        transaction: signature,
       })
     } catch (error) {
       const errorMessage = getApiErrorMessage(
         error,
-        'Não foi possível registrar o voto agora.',
+        'Nao foi possivel registrar o voto agora.',
       )
 
       setState((currentState) => ({
@@ -164,7 +219,7 @@ export function useVoteMilestone({
         error: errorMessage,
         transactionStatus: {
           status: 'failed',
-          title: 'Voto não registrado',
+          title: 'Voto nao registrado',
           message: errorMessage,
         },
       }))

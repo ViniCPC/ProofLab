@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useParams } from 'react-router-dom'
 import { contributionService } from '@/services/contribution.service'
 import { milestoneService } from '@/services/milestone.service'
@@ -49,6 +50,7 @@ function getCurrentMilestoneId(milestones: Milestone[]) {
 export function useResearchDetails() {
   const { id } = useParams<{ id: string }>()
   const { walletAddress } = useWalletStore()
+  const { signMessage } = useWallet()
   const [state, setState] = useState<ResearchDetailsState>(initialState)
 
   const loadDetails = useCallback(async () => {
@@ -105,6 +107,7 @@ export function useResearchDetails() {
       try {
         await ensureWalletSession(
           walletAddress,
+          signMessage,
           'Conecte sua wallet para contribuir.',
         )
 
@@ -126,7 +129,7 @@ export function useResearchDetails() {
         }))
       }
     },
-    [id, walletAddress],
+    [id, walletAddress, signMessage],
   )
 
   const submitMilestoneReview = useCallback(
@@ -148,6 +151,7 @@ export function useResearchDetails() {
       try {
         await ensureWalletSession(
           walletAddress,
+          signMessage,
           'Conecte sua wallet para submeter a milestone.',
         )
 
@@ -175,7 +179,7 @@ export function useResearchDetails() {
         throw error
       }
     },
-    [id, walletAddress],
+    [id, walletAddress, signMessage],
   )
 
   useEffect(() => {

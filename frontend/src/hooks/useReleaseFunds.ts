@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import {
   type TransactionStatusState,
 } from '@/components/blockchain/TransactionStatusToast'
@@ -6,7 +7,7 @@ import { blockchainService } from '@/services/blockchain.service'
 import { demoStore } from '@/store/demoStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
-import { ensureWalletSession } from '@/utils/wallet'
+import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
 
 interface UseReleaseFundsOptions {
   projectId?: string
@@ -23,7 +24,11 @@ export function useReleaseFunds({
   onReleased,
 }: UseReleaseFundsOptions) {
   const { walletAddress } = useWalletStore()
-  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(null)
+  const { connection } = useConnection()
+  const { sendTransaction, signMessage } = useWallet()
+  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(
+    null,
+  )
   const [transactionStatus, setTransactionStatus] =
     useState<TransactionStatusState>(idleTransaction)
 
@@ -35,15 +40,15 @@ export function useReleaseFunds({
     setLoadingMilestoneId(milestoneId)
     setTransactionStatus({
       status: 'pending',
-      title: 'Preparando liberação',
-      message: 'A transação de release está sendo montada.',
+      title: 'Preparando liberacao',
+      message: 'A transacao de release esta sendo montada.',
     })
 
     const transactionId = demoStore.addTransaction({
       type: 'release-funds',
       status: 'pending',
-      title: 'Liberação de fundos',
-      message: 'Preparando transação on-chain de release.',
+      title: 'Liberacao de fundos',
+      message: 'Preparando transacao on-chain de release.',
       projectId,
       milestoneId,
     })
@@ -51,6 +56,7 @@ export function useReleaseFunds({
     try {
       await ensureWalletSession(
         walletAddress,
+        signMessage,
         'Conecte sua wallet para liberar fundos.',
       )
 
@@ -58,24 +64,55 @@ export function useReleaseFunds({
         projectId,
         milestoneId,
       )
+      setTransactionStatus({
+        status: 'pending',
+        title: 'Aguardando assinatura',
+        message: 'Confirme a transacao na sua wallet.',
+      })
+
+      const signature = await signAndSendTransaction(
+        response.transaction,
+        connection,
+        sendTransaction,
+      )
+      const confirmation = await blockchainService.confirmTransaction(
+        projectId,
+        response.requestId,
+        signature,
+      )
+
+      if (confirmation.status !== 'CONFIRMED') {
+        setTransactionStatus({
+          status: 'pending',
+          title: 'Release enviado',
+          message: 'Aguardando confirmacao final do backend.',
+          transaction: signature,
+        })
+        demoStore.updateTransaction(transactionId, {
+          status: 'pending',
+          message: 'Aguardando confirmacao final do backend.',
+          transaction: signature,
+        })
+        return
+      }
 
       await onReleased?.()
 
       setTransactionStatus({
         status: 'confirmed',
-        title: 'Fundos prontos para liberação',
-        message: 'Transação on-chain preparada para assinatura.',
-        transaction: response.transaction,
+        title: 'Fundos liberados',
+        message: 'Release confirmado on-chain.',
+        transaction: signature,
       })
       demoStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Transação on-chain preparada para assinatura.',
-        transaction: response.transaction,
+        message: 'Release confirmado on-chain.',
+        transaction: signature,
       })
     } catch (error) {
       const errorMessage = getApiErrorMessage(
         error,
-        'Não foi possível preparar a liberação dos fundos.',
+        'Nao foi possivel preparar a liberacao dos fundos.',
       )
       setTransactionStatus({
         status: 'failed',

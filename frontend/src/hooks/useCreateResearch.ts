@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import type { ResearchFormValues } from '@/components/research/ResearchForm'
 import { researchService } from '@/services/research.service'
 import { demoStore } from '@/store/demoStore'
@@ -39,6 +40,7 @@ function validateResearch(values: ResearchFormValues) {
 
 export function useCreateResearch() {
   const { walletAddress } = useWalletStore()
+  const { signMessage } = useWallet()
   const [state, setState] = useState<CreateResearchState>({
     loading: false,
     error: null,
@@ -69,6 +71,7 @@ export function useCreateResearch() {
     try {
       await ensureWalletSession(
         walletAddress,
+        signMessage,
         'Conecte sua wallet para criar uma pesquisa.',
       )
 

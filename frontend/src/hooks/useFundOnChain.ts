@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import {
   type TransactionStatusState,
 } from '@/components/blockchain/TransactionStatusToast'
@@ -6,7 +7,7 @@ import { blockchainService } from '@/services/blockchain.service'
 import { demoStore } from '@/store/demoStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
-import { ensureWalletSession } from '@/utils/wallet'
+import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
 
 interface UseFundOnChainOptions {
   projectId?: string
@@ -20,6 +21,8 @@ const idleTransaction: TransactionStatusState = {
 
 export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
   const { walletAddress } = useWalletStore()
+  const { connection } = useConnection()
+  const { sendTransaction, signMessage } = useWallet()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [transactionStatus, setTransactionStatus] =
@@ -48,6 +51,7 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
     try {
       await ensureWalletSession(
         walletAddress,
+        signMessage,
         'Conecte sua wallet para contribuir on-chain.',
       )
 
@@ -55,18 +59,51 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
         projectId,
         Number(amount),
       )
+
+      setTransactionStatus({
+        status: 'pending',
+        title: 'Aguardando assinatura',
+        message: 'Confirme a transação na sua wallet.',
+      })
+
+      const signature = await signAndSendTransaction(
+        response.transaction,
+        connection,
+        sendTransaction,
+      )
+      const confirmation = await blockchainService.confirmTransaction(
+        projectId,
+        response.requestId,
+        signature,
+      )
+
+      if (confirmation.status !== 'CONFIRMED') {
+        setTransactionStatus({
+          status: 'pending',
+          title: 'Funding enviado',
+          message: 'Aguardando confirmação final do backend.',
+          transaction: signature,
+        })
+        demoStore.updateTransaction(transactionId, {
+          status: 'pending',
+          message: 'Aguardando confirmação final do backend.',
+          transaction: signature,
+        })
+        return
+      }
+
       await onFunded?.()
 
       setTransactionStatus({
         status: 'confirmed',
-        title: 'Funding preparado',
-        message: 'Transação on-chain preparada para assinatura.',
-        transaction: response.transaction,
+        title: 'Funding confirmado',
+        message: 'Transação on-chain confirmada.',
+        transaction: signature,
       })
       demoStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Transação on-chain preparada para assinatura.',
-        transaction: response.transaction,
+        message: 'Transação on-chain confirmada.',
+        transaction: signature,
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
