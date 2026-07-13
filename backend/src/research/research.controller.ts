@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import type { AuthenticatedRequest } from '../auth/types/authenticated-request';
+import { ConfirmTransactionDto } from './dto/confirm-transaction.dto';
 import { CreateResearchDto } from './dto/create-research.dto';
 import { FundOnChainDto } from './dto/fund-on-chain.dto';
 import { ListResearchQueryDto } from './dto/list-research-query.dto';
@@ -73,5 +74,19 @@ export class ResearchController {
     @Req() request: AuthenticatedRequest,
   ) {
     return this.researchService.cancelOnChain(projectId, request.user!);
+  }
+
+  @Post(':id/on-chain/confirm-transaction')
+  @UseGuards(AuthGuard)
+  confirmTransaction(
+    @Param('id') projectId: string,
+    @Body() body: ConfirmTransactionDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.researchService.confirmTransaction(
+      projectId,
+      body,
+      request.user!,
+    );
   }
 }

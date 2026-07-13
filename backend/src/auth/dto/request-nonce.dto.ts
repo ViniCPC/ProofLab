@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
-export class WalletLoginDto {
+export class RequestNonceDto {
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
   )
@@ -9,9 +9,4 @@ export class WalletLoginDto {
   @IsNotEmpty()
   @MaxLength(128)
   walletAddress!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(256)
-  signature!: string;
 }

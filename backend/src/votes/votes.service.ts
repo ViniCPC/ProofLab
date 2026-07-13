@@ -4,11 +4,33 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { BlockchainService } from '../blockchain/blockchain.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { PublicUser } from '../users/users.service';
 import type { CreateVoteDto } from './dto/create-vote.dto';
 import type { VoteOnChainDto } from './dto/vote-on-chain.dto';
+
+const OnChainOperation = {
+  VOTE_MILESTONE: 'VOTE_MILESTONE',
+  FINALIZE_VOTE: 'FINALIZE_VOTE',
+} as const;
+
+type OnChainOperation =
+  (typeof OnChainOperation)[keyof typeof OnChainOperation];
+
+interface CreatePendingTransactionInput {
+  projectId: string;
+  milestoneId: string;
+  userId: string;
+  wallet: string;
+  operation: OnChainOperation;
+  expectedProjectAddress: string;
+  expectedContributionAddress?: string | null;
+  expectedMilestoneAddress?: string | null;
+  expectedVoteAddress?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
 
 @Injectable()
 export class VotesService {
@@ -108,6 +130,14 @@ export class VotesService {
       );
     }
 
+    const contributionAddress = this.blockchain.getContributionPda(
+      milestone.project.onChainProjectAddress,
+      user.walletAddress,
+    );
+    const voteAddress = this.blockchain.getVotePda(
+      milestone.onChainMilestoneAddress,
+      user.walletAddress,
+    );
     const transaction = await this.blockchain.voteMilestoneOnChain(
       user.walletAddress,
       milestone.project.onChainProjectAddress,
@@ -115,7 +145,24 @@ export class VotesService {
       dto.approve,
     );
 
-    return { transaction: transaction.toString('base64') };
+    const pendingTransaction = await this.createPendingTransaction({
+      projectId,
+      milestoneId,
+      userId: user.id,
+      wallet: user.walletAddress,
+      operation: OnChainOperation.VOTE_MILESTONE,
+      expectedProjectAddress: milestone.project.onChainProjectAddress,
+      expectedContributionAddress: contributionAddress,
+      expectedMilestoneAddress: milestone.onChainMilestoneAddress,
+      expectedVoteAddress: voteAddress,
+      metadata: { approve: dto.approve },
+    });
+
+    return {
+      requestId: pendingTransaction.id,
+      transaction: transaction.toString('base64'),
+      onChainVoteAddress: voteAddress,
+    };
   }
 
   async finalizeVoteOnChain(
@@ -152,7 +199,57 @@ export class VotesService {
       user.walletAddress,
     );
 
-    return { transaction: transaction.toString('base64') };
+    const pendingTransaction = await this.createPendingTransaction({
+      projectId,
+      milestoneId,
+      userId: user.id,
+      wallet: user.walletAddress,
+      operation: OnChainOperation.FINALIZE_VOTE,
+      expectedProjectAddress: milestone.project.onChainProjectAddress,
+      expectedMilestoneAddress: milestone.onChainMilestoneAddress,
+    });
+
+    return {
+      requestId: pendingTransaction.id,
+      transaction: transaction.toString('base64'),
+    };
+  }
+
+  private async createPendingTransaction(input: CreatePendingTransactionInput) {
+    const id = randomUUID();
+    const rows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+      INSERT INTO "OnChainTransaction" (
+        "id",
+        "projectId",
+        "milestoneId",
+        "userId",
+        "wallet",
+        "operation",
+        "expectedProjectAddress",
+        "expectedContributionAddress",
+        "expectedMilestoneAddress",
+        "expectedVoteAddress",
+        "metadata",
+        "updatedAt"
+      )
+      VALUES (
+        ${id},
+        ${input.projectId},
+        ${input.milestoneId},
+        ${input.userId},
+        ${input.wallet},
+        ${input.operation}::"OnChainOperation",
+        ${input.expectedProjectAddress},
+        ${input.expectedContributionAddress ?? null},
+        ${input.expectedMilestoneAddress ?? null},
+        ${input.expectedVoteAddress ?? null},
+        ${input.metadata ? JSON.stringify(input.metadata) : null}::jsonb,
+        ${new Date()}
+      )
+      RETURNING "id"
+    `;
+
+    return rows[0];
   }
 
   private async findMilestoneOrThrow(projectId: string, milestoneId: string) {

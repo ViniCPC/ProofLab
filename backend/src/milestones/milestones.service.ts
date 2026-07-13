@@ -5,15 +5,38 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { AiService } from '../ai/ai.service';
 import { BlockchainService } from '../blockchain/blockchain.service';
+import { toUsdcBaseUnits } from '../blockchain/blockchain.utils';
 import { PrismaService } from '../prisma/prisma.service';
 import type { PublicUser } from '../users/users.service';
 import type { CreateMilestoneOnChainDto } from './dto/create-milestone-on-chain.dto';
 import type { CreateMilestoneDto } from './dto/create-milestone.dto';
 import type { SubmitMilestoneReviewDto } from './dto/submit-milestone-review.dto';
 import type { SubmitOnChainDto } from './dto/submit-on-chain.dto';
+
+const OnChainOperation = {
+  CREATE_MILESTONE: 'CREATE_MILESTONE',
+  SUBMIT_MILESTONE: 'SUBMIT_MILESTONE',
+  FINALIZE_VOTE: 'FINALIZE_VOTE',
+  RELEASE_FUNDS: 'RELEASE_FUNDS',
+} as const;
+
+type OnChainOperation =
+  (typeof OnChainOperation)[keyof typeof OnChainOperation];
+
+interface CreatePendingTransactionInput {
+  projectId: string;
+  milestoneId: string;
+  userId: string;
+  wallet: string;
+  operation: OnChainOperation;
+  expectedProjectAddress: string;
+  expectedEscrowVaultAddress?: string | null;
+  expectedMilestoneAddress?: string | null;
+}
 
 @Injectable()
 export class MilestonesService {
@@ -244,12 +267,18 @@ export class MilestonesService {
       dto.votingDurationSeconds,
     );
 
-    await this.prisma.milestone.update({
-      where: { id: milestoneId },
-      data: { onChainMilestoneAddress },
+    const pendingTransaction = await this.createPendingTransaction({
+      projectId,
+      milestoneId,
+      userId: user.id,
+      wallet: user.walletAddress,
+      operation: OnChainOperation.SUBMIT_MILESTONE,
+      expectedProjectAddress: project.onChainProjectAddress,
+      expectedMilestoneAddress: onChainMilestoneAddress,
     });
 
     return {
+      requestId: pendingTransaction.id,
       transaction: transaction.toString('base64'),
       onChainMilestoneAddress,
     };
@@ -304,16 +333,22 @@ export class MilestonesService {
       user.walletAddress,
       project.onChainProjectAddress,
       milestone.order,
-      Number(milestone.amount),
+      toUsdcBaseUnits(milestone.amount),
       deadline,
     );
 
-    await this.prisma.milestone.update({
-      where: { id: milestoneId },
-      data: { onChainMilestoneAddress },
+    const pendingTransaction = await this.createPendingTransaction({
+      projectId,
+      milestoneId,
+      userId: user.id,
+      wallet: user.walletAddress,
+      operation: OnChainOperation.CREATE_MILESTONE,
+      expectedProjectAddress: project.onChainProjectAddress,
+      expectedMilestoneAddress: onChainMilestoneAddress,
     });
 
     return {
+      requestId: pendingTransaction.id,
       transaction: transaction.toString('base64'),
       onChainMilestoneAddress,
     };
@@ -358,7 +393,20 @@ export class MilestonesService {
       user.walletAddress,
     );
 
-    return { transaction: transaction.toString('base64') };
+    const pendingTransaction = await this.createPendingTransaction({
+      projectId,
+      milestoneId,
+      userId: user.id,
+      wallet: user.walletAddress,
+      operation: OnChainOperation.FINALIZE_VOTE,
+      expectedProjectAddress: project.onChainProjectAddress,
+      expectedMilestoneAddress: milestone.onChainMilestoneAddress,
+    });
+
+    return {
+      requestId: pendingTransaction.id,
+      transaction: transaction.toString('base64'),
+    };
   }
 
   async releaseOnChain(
@@ -412,7 +460,56 @@ export class MilestonesService {
       milestone.order,
     );
 
-    return { transaction: transaction.toString('base64') };
+    const pendingTransaction = await this.createPendingTransaction({
+      projectId,
+      milestoneId,
+      userId: user.id,
+      wallet: user.walletAddress,
+      operation: OnChainOperation.RELEASE_FUNDS,
+      expectedProjectAddress: project.onChainProjectAddress,
+      expectedEscrowVaultAddress: this.blockchain.getEscrowVaultPda(
+        project.onChainProjectAddress,
+      ),
+      expectedMilestoneAddress: milestone.onChainMilestoneAddress,
+    });
+
+    return {
+      requestId: pendingTransaction.id,
+      transaction: transaction.toString('base64'),
+    };
+  }
+
+  private async createPendingTransaction(input: CreatePendingTransactionInput) {
+    const id = randomUUID();
+    const rows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+      INSERT INTO "OnChainTransaction" (
+        "id",
+        "projectId",
+        "milestoneId",
+        "userId",
+        "wallet",
+        "operation",
+        "expectedProjectAddress",
+        "expectedEscrowVaultAddress",
+        "expectedMilestoneAddress",
+        "updatedAt"
+      )
+      VALUES (
+        ${id},
+        ${input.projectId},
+        ${input.milestoneId},
+        ${input.userId},
+        ${input.wallet},
+        ${input.operation}::"OnChainOperation",
+        ${input.expectedProjectAddress},
+        ${input.expectedEscrowVaultAddress ?? null},
+        ${input.expectedMilestoneAddress ?? null},
+        ${new Date()}
+      )
+      RETURNING "id"
+    `;
+
+    return rows[0];
   }
 
   private async findProjectOrThrow(projectId: string) {

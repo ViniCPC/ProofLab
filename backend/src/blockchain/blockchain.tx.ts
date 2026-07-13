@@ -27,6 +27,12 @@ export interface ResearchProjectAccount {
   escrowTokenAccount: PublicKey;
 }
 
+export interface MilestoneAccount {
+  status: unknown;
+}
+
+const MILESTONE_STATUS_OFFSET = 8 + 32 + 8 + 8;
+
 @Injectable()
 export class BlockchainTx {
   constructor(
@@ -68,6 +74,28 @@ export class BlockchainTx {
         `Project not found on-chain: ${project.toBase58()}`,
       );
     }
+  }
+
+  async fetchMilestone(milestone: PublicKey): Promise<MilestoneAccount> {
+    const account = await this.provider.connection.getAccountInfo(milestone);
+
+    if (!account) {
+      throw new NotFoundException(
+        `Milestone not found on-chain: ${milestone.toBase58()}`,
+      );
+    }
+
+    if (!account.owner.equals(this.provider.programId)) {
+      throw new BadRequestException('Milestone account owner is invalid');
+    }
+
+    if (account.data.length <= MILESTONE_STATUS_OFFSET) {
+      throw new BadRequestException('Milestone account data is invalid');
+    }
+
+    return {
+      status: account.data[MILESTONE_STATUS_OFFSET],
+    };
   }
 
   async createAtaIfMissing(
