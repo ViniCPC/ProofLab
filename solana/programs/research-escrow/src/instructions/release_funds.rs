@@ -50,7 +50,7 @@ pub fn handler(ctx: Context<ReleaseFunds>) -> Result<()> {
     };
 
     let transfer_ctx = CpiContext::new_with_signer(
-        ctx.accounts.token_program.to_account_info(),
+        ctx.accounts.token_program.key(),
         transfer_accounts,
         signer_seeds,
     );

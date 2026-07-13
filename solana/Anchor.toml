@@ -10,7 +10,7 @@ research_escrow = "5q7tMMX6j5M4m6JQ2R4kGPZZ8sJ5bxFcxwJkmxfW4AcJ"
 
 [provider]
 cluster = "devnet"
-wallet = "~/.config/solana/id.json"
+wallet = "./deploy-payer.key"
 
 [scripts]
 test = "cargo test"
