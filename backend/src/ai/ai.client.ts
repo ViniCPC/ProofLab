@@ -1,15 +1,25 @@
 import {
   BadGatewayException,
   Injectable,
+  Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { OpenAiResponse } from './ai.types';
 
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
+const REQUEST_TIMEOUT_MS = 20_000;
+const MAX_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 500;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 @Injectable()
 export class AiClient {
+  private readonly logger = new Logger(AiClient.name);
+
   constructor(private readonly config: ConfigService) {}
 
   async call<T>(
@@ -19,7 +29,7 @@ export class AiClient {
     schema: object,
     guard: (value: unknown) => value is T,
   ): Promise<T> {
-    const data = await this.fetchOpenAi(
+    const data = await this.fetchWithRetry(
       systemInstruction,
       input,
       schemaName,
@@ -29,34 +39,90 @@ export class AiClient {
     return this.parseAnalysis(text, guard);
   }
 
+  private async fetchWithRetry(
+    instructions: string,
+    input: string,
+    schemaName: string,
+    schema: object,
+  ): Promise<OpenAiResponse> {
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        return await this.fetchOpenAi(instructions, input, schemaName, schema);
+      } catch (error) {
+        lastError = error;
+
+        if (
+          error instanceof ServiceUnavailableException ||
+          attempt === MAX_ATTEMPTS
+        ) {
+          throw error;
+        }
+
+        this.logger.warn(
+          `OpenAI call failed (attempt ${attempt}/${MAX_ATTEMPTS}), retrying: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        await sleep(RETRY_DELAY_MS * attempt);
+      }
+    }
+
+    throw lastError;
+  }
+
   private async fetchOpenAi(
     instructions: string,
     input: string,
     schemaName: string,
     schema: object,
   ): Promise<OpenAiResponse> {
-    const response = await fetch(OPENAI_RESPONSES_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.getApiKey()}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: this.getModel(),
-        instructions,
-        input,
-        max_output_tokens: 700,
-        store: false,
-        text: {
-          format: {
-            type: 'json_schema',
-            name: schemaName,
-            strict: true,
-            schema,
-          },
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      REQUEST_TIMEOUT_MS,
+    );
+
+    let response: Response;
+
+    try {
+      response = await fetch(OPENAI_RESPONSES_URL, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${this.getApiKey()}`,
+          'Content-Type': 'application/json',
         },
-      }),
-    });
+        body: JSON.stringify({
+          model: this.getModel(),
+          instructions,
+          input,
+          max_output_tokens: 700,
+          store: false,
+          text: {
+            format: {
+              type: 'json_schema',
+              name: schemaName,
+              strict: true,
+              schema,
+            },
+          },
+        }),
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new BadGatewayException(
+          `OpenAI request timed out after ${REQUEST_TIMEOUT_MS}ms`,
+        );
+      }
+
+      throw new BadGatewayException(
+        `OpenAI request failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       throw new BadGatewayException(
