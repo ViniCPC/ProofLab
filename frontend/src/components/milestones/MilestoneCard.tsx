@@ -20,6 +20,8 @@ interface MilestoneCardProps {
     },
   ) => Promise<void>
   onPrepareOnChain: (milestoneId: string) => Promise<void>
+  onReanalyze?: (milestoneId: string) => void
+  reanalyzingMilestoneId?: string | null
 }
 
 function canSubmitReview(status: ReturnType<typeof getMilestoneDisplayStatus>) {
@@ -36,6 +38,8 @@ export function MilestoneCard({
   loading,
   onSubmitReview,
   onPrepareOnChain,
+  onReanalyze,
+  reanalyzingMilestoneId,
 }: MilestoneCardProps) {
   const displayStatus = getMilestoneDisplayStatus(milestone, orderedMilestones)
 
@@ -63,7 +67,11 @@ export function MilestoneCard({
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_220px]">
-        <MilestoneAIReviewCard milestone={milestone} />
+        <MilestoneAIReviewCard
+          milestone={milestone}
+          onReanalyze={onReanalyze ? () => onReanalyze(milestone.id) : undefined}
+          reanalyzing={reanalyzingMilestoneId === milestone.id}
+        />
 
         <div className="flex flex-wrap content-start gap-2">
           {canSubmitReview(displayStatus) && (

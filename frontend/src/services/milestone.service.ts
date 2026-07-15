@@ -21,4 +21,10 @@ export const milestoneService = {
       `/research/${projectId}/milestones/${milestoneId}/submit-review`,
       payload,
     ),
+
+  reanalyze: (projectId: string, milestoneId: string) =>
+    api.post<Milestone>(
+      `/research/${projectId}/milestones/${milestoneId}/reanalyze`,
+      {},
+    ),
 }

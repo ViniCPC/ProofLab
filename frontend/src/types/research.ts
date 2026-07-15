@@ -5,6 +5,7 @@ import type { UserSummary } from './user'
 
 export type ProjectStatus = 'DRAFT' | 'ACTIVE' | 'CANCELLED' | 'COMPLETED'
 export type OnChainStatus = 'Funding' | 'Active' | 'Completed' | 'Cancelled'
+export type AiAnalysisStatus = 'PENDING' | 'COMPLETED' | 'FAILED'
 
 export interface ResearchProject {
   id: string
@@ -16,6 +17,8 @@ export interface ResearchProject {
   onChainProjectAddress: string | null
   escrowVaultAddress: string | null
   aiSummary: string | null
+  aiRecommendation: string | null
+  aiStatus: AiAnalysisStatus
   innovationScore: number | null
   feasibilityScore: number | null
   riskLevel: RiskLevel | null

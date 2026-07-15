@@ -1,3 +1,4 @@
+import type { AiAnalysisStatus } from './research'
 import type { RiskLevel } from './ai'
 
 export type MilestoneStatus =
@@ -17,6 +18,8 @@ export interface Milestone {
   onChainMilestoneAddress: string | null
   releaseTransactionHash: string | null
   aiSummary: string | null
+  aiRecommendation: string | null
+  aiStatus: AiAnalysisStatus
   consistencyScore: number | null
   completionEstimate: number | null
   aiRiskLevel: RiskLevel | null

@@ -14,6 +14,8 @@ interface MilestoneTimelineProps {
     },
   ) => Promise<void>
   onPrepareOnChain: (milestoneId: string) => Promise<void>
+  onReanalyze?: (milestoneId: string) => void
+  reanalyzingMilestoneId?: string | null
 }
 
 function sortMilestones(milestones: Milestone[]) {
@@ -25,6 +27,8 @@ export function MilestoneTimeline({
   loading,
   onSubmitReview,
   onPrepareOnChain,
+  onReanalyze,
+  reanalyzingMilestoneId,
 }: MilestoneTimelineProps) {
   const orderedMilestones = sortMilestones(milestones)
 
@@ -51,6 +55,8 @@ export function MilestoneTimeline({
               loading={loading}
               onSubmitReview={onSubmitReview}
               onPrepareOnChain={onPrepareOnChain}
+              onReanalyze={onReanalyze}
+              reanalyzingMilestoneId={reanalyzingMilestoneId}
             />
           ))}
         </div>

@@ -14,9 +14,12 @@ import { useCancelProjectOnChain } from '@/hooks/useCancelProjectOnChain'
 import { useClaimRefund } from '@/hooks/useClaimRefund'
 import { useCreateProjectOnChain } from '@/hooks/useCreateProjectOnChain'
 import { useFundOnChain } from '@/hooks/useFundOnChain'
+import { useReanalyzeMilestone } from '@/hooks/useReanalyzeMilestone'
+import { useReanalyzeResearch } from '@/hooks/useReanalyzeResearch'
 import { useReleaseFunds } from '@/hooks/useReleaseFunds'
 import { useResearchDetails } from '@/hooks/useResearchDetails'
 import { useSubmitMilestoneOnChain } from '@/hooks/useSubmitMilestoneOnChain'
+import { useWalletStore } from '@/store/walletStore'
 
 export default function ResearchDetailsPage() {
   const {
@@ -73,6 +76,20 @@ export default function ResearchDetailsPage() {
     cancelProjectOnChain,
     dismissTransactionStatus: dismissCancelTransactionStatus,
   } = useCancelProjectOnChain({ projectId: project?.id, onCancelled: refetch })
+  const {
+    loading: reanalyzeResearchLoading,
+    error: reanalyzeResearchError,
+    reanalyze: reanalyzeResearch,
+  } = useReanalyzeResearch({ projectId: project?.id, onReanalyzed: refetch })
+  const {
+    loadingMilestoneId: reanalyzeMilestoneLoadingId,
+    error: reanalyzeMilestoneError,
+    reanalyze: reanalyzeMilestone,
+  } = useReanalyzeMilestone({ projectId: project?.id, onReanalyzed: refetch })
+  const { walletAddress } = useWalletStore()
+  const isCreator = Boolean(
+    walletAddress && project?.creator?.walletAddress === walletAddress,
+  )
   const fundToastIsActive = fundTransactionStatus.status !== 'idle'
   const releaseToastIsActive = releaseTransactionStatus.status !== 'idle'
   const cancelToastIsActive = cancelTransactionStatus.status !== 'idle'
@@ -81,7 +98,9 @@ export default function ResearchDetailsPage() {
     createProjectOnChainError ??
     submitMilestoneOnChainError ??
     fundOnChainError ??
-    cancelProjectOnChainError
+    cancelProjectOnChainError ??
+    reanalyzeResearchError ??
+    reanalyzeMilestoneError
   const pageActionMessage =
     actionMessage ?? createProjectOnChainMessage ?? submitMilestoneOnChainMessage
   const onChainLoading =
@@ -128,12 +147,24 @@ export default function ResearchDetailsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
-          <AIAnalysisCard project={project} />
+          <AIAnalysisCard
+            project={project}
+            onReanalyze={
+              isCreator ? () => void reanalyzeResearch() : undefined
+            }
+            reanalyzing={reanalyzeResearchLoading}
+          />
           <MilestoneTimeline
             milestones={milestones}
             loading={reviewLoading || onChainLoading}
             onSubmitReview={submitMilestoneReview}
             onPrepareOnChain={submitMilestoneOnChain}
+            onReanalyze={
+              isCreator
+                ? (milestoneId) => void reanalyzeMilestone(milestoneId)
+                : undefined
+            }
+            reanalyzingMilestoneId={reanalyzeMilestoneLoadingId}
           />
           <VotingPanel
             project={project}

@@ -1,42 +1,32 @@
-import { Bot, CheckCircle2, Gauge, Percent, ShieldAlert } from 'lucide-react'
+import {
+  Bot,
+  CheckCircle2,
+  Gauge,
+  Percent,
+  RotateCcw,
+  ShieldAlert,
+} from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import type { Milestone } from '@/types'
 import { RiskBadge } from './RiskBadge'
 
 interface MilestoneAIReviewCardProps {
   milestone: Milestone
-}
-
-function hasReview(milestone: Milestone) {
-  return (
-    milestone.aiSummary !== null ||
-    milestone.consistencyScore !== null ||
-    milestone.completionEstimate !== null ||
-    milestone.aiRiskLevel !== null
-  )
+  onReanalyze?: () => void
+  reanalyzing?: boolean
 }
 
 function getRecommendation(milestone: Milestone) {
-  if (!hasReview(milestone)) {
-    return 'Aguardando envio do relatório para a IA gerar uma recomendação.'
+  if (milestone.aiRecommendation) {
+    return milestone.aiRecommendation
   }
 
-  if (
-    milestone.aiRiskLevel === 'HIGH' ||
-    (milestone.consistencyScore ?? 100) < 50 ||
-    (milestone.completionEstimate ?? 100) < 60
-  ) {
-    return 'Recomenda revisar evidências antes de aprovar a liberação dos recursos.'
+  if (milestone.aiStatus === 'FAILED') {
+    return 'A análise da IA falhou para esta entrega.'
   }
 
-  if (
-    (milestone.completionEstimate ?? 0) >= 80 &&
-    (milestone.consistencyScore ?? 0) >= 70
-  ) {
-    return 'Recomenda seguir para votação da comunidade com baixo atrito.'
-  }
-
-  return 'Recomenda votação com atenção aos pontos técnicos destacados.'
+  return 'Aguardando envio do relatório para a IA gerar uma recomendação.'
 }
 
 function formatScore(score: number | null) {
@@ -45,9 +35,12 @@ function formatScore(score: number | null) {
 
 export function MilestoneAIReviewCard({
   milestone,
+  onReanalyze,
+  reanalyzing,
 }: MilestoneAIReviewCardProps) {
   const completionEstimate = milestone.completionEstimate ?? 0
   const consistencyScore = milestone.consistencyScore ?? 0
+  const failed = milestone.aiStatus === 'FAILED'
 
   return (
     <div className="rounded-lg border border-green-300/15 bg-green-300/5 p-3">
@@ -101,6 +94,20 @@ export function MilestoneAIReviewCard({
           {getRecommendation(milestone)}
         </p>
       </div>
+
+      {failed && onReanalyze && (
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="mt-3"
+          loading={reanalyzing}
+          onClick={onReanalyze}
+        >
+          <RotateCcw className="size-3.5" />
+          Reanalisar com a IA
+        </Button>
+      )}
     </div>
   )
 }

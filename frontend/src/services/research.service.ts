@@ -13,4 +13,7 @@ export const researchService = {
 
   create: (payload: CreateResearchPayload) =>
     api.post<ResearchProject>('/research', payload),
+
+  reanalyze: (id: string) =>
+    api.post<ResearchProject>(`/research/${id}/reanalyze`, {}),
 }
