@@ -9,16 +9,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   PublicKey,
+  SystemProgram,
   TransactionInstruction,
   TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js';
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
-  getAssociatedTokenAddressSync,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
 import { BlockchainProvider } from './blockchain.provider';
 import { publicKeyField, toPublicKey } from './blockchain.utils';
 
@@ -32,6 +27,48 @@ export interface MilestoneAccount {
 }
 
 const MILESTONE_STATUS_OFFSET = 8 + 32 + 8 + 8;
+const TOKEN_PROGRAM_ID = new PublicKey(
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+);
+const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
+  'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+);
+
+function getAssociatedTokenAddressSync(
+  mint: PublicKey,
+  owner: PublicKey,
+): PublicKey {
+  if (!PublicKey.isOnCurve(owner.toBuffer())) {
+    throw new BadRequestException('Token account owner must be on curve');
+  }
+
+  const [address] = PublicKey.findProgramAddressSync(
+    [owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+  );
+
+  return address;
+}
+
+function createAssociatedTokenAccountInstruction(
+  payer: PublicKey,
+  associatedToken: PublicKey,
+  owner: PublicKey,
+  mint: PublicKey,
+): TransactionInstruction {
+  return new TransactionInstruction({
+    programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+    keys: [
+      { pubkey: payer, isSigner: true, isWritable: true },
+      { pubkey: associatedToken, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: false, isWritable: false },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    ],
+    data: Buffer.alloc(0),
+  });
+}
 
 @Injectable()
 export class BlockchainTx {
@@ -116,8 +153,6 @@ export class BlockchainTx {
         ata,
         owner,
         mint,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID,
       ),
     ];
   }
@@ -126,9 +161,6 @@ export class BlockchainTx {
     return getAssociatedTokenAddressSync(
       mint,
       owner,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
     );
   }
 

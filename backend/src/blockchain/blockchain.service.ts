@@ -1,6 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ParsedTransactionWithMeta, SystemProgram } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  ParsedTransactionWithMeta,
+  PublicKey,
+  SystemProgram,
+} from '@solana/web3.js';
 import { BlockchainProvider } from './blockchain.provider';
 import {
   deriveContributionPda,
@@ -62,6 +65,9 @@ const operationLogLabels: Record<ExpectedOperation, string> = {
   CANCEL_PROJECT: 'Instruction: CancelProject',
   CLAIM_REFUND: 'Instruction: ClaimRefund',
 };
+const TOKEN_PROGRAM_ID = new PublicKey(
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+);
 
 @Injectable()
 export class BlockchainService {
