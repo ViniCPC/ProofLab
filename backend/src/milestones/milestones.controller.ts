@@ -52,6 +52,20 @@ export class MilestonesController {
     return this.milestonesService.findByProject(projectId);
   }
 
+  @Post(':milestoneId/reanalyze')
+  @UseGuards(AuthGuard)
+  reanalyze(
+    @Param('id') projectId: string,
+    @Param('milestoneId') milestoneId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.milestonesService.reanalyze(
+      projectId,
+      milestoneId,
+      request.user!,
+    );
+  }
+
   @Patch(':milestoneId/status')
   @UseGuards(AuthGuard)
   updateStatus(

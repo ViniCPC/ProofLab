@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
@@ -95,6 +96,8 @@ interface CreatePendingTransactionInput {
 
 @Injectable()
 export class ResearchService {
+  private readonly logger = new Logger(ResearchService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiService: AiService,
@@ -102,23 +105,22 @@ export class ResearchService {
   ) {}
 
   async create(dto: CreateResearchDto, creator: PublicUser) {
-    const analysis = await this.aiService.analyzeResearch({
-      title: dto.title,
-      description: dto.description,
-      totalAmount: dto.totalAmount,
-      milestones: dto.milestones,
-    });
+    const analysis = await this.runResearchAnalysis(
+      {
+        title: dto.title,
+        description: dto.description,
+        totalAmount: dto.totalAmount,
+        milestones: dto.milestones,
+      },
+      creator.walletAddress,
+    );
 
     return this.prisma.researchProject.create({
       data: {
         title: dto.title,
         description: dto.description,
         totalAmount: dto.totalAmount,
-        aiSummary: analysis.summary,
-        innovationScore: analysis.innovationScore,
-        feasibilityScore: analysis.feasibilityScore,
-        riskLevel: analysis.riskLevel,
-        complexityLevel: analysis.complexityLevel,
+        ...analysis,
         creatorId: creator.id,
         milestones: dto.milestones?.length
           ? {
@@ -137,6 +139,113 @@ export class ResearchService {
         },
       },
     });
+  }
+
+  async reanalyze(projectId: string, user: PublicUser) {
+    const project = await this.prisma.researchProject.findUnique({
+      where: { id: projectId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        totalAmount: true,
+        creatorId: true,
+        milestones: {
+          orderBy: { order: 'asc' },
+          select: { title: true, description: true, amount: true, order: true },
+        },
+      },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Research project not found');
+    }
+
+    if (project.creatorId !== user.id) {
+      throw new ForbiddenException(
+        'Only the project creator can request a new AI analysis',
+      );
+    }
+
+    const analysis = await this.runResearchAnalysis(
+      {
+        title: project.title,
+        description: project.description,
+        totalAmount: project.totalAmount,
+        milestones: project.milestones.map((milestone) => ({
+          title: milestone.title,
+          description: milestone.description,
+          amount: milestone.amount.toString(),
+          order: milestone.order,
+        })),
+      },
+      user.walletAddress,
+    );
+
+    const updated = await this.prisma.researchProject.update({
+      where: { id: projectId },
+      data:
+        analysis.aiStatus === 'FAILED' ? { aiStatus: 'FAILED' } : analysis,
+      include: {
+        creator: { select: creatorSelect },
+        milestones: { orderBy: { order: 'asc' } },
+      },
+    });
+
+    return this.serializeResearch(updated);
+  }
+
+  private async runResearchAnalysis(
+    input: {
+      title: string;
+      description: string;
+      totalAmount: Prisma.Decimal | string;
+      milestones?: {
+        title: string;
+        description: string;
+        amount: string;
+        order: number;
+      }[];
+    },
+    actor: string,
+  ) {
+    try {
+      const analysis = await this.aiService.analyzeResearch(
+        {
+          title: input.title,
+          description: input.description,
+          totalAmount: input.totalAmount.toString(),
+          milestones: input.milestones,
+        },
+        actor,
+      );
+
+      return {
+        aiStatus: 'COMPLETED' as const,
+        aiSummary: analysis.summary,
+        aiRecommendation: analysis.recommendation,
+        innovationScore: analysis.innovationScore,
+        feasibilityScore: analysis.feasibilityScore,
+        riskLevel: analysis.riskLevel,
+        complexityLevel: analysis.complexityLevel,
+      };
+    } catch (error) {
+      this.logger.warn(
+        `AI research analysis failed, saving project without it: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+
+      return {
+        aiStatus: 'FAILED' as const,
+        aiSummary: null,
+        aiRecommendation: null,
+        innovationScore: null,
+        feasibilityScore: null,
+        riskLevel: null,
+        complexityLevel: null,
+      };
+    }
   }
 
   async findAll(query: ListResearchQueryDto) {

@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
@@ -40,6 +41,8 @@ interface CreatePendingTransactionInput {
 
 @Injectable()
 export class MilestonesService {
+  private readonly logger = new Logger(MilestonesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiService: AiService,
@@ -136,27 +139,118 @@ export class MilestonesService {
       where: { id: milestoneId },
       data: {
         submittedReport: dto.submittedReport,
+        submittedProgress: dto.progress,
+        submittedEvidence: dto.evidenceText,
         submittedAt: new Date(),
       },
     });
 
-    const analysis = await this.aiService.analyzeMilestone({
-      promisedDescription: milestone.description,
-      submittedReport: dto.submittedReport,
-      progress: dto.progress,
-      evidenceText: dto.evidenceText,
-    });
+    const analysis = await this.runMilestoneAnalysis(
+      {
+        promisedDescription: milestone.description,
+        submittedReport: dto.submittedReport,
+        progress: dto.progress,
+        evidenceText: dto.evidenceText,
+      },
+      user.walletAddress,
+    );
 
     return this.prisma.milestone.update({
       where: { id: milestoneId },
       data: {
-        aiSummary: analysis.summary,
-        consistencyScore: analysis.consistencyScore,
-        completionEstimate: analysis.completionEstimate,
-        aiRiskLevel: analysis.riskLevel,
+        ...analysis,
         status: 'PENDING_REVIEW',
       },
     });
+  }
+
+  async reanalyze(projectId: string, milestoneId: string, user: PublicUser) {
+    const project = await this.findProjectOrThrow(projectId);
+
+    if (project.creatorId !== user.id) {
+      throw new ForbiddenException(
+        'Only the project creator can request a new AI analysis',
+      );
+    }
+
+    const milestone = await this.prisma.milestone.findFirst({
+      where: { id: milestoneId, projectId },
+      select: {
+        id: true,
+        description: true,
+        submittedReport: true,
+        submittedProgress: true,
+        submittedEvidence: true,
+      },
+    });
+
+    if (!milestone) {
+      throw new NotFoundException('Milestone not found');
+    }
+
+    if (
+      !milestone.submittedReport ||
+      milestone.submittedProgress === null ||
+      !milestone.submittedEvidence
+    ) {
+      throw new BadRequestException(
+        'Milestone has not been submitted for review yet',
+      );
+    }
+
+    const analysis = await this.runMilestoneAnalysis(
+      {
+        promisedDescription: milestone.description,
+        submittedReport: milestone.submittedReport,
+        progress: milestone.submittedProgress,
+        evidenceText: milestone.submittedEvidence,
+      },
+      user.walletAddress,
+    );
+
+    return this.prisma.milestone.update({
+      where: { id: milestoneId },
+      data:
+        analysis.aiStatus === 'FAILED' ? { aiStatus: 'FAILED' } : analysis,
+    });
+  }
+
+  private async runMilestoneAnalysis(
+    input: {
+      promisedDescription: string;
+      submittedReport: string;
+      progress: number;
+      evidenceText: string;
+    },
+    actor: string,
+  ) {
+    try {
+      const analysis = await this.aiService.analyzeMilestone(input, actor);
+
+      return {
+        aiStatus: 'COMPLETED' as const,
+        aiSummary: analysis.summary,
+        aiRecommendation: analysis.recommendation,
+        consistencyScore: analysis.consistencyScore,
+        completionEstimate: analysis.completionEstimate,
+        aiRiskLevel: analysis.riskLevel,
+      };
+    } catch (error) {
+      this.logger.warn(
+        `AI milestone analysis failed, keeping milestone in review without it: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+
+      return {
+        aiStatus: 'FAILED' as const,
+        aiSummary: null,
+        aiRecommendation: null,
+        consistencyScore: null,
+        completionEstimate: null,
+        aiRiskLevel: null,
+      };
+    }
   }
 
   async updateStatus(

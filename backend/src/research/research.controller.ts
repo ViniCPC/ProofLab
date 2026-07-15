@@ -76,6 +76,15 @@ export class ResearchController {
     return this.researchService.cancelOnChain(projectId, request.user!);
   }
 
+  @Post(':id/reanalyze')
+  @UseGuards(AuthGuard)
+  reanalyze(
+    @Param('id') projectId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.researchService.reanalyze(projectId, request.user!);
+  }
+
   @Post(':id/on-chain/confirm-transaction')
   @UseGuards(AuthGuard)
   confirmTransaction(
