@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from '../auth/auth.module';
 import { AiClient } from './ai.client';
 import { AiController } from './ai.controller';
 import { AiService } from './ai.service';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, AuthModule],
   controllers: [AiController],
   providers: [AiClient, AiService],
   exports: [AiService],
