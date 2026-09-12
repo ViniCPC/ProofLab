@@ -4,7 +4,11 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  // Keep browser access closed unless the single frontend origin is configured.
+  const frontendUrl = process.env.FRONTEND_URL?.trim();
+  app.enableCors({
+    origin: frontendUrl || false,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,

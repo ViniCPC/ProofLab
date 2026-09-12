@@ -219,6 +219,7 @@ POSTGRES_PORT=5437
 
 DATABASE_URL="postgresql://prooflab:prooflab@localhost:5437/prooflab?schema=public"
 JWT_SECRET="troque-este-valor"
+FRONTEND_URL="http://localhost:5173"
 
 OPENAI_API_KEY=""
 OPENAI_MODEL="gpt-5.4-mini"
@@ -595,7 +596,8 @@ Enums principais:
 - O funding on-chain (`POST /research/:id/fund-on-chain`) prepara uma transação Solana.
 - A IA depende de `OPENAI_API_KEY`.
 - O backend usa `ValidationPipe` global com whitelist, transform e bloqueio de campos não permitidos.
-- O CORS está habilitado no backend.
+- O CORS aceita somente a origem definida em `FRONTEND_URL`. Em produção, defina essa variável com o domínio exato do frontend no Vercel, por exemplo `https://seu-projeto.vercel.app`.
+- A rota `GET /health` retorna `{ "status": "ok" }` e pode ser usada pelo provedor de deploy para verificar a saúde da API.
 - Não commite arquivos `.env` com segredos reais.
 
 ## Troubleshooting
