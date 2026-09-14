@@ -1,23 +1,43 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiSecurity } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { DemoAdminGuard } from './demo-admin.guard';
 import { ApplyDemoScenarioDto } from './dto/apply-demo-scenario.dto';
 import { DemoService } from './demo.service';
 
 @Controller('demo')
 export class DemoController {
-  constructor(private readonly demoService: DemoService) {}
+  constructor(
+    private readonly demoService: DemoService,
+    private readonly demoAdminGuard: DemoAdminGuard,
+  ) {}
 
   @Get()
-  getSummary() {
-    return this.demoService.getSummary();
+  async getSummary() {
+    return this.withCapabilities(await this.demoService.getSummary());
   }
 
   @Post('seed')
-  seed() {
-    return this.demoService.seed();
+  @ApiSecurity('demo-admin')
+  @UseGuards(DemoAdminGuard)
+  async seed() {
+    return this.withCapabilities(await this.demoService.seed());
   }
 
   @Post('scenario')
-  applyScenario(@Body() body: ApplyDemoScenarioDto) {
-    return this.demoService.applyScenario(body.scenario);
+  @ApiSecurity('demo-admin')
+  @UseGuards(DemoAdminGuard)
+  async applyScenario(@Body() body: ApplyDemoScenarioDto) {
+    return this.withCapabilities(
+      await this.demoService.applyScenario(body.scenario),
+    );
+  }
+
+  private withCapabilities(
+    summary: Awaited<ReturnType<DemoService['getSummary']>>,
+  ) {
+    return {
+      ...summary,
+      mutationsEnabled: this.demoAdminGuard.arePublicMutationsEnabled(),
+    };
   }
 }

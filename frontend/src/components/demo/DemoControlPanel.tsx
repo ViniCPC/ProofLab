@@ -49,7 +49,11 @@ export function DemoControlPanel({
   onSeed,
   onScenario,
 }: DemoControlPanelProps) {
-  const projectUrl = summary ? `/research/${summary.primaryProjectId}` : '/explore'
+  const primaryProject = summary?.projects.find(
+    (project) => project.id === summary.primaryProjectId,
+  )
+  const projectUrl = primaryProject ? `/research/${primaryProject.id}` : '/explore'
+  const mutationsEnabled = summary?.mutationsEnabled ?? false
 
   return (
     <Card glow="cyan" className="space-y-5">
@@ -58,43 +62,51 @@ export function DemoControlPanel({
         <h2 className="text-lg font-semibold">Painel da demo</h2>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Button
-          type="button"
-          variant="secondary"
-          loading={activeAction === 'seed'}
-          onClick={() => void onSeed()}
-        >
-          <RotateCcw className="size-4" />
-          Recriar seed
-        </Button>
+      <div className={mutationsEnabled ? 'grid gap-3 sm:grid-cols-2' : 'grid gap-3'}>
+        {mutationsEnabled && (
+          <Button
+            type="button"
+            variant="secondary"
+            loading={activeAction === 'seed'}
+            onClick={() => void onSeed()}
+          >
+            <RotateCcw className="size-4" />
+            Recriar seed
+          </Button>
+        )}
         <Link
           to={projectUrl}
           className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-cyan-300/40 bg-cyan-300 px-4 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
         >
           <Play className="size-4" />
-          Abrir projeto demo
+          {primaryProject ? 'Abrir projeto demo' : 'Explorar pesquisas'}
         </Link>
       </div>
 
-      <div className="grid gap-3">
-        {scenarioButtons.map(({ scenario, label, description }) => (
-          <button
-            key={scenario}
-            type="button"
-            onClick={() => void onScenario(scenario)}
-            disabled={activeAction !== null}
-            className="rounded-lg border border-slate-800 bg-slate-950/70 p-3 text-left transition hover:border-purple-300/40 hover:bg-purple-300/10 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span className="block text-sm font-semibold text-slate-100">
-              {activeAction === scenario ? 'Aplicando...' : label}
-            </span>
-            <span className="mt-1 block text-xs leading-5 text-slate-500">
-              {description}
-            </span>
-          </button>
-        ))}
-      </div>
+      {mutationsEnabled ? (
+        <div className="grid gap-3">
+          {scenarioButtons.map(({ scenario, label, description }) => (
+            <button
+              key={scenario}
+              type="button"
+              onClick={() => void onScenario(scenario)}
+              disabled={activeAction !== null}
+              className="rounded-lg border border-slate-800 bg-slate-950/70 p-3 text-left transition hover:border-purple-300/40 hover:bg-purple-300/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="block text-sm font-semibold text-slate-100">
+                {activeAction === scenario ? 'Aplicando...' : label}
+              </span>
+              <span className="mt-1 block text-xs leading-5 text-slate-500">
+                {description}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : summary ? (
+        <p className="text-sm leading-6 text-slate-400">
+          A demo pública está em modo de leitura para preservar os dados de apresentação.
+        </p>
+      ) : null}
     </Card>
   )
 }

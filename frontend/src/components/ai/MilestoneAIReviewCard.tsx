@@ -57,23 +57,28 @@ export function MilestoneAIReviewCard({
           'A IA ainda não analisou uma entrega para esta milestone.'}
       </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <ProgressBar
-          value={completionEstimate}
-          label="Estimativa de conclusão"
-          tone="green"
-        />
-        <ProgressBar
-          value={consistencyScore}
-          label="Score de consistência"
-          tone="cyan"
-        />
-      </div>
+      {(milestone.completionEstimate !== null ||
+        milestone.consistencyScore !== null) && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <ProgressBar
+            value={completionEstimate}
+            label="Estimativa de conclusão"
+            tone="green"
+          />
+          <ProgressBar
+            value={consistencyScore}
+            label="Score de consistência"
+            tone="cyan"
+          />
+        </div>
+      )}
 
       <div className="mt-4 grid gap-2 text-xs text-slate-400 sm:grid-cols-3">
         <div className="flex items-center gap-2">
           <Percent className="size-3.5 text-green-200" />
-          {completionEstimate}% concluído
+          {milestone.completionEstimate === null
+            ? 'Conclusão não avaliada'
+            : `${completionEstimate}% concluído`}
         </div>
         <div className="flex items-center gap-2">
           <Gauge className="size-3.5 text-cyan-200" />

@@ -1,3 +1,4 @@
+import { ApiBearerAuth } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -18,6 +19,7 @@ export class VotesController {
   constructor(private readonly votesService: VotesService) {}
 
   @Post('votes')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   vote(
     @Param('projectId') projectId: string,
@@ -37,6 +39,7 @@ export class VotesController {
   }
 
   @Post('vote-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   voteOnChain(
     @Param('projectId') projectId: string,
@@ -53,6 +56,7 @@ export class VotesController {
   }
 
   @Post('finalize-vote-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   finalizeVoteOnChain(
     @Param('projectId') projectId: string,

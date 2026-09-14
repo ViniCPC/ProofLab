@@ -221,7 +221,10 @@ export class ResearchService {
       );
 
       return {
-        aiStatus: 'COMPLETED' as const,
+        aiStatus:
+          analysis.source === 'unavailable'
+            ? ('FAILED' as const)
+            : ('COMPLETED' as const),
         aiSummary: analysis.summary,
         aiRecommendation: analysis.recommendation,
         innovationScore: analysis.innovationScore,

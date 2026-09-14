@@ -1,10 +1,14 @@
 # ProofLab
 
+[Código-fonte](https://github.com/ViniCPC/ProofLab) · [Health da API](https://prooflab-9ffw.onrender.com/health) · [Swagger da API](https://prooflab-9ffw.onrender.com/docs) · [Roteiro de apresentação](docs/DEMO.md)
+
+Demo frontend: URL pública do Vercel pendente de confirmação. Vídeo: ainda não informado. A documentação Swagger ficará disponível na API após o deploy destas alterações.
+
 ProofLab é uma plataforma experimental para financiar pesquisa científica com cripto, IA e governança comunitária. A proposta é permitir que qualquer pessoa apoie projetos científicos, mas com liberação de recursos condicionada a entregas verificáveis por etapas, chamadas de milestones.
 
 No MVP atual, o ProofLab combina:
 
-- autenticação mockada por wallet;
+- autenticação por assinatura de mensagem da wallet e JWT;
 - backend em NestJS com Prisma e PostgreSQL;
 - frontend em React, Vite e Solana Wallet Adapter;
 - análise de propostas e entregas com IA;
@@ -28,6 +32,20 @@ O fluxo esperado é:
 5. a IA analisa a entrega da milestone;
 6. a comunidade vota para aprovar ou rejeitar a próxima liberação;
 7. os fundos são liberados em caso de aprovação ou podem ser devolvidos em cenários de falha/cancelamento.
+
+## Como avaliar o MVP
+
+Em cerca de cinco minutos, sem cadastro e sem wallet, é possível avaliar o fluxo de leitura:
+
+1. Abra `/explore` no frontend e compare as pesquisas, seus orçamentos e milestones.
+2. Abra os detalhes de um projeto seedado e confira entregas, funding, resumo de análise e votação. Os dados do seed são demonstrativos.
+3. Visite `/demo` para localizar os projetos preparados para apresentação. Em produção, os controles que recriam dados ficam reservados ao administrador.
+4. Abra [a documentação da API](https://prooflab-9ffw.onrender.com/docs) para inspecionar rotas, payloads e autenticação.
+5. Opcionalmente, conecte uma wallet própria, assine a mensagem de login e teste criação de pesquisa, contribuição mockada ou voto no projeto “Demo rápida para doação e voto”. Essas ações alteram dados da demo, mas contribuições mockadas não transferem fundos reais.
+
+O que observar tecnicamente: separação de módulos no NestJS, validação de payloads, autenticação por nonce assinado, persistência com Prisma, proteção dos controles administrativos e comportamento quando a IA está indisponível.
+
+Este é um MVP de portfólio, não uma plataforma auditada para receber dinheiro real. As rotas Solana dependem de configuração de Devnet, IDL, mint e wallet; os exemplos on-chain do seed não equivalem a transações reais. Consulte também o [roteiro de apresentação](docs/DEMO.md).
 
 ## Status Atual
 
@@ -114,9 +132,9 @@ proofLab/
 
 ### Autenticação
 
-- Login mockado por wallet address.
+- Login por wallet address com nonce temporário e assinatura verificada.
 - Criação automática de usuário quando a wallet ainda não existe.
-- JWT simples para rotas protegidas.
+- JWT para rotas protegidas.
 - Endpoint para recuperar o usuário autenticado.
 
 ### Pesquisas
@@ -220,6 +238,8 @@ POSTGRES_PORT=5437
 DATABASE_URL="postgresql://prooflab:prooflab@localhost:5437/prooflab?schema=public"
 JWT_SECRET="troque-este-valor"
 FRONTEND_URL="http://localhost:5173"
+NODE_ENV="development"
+DEMO_ADMIN_TOKEN=""
 
 OPENAI_API_KEY=""
 OPENAI_MODEL="gpt-5.4-mini"
@@ -236,7 +256,9 @@ USDC_MINT_ADDRESS="<devnet-usdc-mint>"
 Notas importantes:
 
 - `JWT_SECRET` deve ser definido. Não use o valor de exemplo em produção.
-- `OPENAI_API_KEY` é necessária para fluxos que chamam análise real de IA.
+- Em produção, `JWT_SECRET` deve ter pelo menos 32 caracteres e `FRONTEND_URL` deve ser uma origem HTTPS exata, sem barra final ou caminho. O backend valida essas configurações ao iniciar.
+- `DEMO_ADMIN_TOKEN` protege as alterações da demo. Não coloque esse segredo em variáveis `VITE_*`.
+- `OPENAI_API_KEY` é necessária para análise real de IA. Sem chave, os fluxos continuam com mensagem de indisponibilidade e sem scores inventados; o status de IA fica `FAILED`, não `COMPLETED`.
 - `SOLANA_IDL_PATH` precisa apontar para o IDL gerado pelo Anchor.
 - `USDC_MINT_ADDRESS` precisa ser um mint válido para o ambiente Solana usado.
 - `SOLANA_ADMIN_KEYPAIR` é opcional no MVP. Sem essa variável, o backend usa uma wallet efêmera para construir transações.
@@ -331,6 +353,60 @@ http://localhost:5173
 10. Conecte uma wallet.
 11. Teste funding, review, voto, finalização e release/refund.
 
+## Deploy: Vercel e Render
+
+### Frontend no Vercel
+
+- Root Directory: `frontend`.
+- Build Command: `npm run build`.
+- Output Directory: `dist`.
+- Cadastre `VITE_API_URL=https://prooflab-9ffw.onrender.com` no ambiente Production e faça um novo deploy. As variáveis `VITE_*` são incorporadas durante o build, não em tempo de execução.
+- O arquivo `frontend/vercel.json` encaminha rotas como `/explore`, `/demo` e `/research/:id` para a SPA, inclusive ao atualizar a página.
+
+O build de produção falha se `VITE_API_URL` não estiver definido como uma origem HTTPS válida. Para um build local contra uma API HTTP, use `npm run build -- --mode development`.
+
+### Backend no Render
+
+- Root Directory: `backend`.
+- Build Command: `npm ci && npx prisma generate && npm run build`.
+- Start Command: `npm run start:prod`.
+- Health Check Path: `/health`.
+- Execute `npm run db:deploy` antes de iniciar a versão nova. Use o Pre-Deploy Command quando disponível, ou o shell do serviço. Não use `prisma migrate dev` no banco público.
+
+Cadastre estas variáveis no Render, usando os valores reais do seu ambiente:
+
+```env
+NODE_ENV=production
+DATABASE_URL=<conexao-postgresql-do-banco-publico>
+JWT_SECRET=<segredo-aleatorio-com-pelo-menos-32-caracteres>
+FRONTEND_URL=https://<seu-dominio-exato>.vercel.app
+DEMO_ADMIN_TOKEN=<outro-segredo-aleatorio>
+OPENAI_API_KEY=<chave-da-api>
+OPENAI_MODEL=gpt-5.4-mini
+SOLANA_RPC_URL=https://api.devnet.solana.com
+SOLANA_PROGRAM_ID=<programa-implantado-na-devnet>
+USDC_MINT_ADDRESS=<mint-usdc-valido-na-devnet>
+```
+
+`FRONTEND_URL` deve corresponder exatamente à URL usada pelo visitante. Não use curingas, caminhos, barra final ou uma lista de domínios. O CORS não substitui autenticação.
+
+Confira também se `SOLANA_IDL_PATH` aponta para um IDL disponível no deploy quando for usar os fluxos on-chain.
+
+### Popular e preservar a demo pública
+
+Após as migrations, execute `npm run seed` uma vez no shell do backend implantado. O seed recria somente os três projetos reservados para demonstração e seus registros relacionados; ele apaga alterações anteriores feitas nesses projetos. Não execute automaticamente em cada deploy.
+
+Sem acesso ao shell, um administrador pode usar a rota protegida:
+
+```bash
+curl -X POST "https://prooflab-9ffw.onrender.com/demo/seed" \
+  -H "x-demo-admin-token: <DEMO_ADMIN_TOKEN>"
+```
+
+Em produção, o painel público permite consultar e abrir os projetos, mas não alterar cenários. `POST /demo/seed` e `POST /demo/scenario` exigem `x-demo-admin-token`; se o segredo não estiver cadastrado, as alterações ficam bloqueadas. Somente com `NODE_ENV=development` e sem segredo configurado os controles públicos ficam disponíveis localmente. Se `NODE_ENV` estiver ausente, as alterações também ficam bloqueadas.
+
+Após o deploy, confirme que `/health` responde com `{"status":"ok"}`, que `/demo` contém os projetos e que as rotas internas do frontend abrem diretamente e sobrevivem a um refresh.
+
 ## Rotas do Frontend
 
 | Rota | Descrição |
@@ -343,11 +419,14 @@ http://localhost:5173
 
 ## Principais Endpoints da API
 
+A documentação interativa fica em `/docs` e a especificação OpenAPI em `/docs-json`. Localmente: `http://localhost:3000/docs`. Use JWT em **Authorize** para rotas autenticadas e a chave administrativa apenas para alterações da demo. O Swagger não persiste essas credenciais no navegador. A integração segue a [documentação oficial do NestJS](https://docs.nestjs.com/openapi/introduction).
+
 ### Auth
 
 | Método | Endpoint | Protegido | Descrição |
 | --- | --- | --- | --- |
-| `POST` | `/auth/wallet-login` | Não | Login mockado com `walletAddress` |
+| `POST` | `/auth/nonce` | Não | Gera mensagem temporária para assinatura pela wallet |
+| `POST` | `/auth/wallet-login` | Não | Verifica `walletAddress` e assinatura do nonce em base64 |
 | `GET` | `/auth/me` | Sim | Retorna o usuário autenticado |
 
 ### Research
@@ -395,24 +474,27 @@ http://localhost:5173
 
 | Método | Endpoint | Protegido | Descrição |
 | --- | --- | --- | --- |
-| `POST` | `/ai/analyze-research` | Não | Analisa uma proposta de pesquisa |
-| `POST` | `/ai/analyze-milestone` | Não | Analisa uma entrega de milestone |
+| `POST` | `/ai/analyze-research` | Sim | Analisa proposta ou informa indisponibilidade sem chave |
+| `POST` | `/ai/analyze-milestone` | Sim | Analisa entrega ou informa indisponibilidade sem chave |
 
 ### Demo
 
 | Método | Endpoint | Protegido | Descrição |
 | --- | --- | --- | --- |
 | `GET` | `/demo` | Não | Retorna resumo dos dados de demo |
-| `POST` | `/demo/seed` | Não | Recria dados de demo |
-| `POST` | `/demo/scenario` | Não | Aplica cenário de apresentação |
+| `POST` | `/demo/seed` | Sim em produção | Recria dados de demo; exige `x-demo-admin-token` |
+| `POST` | `/demo/scenario` | Sim em produção | Aplica cenário; exige `x-demo-admin-token` |
 
 ## Exemplos de Payload
 
 ### Login com wallet
 
+Primeiro chame `/auth/nonce` com sua `walletAddress`, assine a mensagem retornada usando a wallet e envie a assinatura em base64 para `/auth/wallet-login`. O endereço abaixo é apenas ilustrativo; não permite login sem a assinatura correspondente.
+
 ```json
 {
-  "walletAddress": "DemoFunder111111111111111111111111111111111"
+  "walletAddress": "<chave-publica-da-sua-wallet>",
+  "signature": "<assinatura-base64-da-mensagem-do-nonce>"
 }
 ```
 
@@ -594,7 +676,7 @@ Enums principais:
 
 - O funding mockado (`POST /research/:id/contribute`) registra contribuição no banco e é útil para demo.
 - O funding on-chain (`POST /research/:id/fund-on-chain`) prepara uma transação Solana.
-- A IA depende de `OPENAI_API_KEY`.
+- A análise real de IA depende de `OPENAI_API_KEY`, mantida somente no backend, conforme a [documentação oficial da OpenAI](https://developers.openai.com/api/docs/quickstart). Sem chave, o fallback não faz requisições externas e não atribui avaliações fictícias.
 - O backend usa `ValidationPipe` global com whitelist, transform e bloqueio de campos não permitidos.
 - O CORS aceita somente a origem definida em `FRONTEND_URL`. Em produção, defina essa variável com o domínio exato do frontend no Vercel, por exemplo `https://seu-projeto.vercel.app`.
 - A rota `GET /health` retorna `{ "status": "ok" }` e pode ser usada pelo provedor de deploy para verificar a saúde da API.
@@ -604,7 +686,7 @@ Enums principais:
 
 ### `OPENAI_API_KEY is not configured`
 
-Defina `OPENAI_API_KEY` em `backend/.env`. Sem essa variável, fluxos que chamam análise de IA vão falhar.
+Defina `OPENAI_API_KEY` no ambiente do backend e reinicie o serviço para habilitar a análise real. Sem chave ou com valor vazio, a API retorna `source: "unavailable"` e scores nulos; pesquisas e entregas continuam sendo salvas com mensagem de revisão manual e `aiStatus: "FAILED"`. Uma resposta real usa `source: "openai"`. Falhas do provedor não são ocultadas por esse fallback; em reanálises com falha, os resultados anteriores são preservados.
 
 ### `Anchor IDL not found`
 
@@ -653,10 +735,8 @@ Confira:
 - Criar mint USDC devnet controlado para demo.
 - Melhorar o fluxo de permissões para admin.
 - Adicionar testes e2e para o fluxo completo.
-- Adicionar documentação OpenAPI/Swagger.
-- Melhorar o modo demo offline para cenários sem `OPENAI_API_KEY`.
 - Implantar backend, frontend e banco em ambiente público de staging.
 
 ## Licença
 
-Este projeto está marcado como `UNLICENSED` nos pacotes atuais. Defina uma licença antes de distribuir publicamente.
+Este projeto usa a licença [MIT](LICENSE). Os metadados dos pacotes frontend, backend e do programa Rust foram alinhados à licença.

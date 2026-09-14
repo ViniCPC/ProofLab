@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsInt,
@@ -12,21 +13,25 @@ export class AnalyzeMilestoneDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(5000)
+  @ApiProperty({ type: String })
   promisedDescription!: string;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(10000)
+  @ApiProperty({ type: String })
   submittedReport!: string;
 
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @Max(100)
+  @ApiProperty({ type: Number, minimum: 0, maximum: 100, example: 80 })
   progress!: number;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(10000)
+  @ApiProperty({ type: String })
   evidenceText!: string;
 }

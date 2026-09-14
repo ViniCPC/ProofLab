@@ -17,6 +17,27 @@ export interface MilestoneAnalysis {
   recommendation: string;
 }
 
+export interface ResearchAnalysisResult extends Omit<
+  ResearchAnalysis,
+  'innovationScore' | 'feasibilityScore' | 'riskLevel' | 'complexityLevel'
+> {
+  source: 'openai' | 'unavailable';
+  innovationScore: number | null;
+  feasibilityScore: number | null;
+  riskLevel: RiskLevel | null;
+  complexityLevel: RiskLevel | null;
+}
+
+export interface MilestoneAnalysisResult extends Omit<
+  MilestoneAnalysis,
+  'consistencyScore' | 'completionEstimate' | 'riskLevel'
+> {
+  source: 'openai' | 'unavailable';
+  consistencyScore: number | null;
+  completionEstimate: number | null;
+  riskLevel: RiskLevel | null;
+}
+
 export interface OpenAiResponse {
   status?: string;
   output_text?: string;

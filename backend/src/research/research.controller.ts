@@ -1,3 +1,4 @@
+import { ApiBearerAuth } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -21,6 +22,7 @@ export class ResearchController {
   constructor(private readonly researchService: ResearchService) {}
 
   @Post()
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   create(
     @Body() body: CreateResearchDto,
@@ -40,6 +42,7 @@ export class ResearchController {
   }
 
   @Post(':id/create-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   createOnChain(
     @Param('id') projectId: string,
@@ -49,6 +52,7 @@ export class ResearchController {
   }
 
   @Post(':id/fund-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   fundOnChain(
     @Param('id') projectId: string,
@@ -59,6 +63,7 @@ export class ResearchController {
   }
 
   @Post(':id/claim-refund')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   claimRefund(
     @Param('id') projectId: string,
@@ -68,6 +73,7 @@ export class ResearchController {
   }
 
   @Post(':id/cancel-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   cancelOnChain(
     @Param('id') projectId: string,
@@ -77,6 +83,7 @@ export class ResearchController {
   }
 
   @Post(':id/reanalyze')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   reanalyze(
     @Param('id') projectId: string,
@@ -86,6 +93,7 @@ export class ResearchController {
   }
 
   @Post(':id/on-chain/confirm-transaction')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   confirmTransaction(
     @Param('id') projectId: string,

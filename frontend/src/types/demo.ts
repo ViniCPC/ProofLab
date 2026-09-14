@@ -38,5 +38,6 @@ export interface DemoProjectSummary {
 export interface DemoSummary {
   primaryProjectId: string
   pendingReviewMilestoneId: string
+  mutationsEnabled: boolean
   projects: DemoProjectSummary[]
 }

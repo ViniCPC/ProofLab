@@ -22,6 +22,10 @@ export class AiClient {
 
   constructor(private readonly config: ConfigService) {}
 
+  isConfigured(): boolean {
+    return Boolean(this.config.get<string>('OPENAI_API_KEY')?.trim());
+  }
+
   async call<T>(
     systemInstruction: string,
     input: string,
@@ -78,11 +82,9 @@ export class AiClient {
     schemaName: string,
     schema: object,
   ): Promise<OpenAiResponse> {
+    const apiKey = this.getApiKey();
     const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(),
-      REQUEST_TIMEOUT_MS,
-    );
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     let response: Response;
 
@@ -91,7 +93,7 @@ export class AiClient {
         method: 'POST',
         signal: controller.signal,
         headers: {
-          Authorization: `Bearer ${this.getApiKey()}`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -181,7 +183,7 @@ export class AiClient {
   }
 
   private getApiKey(): string {
-    const apiKey = this.config.get<string>('OPENAI_API_KEY');
+    const apiKey = this.config.get<string>('OPENAI_API_KEY')?.trim();
 
     if (!apiKey) {
       throw new ServiceUnavailableException('OPENAI_API_KEY is not configured');

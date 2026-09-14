@@ -1,3 +1,4 @@
+import { ApiBearerAuth } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -19,6 +20,7 @@ export class ContributionsController {
   constructor(private readonly contributionsService: ContributionsService) {}
 
   @Post('contribute')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   contribute(
     @Param('id') projectId: string,

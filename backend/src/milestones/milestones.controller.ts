@@ -1,3 +1,4 @@
+import { ApiBearerAuth } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -22,6 +23,7 @@ export class MilestonesController {
   constructor(private readonly milestonesService: MilestonesService) {}
 
   @Post()
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   create(
     @Param('id') projectId: string,
@@ -32,6 +34,7 @@ export class MilestonesController {
   }
 
   @Post(':milestoneId/submit-review')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   submitReview(
     @Param('id') projectId: string,
@@ -53,6 +56,7 @@ export class MilestonesController {
   }
 
   @Post(':milestoneId/reanalyze')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   reanalyze(
     @Param('id') projectId: string,
@@ -67,6 +71,7 @@ export class MilestonesController {
   }
 
   @Patch(':milestoneId/status')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   updateStatus(
     @Param('id') projectId: string,
@@ -83,6 +88,7 @@ export class MilestonesController {
   }
 
   @Post(':milestoneId/submit-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   submitOnChain(
     @Param('id') projectId: string,
@@ -99,6 +105,7 @@ export class MilestonesController {
   }
 
   @Post(':milestoneId/create-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   createOnChain(
     @Param('id') projectId: string,
@@ -115,6 +122,7 @@ export class MilestonesController {
   }
 
   @Post(':milestoneId/finalize-vote-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   finalizeVoteOnChain(
     @Param('id') projectId: string,
@@ -129,6 +137,7 @@ export class MilestonesController {
   }
 
   @Post(':milestoneId/release-on-chain')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   releaseOnChain(
     @Param('id') projectId: string,

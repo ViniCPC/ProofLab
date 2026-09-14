@@ -228,7 +228,10 @@ export class MilestonesService {
       const analysis = await this.aiService.analyzeMilestone(input, actor);
 
       return {
-        aiStatus: 'COMPLETED' as const,
+        aiStatus:
+          analysis.source === 'unavailable'
+            ? ('FAILED' as const)
+            : ('COMPLETED' as const),
         aiSummary: analysis.summary,
         aiRecommendation: analysis.recommendation,
         consistencyScore: analysis.consistencyScore,

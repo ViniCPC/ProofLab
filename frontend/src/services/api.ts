@@ -1,6 +1,6 @@
 import type { ApiError } from '@/types/api'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const BASE_URL = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:3000'
 
 async function request<T>(
   path: string,

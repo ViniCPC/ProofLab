@@ -10,6 +10,10 @@ import {
   RESEARCH_ANALYSIS_SCHEMA,
   RESEARCH_SYSTEM_INSTRUCTION,
 } from './ai.types';
+import type {
+  MilestoneAnalysisResult,
+  ResearchAnalysisResult,
+} from './ai.types';
 
 export type { ResearchAnalysis, MilestoneAnalysis } from './ai.types';
 
@@ -22,28 +26,65 @@ export class AiService {
 
   constructor(private readonly client: AiClient) {}
 
-  analyzeResearch(dto: AnalyzeResearchDto, actor?: string) {
+  async analyzeResearch(
+    dto: AnalyzeResearchDto,
+    actor?: string,
+  ): Promise<ResearchAnalysisResult> {
     this.checkRateLimit(actor);
 
-    return this.client.call(
+    if (!this.client.isConfigured()) {
+      return {
+        source: 'unavailable',
+        summary:
+          'A análise automática está indisponível nesta demonstração. A pesquisa foi recebida, mas ainda não foi avaliada pela IA.',
+        recommendation:
+          'Revise a proposta, o orçamento e as milestones manualmente. Nenhuma nota ou recomendação de financiamento foi gerada.',
+        innovationScore: null,
+        feasibilityScore: null,
+        riskLevel: null,
+        complexityLevel: null,
+      };
+    }
+
+    const analysis = await this.client.call(
       RESEARCH_SYSTEM_INSTRUCTION,
       this.buildResearchPrompt(dto),
       'research_analysis',
       RESEARCH_ANALYSIS_SCHEMA,
       isResearchAnalysis,
     );
+
+    return { ...analysis, source: 'openai' };
   }
 
-  analyzeMilestone(dto: AnalyzeMilestoneDto, actor?: string) {
+  async analyzeMilestone(
+    dto: AnalyzeMilestoneDto,
+    actor?: string,
+  ): Promise<MilestoneAnalysisResult> {
     this.checkRateLimit(actor);
 
-    return this.client.call(
+    if (!this.client.isConfigured()) {
+      return {
+        source: 'unavailable',
+        summary:
+          'A análise automática está indisponível nesta demonstração. A entrega pode seguir para revisão manual da comunidade, sem avaliação da IA.',
+        recommendation:
+          'Compare o relatório e as evidências com a entrega prometida antes de votar. Não houve validação automática nem aprovação de liberação de fundos.',
+        consistencyScore: null,
+        completionEstimate: null,
+        riskLevel: null,
+      };
+    }
+
+    const analysis = await this.client.call(
       MILESTONE_SYSTEM_INSTRUCTION,
       this.buildMilestonePrompt(dto),
       'milestone_analysis',
       MILESTONE_ANALYSIS_SCHEMA,
       isMilestoneAnalysis,
     );
+
+    return { ...analysis, source: 'openai' };
   }
 
   private checkRateLimit(actor?: string) {

@@ -15,14 +15,16 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return the API status message', () => {
+      expect(appController.getHello()).toEqual({
+        message: 'ProofLab API is running',
+      });
     });
   });
 
   describe('health', () => {
     it('should return an ok status', () => {
-      expect(appController.getHealth()).toEqual({ status: 'ok' });
+      expect(appController.health()).toEqual({ status: 'ok' });
     });
   });
 });

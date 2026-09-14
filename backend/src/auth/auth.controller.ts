@@ -1,3 +1,4 @@
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
@@ -20,6 +21,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @ApiBearerAuth('wallet-jwt')
   @UseGuards(AuthGuard)
   me(@Req() request: AuthenticatedRequest) {
     return request.user;
