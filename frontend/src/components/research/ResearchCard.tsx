@@ -1,8 +1,7 @@
 import { ArrowRight, Bot } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { Card } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { Button } from '@/components/ui/Button'
+import { LinkButton } from '@/components/ui/LinkButton'
 import type { FundingStats, ResearchProject } from '@/types'
 import { ResearchStatusBadge } from './ResearchStatusBadge'
 import { getResearchDisplayStatus } from './researchStatus'
@@ -74,12 +73,10 @@ export function ResearchCard({ project, funding }: ResearchCardProps) {
           <Bot className="size-4 text-green-300" />
           {aiScore === null ? 'IA pendente' : `Score IA ${aiScore}/100`}
         </div>
-        <Link to={`/research/${project.id}`}>
-          <Button size="sm" variant="secondary">
-            Ver projeto
-            <ArrowRight className="size-3.5" />
-          </Button>
-        </Link>
+        <LinkButton to={`/research/${project.id}`} size="sm" variant="secondary">
+          Ver projeto
+          <ArrowRight className="size-3.5" />
+        </LinkButton>
       </div>
     </Card>
   )

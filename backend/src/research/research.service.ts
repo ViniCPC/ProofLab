@@ -298,6 +298,28 @@ export class ResearchService {
     };
   }
 
+  async getStats() {
+    const [totalProjects, escrow, releasedMilestones] =
+      await this.prisma.$transaction([
+        this.prisma.researchProject.count({
+          where: { status: { not: 'CANCELLED' } },
+        }),
+        this.prisma.contribution.aggregate({
+          where: {
+            project: { status: { in: ['DRAFT', 'ACTIVE'] } },
+          },
+          _sum: { amount: true },
+        }),
+        this.prisma.milestone.count({ where: { status: 'APPROVED' } }),
+      ]);
+
+    return {
+      totalProjects,
+      escrowValue: (escrow._sum.amount ?? new Prisma.Decimal(0)).toFixed(6),
+      releasedMilestones,
+    };
+  }
+
   async findById(id: string) {
     const research = await this.prisma.researchProject.findUnique({
       where: { id },

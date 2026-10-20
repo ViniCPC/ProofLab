@@ -38,6 +38,11 @@ export class ResearchController {
     return this.researchService.findAll(query);
   }
 
+  @Get('stats')
+  getStats() {
+    return this.researchService.getStats();
+  }
+
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.researchService.findById(id);

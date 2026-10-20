@@ -1,6 +1,7 @@
 import { CheckCircle2, Loader2, X, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { explorerUrl } from '@/utils/explorer'
 
 export type TransactionStatus = 'idle' | 'pending' | 'confirmed' | 'failed'
 
@@ -66,9 +67,14 @@ export function TransactionStatusToast({
               </p>
             )}
             {state.transaction && (
-              <p className="mt-2 break-all font-mono text-xs opacity-70">
-                {shortenTransaction(state.transaction)}
-              </p>
+              <a
+                href={explorerUrl('tx', state.transaction)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block break-all font-mono text-xs text-cyan-200 underline decoration-cyan-200/30 underline-offset-2 opacity-80 hover:opacity-100"
+              >
+                {shortenTransaction(state.transaction)} · Explorer
+              </a>
             )}
           </div>
         </div>

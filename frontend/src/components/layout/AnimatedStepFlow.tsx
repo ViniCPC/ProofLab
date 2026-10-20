@@ -11,7 +11,10 @@ interface AnimatedFlowStep {
 }
 
 interface AnimatedStepFlowProps {
-  steps: AnimatedFlowStep[]
+  steps: readonly AnimatedFlowStep[]
+  eyebrow?: string
+  title?: string
+  description?: string
 }
 
 const toneStyles = [
@@ -22,16 +25,20 @@ const toneStyles = [
   'text-green-200 border-green-300/25 bg-green-300/10',
 ]
 
-export function AnimatedStepFlow({ steps }: AnimatedStepFlowProps) {
+export function AnimatedStepFlow({
+  steps,
+  eyebrow = 'fluxo verificável',
+  title = 'Da proposta ao release, tudo acontece por etapas',
+  description,
+}: AnimatedStepFlowProps) {
   return (
     <section className="space-y-4">
       <div>
-        <p className="font-mono text-xs uppercase text-cyan-300">
-          fluxo verificável
-        </p>
+        <p className="font-mono text-xs uppercase text-cyan-300">{eyebrow}</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-50">
-          Da proposta ao release, tudo acontece por etapas
+          {title}
         </h2>
+        {description && <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{description}</p>}
       </div>
 
       <GlassPanel tone="cyan" className="p-4 sm:p-5">

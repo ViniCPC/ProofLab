@@ -1,13 +1,9 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { AppShell } from '@/components/layout/AppShell'
-import { SolanaWalletProvider } from '@/components/wallet/WalletProvider'
+import { LandingLayout } from '@/layouts/LandingLayout'
 
 const HomePage = lazy(() => import('@/pages/HomePage'))
-const ExploreResearchPage = lazy(() => import('@/pages/ExploreResearchPage'))
-const ResearchDetailsPage = lazy(() => import('@/pages/ResearchDetailsPage'))
-const CreateResearchPage = lazy(() => import('@/pages/CreateResearchPage'))
-const DemoPage = lazy(() => import('@/pages/DemoPage'))
+const AppRoutes = lazy(() => import('@/layouts/AppRoutes'))
 
 function PageFallback() {
   return (
@@ -18,21 +14,5 @@ function PageFallback() {
 }
 
 export default function App() {
-  return (
-    <SolanaWalletProvider>
-      <BrowserRouter>
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
-            <Route element={<AppShell />}>
-              <Route index element={<HomePage />} />
-              <Route path="explore" element={<ExploreResearchPage />} />
-              <Route path="research/:id" element={<ResearchDetailsPage />} />
-              <Route path="create" element={<CreateResearchPage />} />
-              <Route path="demo" element={<DemoPage />} />
-            </Route>
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </SolanaWalletProvider>
-  )
+  return <BrowserRouter><Suspense fallback={<PageFallback />}><Routes><Route element={<LandingLayout />}><Route index element={<HomePage />} /></Route><Route path="/*" element={<AppRoutes />} /></Routes></Suspense></BrowserRouter>
 }

@@ -18,6 +18,7 @@ export type {
   ProjectStatus,
   ResearchListResponse,
   ResearchProject,
+  ResearchStats,
 } from './research'
 export type { AuthUser, UserSummary, WalletLoginResponse } from './user'
 export type {

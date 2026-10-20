@@ -3,11 +3,14 @@ import type {
   CreateResearchPayload,
   ResearchListResponse,
   ResearchProject,
+  ResearchStats,
 } from '@/types/research'
 
 export const researchService = {
   list: (page = 1, limit = 10) =>
     api.get<ResearchListResponse>(`/research?page=${page}&limit=${limit}`),
+
+  stats: () => api.get<ResearchStats>('/research/stats'),
 
   getById: (id: string) => api.get<ResearchProject>(`/research/${id}`),
 

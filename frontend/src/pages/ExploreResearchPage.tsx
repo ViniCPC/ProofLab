@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ResearchList } from '@/components/research/ResearchList'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { LinkButton } from '@/components/ui/LinkButton'
 import { useResearchList } from '@/hooks/useResearchList'
 
 const pageSize = 9
@@ -23,9 +23,7 @@ export default function ExploreResearchPage() {
         title="Explorar pesquisas"
         subtitle="Projetos científicos disponíveis para financiamento transparente, com etapas e validação comunitária."
         action={
-          <Link to="/create">
-            <Button>Enviar pesquisa</Button>
-          </Link>
+          <LinkButton to="/create">Enviar pesquisa</LinkButton>
         }
       />
 

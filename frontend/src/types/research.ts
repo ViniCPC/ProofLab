@@ -41,3 +41,9 @@ export interface ResearchListResponse {
   data: ResearchProject[]
   meta: PaginationMeta
 }
+
+export interface ResearchStats {
+  totalProjects: number
+  escrowValue: string
+  releasedMilestones: number
+}
