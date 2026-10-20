@@ -53,7 +53,7 @@ export function useCreateProjectOnChain({
         connection,
         sendTransaction,
       )
-      const confirmation = await blockchainService.confirmTransaction(
+      const confirmation = await blockchainService.confirmTransactionWithRetry(
         projectId,
         response.requestId,
         signature,

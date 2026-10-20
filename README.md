@@ -259,7 +259,7 @@ Notas importantes:
 - Em produção, `JWT_SECRET` deve ter pelo menos 32 caracteres e `FRONTEND_URL` deve ser uma origem HTTPS exata, sem barra final ou caminho. O backend valida essas configurações ao iniciar.
 - `DEMO_ADMIN_TOKEN` protege as alterações da demo. Não coloque esse segredo em variáveis `VITE_*`.
 - `OPENAI_API_KEY` é necessária para análise real de IA. Sem chave, os fluxos continuam com mensagem de indisponibilidade e sem scores inventados; o status de IA fica `FAILED`, não `COMPLETED`.
-- `SOLANA_IDL_PATH` precisa apontar para o IDL gerado pelo Anchor.
+- `SOLANA_IDL_PATH` é opcional: se não for definido, o backend usa o IDL commitado em `backend/src/blockchain/idl/research_escrow.json` e depois tenta o IDL gerado pelo Anchor.
 - `USDC_MINT_ADDRESS` precisa ser um mint válido para o ambiente Solana usado.
 - `SOLANA_ADMIN_KEYPAIR` é opcional no MVP. Sem essa variável, o backend usa uma wallet efêmera para construir transações.
 
@@ -269,6 +269,8 @@ No diretório `frontend`, crie `.env.local`:
 
 ```env
 VITE_API_URL=http://localhost:3000
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+VITE_VOTING_DURATION_SECONDS=259200
 ```
 
 ## Como Rodar Localmente
@@ -582,6 +584,8 @@ Instruções disponíveis:
 - `cancel_project`
 - `claim_refund`
 
+Decisões de design atuais: o peso do voto é o valor contribuído, não existe quórum mínimo e uma rejeição ou o encerramento sem votos cancela o projeto. O owner não pode votar na própria milestone. O cancelamento continua restrito ao owner; cancelamento por timeout de milestone fica como evolução futura. O frontend permite reduzir o prazo de votação na demo com `VITE_VOTING_DURATION_SECONDS`.
+
 Arquivos principais:
 
 ```txt
@@ -600,6 +604,8 @@ cd solana
 anchor build
 anchor test
 ```
+
+O `Cargo.lock` do workspace é versionado para manter reproduzível a resolução das dependências do programa.
 
 Depois de rodar `anchor build`, confira se o IDL foi gerado em:
 

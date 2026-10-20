@@ -6,6 +6,8 @@ pub struct ResearchProject {
     pub title: String,
     pub total_amount: u64,
     pub funded_amount: u64,
+    pub refunded_amount: u64,
+    pub milestone_amount_total: u64,
     pub current_milestone: u64,
     pub milestone_count: u64,
     pub status: ProjectStatus,

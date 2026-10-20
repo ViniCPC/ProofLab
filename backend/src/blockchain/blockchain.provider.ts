@@ -55,6 +55,7 @@ export class BlockchainProvider implements OnModuleInit {
     const configuredPath = this.config.get<string>('SOLANA_IDL_PATH');
     const candidatePaths = [
       configuredPath ? resolve(configuredPath) : undefined,
+      resolve(process.cwd(), 'src/blockchain/idl/research_escrow.json'),
       resolve(process.cwd(), '../solana/target/idl/research_escrow.json'),
       resolve(process.cwd(), 'solana/target/idl/research_escrow.json'),
       join(__dirname, '../../../solana/target/idl/research_escrow.json'),

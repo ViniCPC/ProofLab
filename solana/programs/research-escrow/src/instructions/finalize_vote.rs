@@ -1,8 +1,10 @@
 use anchor_lang::prelude::*;
 
-use crate::{
-    Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError, ResearchProject,
-};
+use crate::{Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError, ResearchProject};
+
+fn voting_period_closed(now: i64, deadline: i64) -> bool {
+    now > deadline
+}
 
 pub fn handler(ctx: Context<FinalizeMilestoneVote>) -> Result<()> {
     let project = &mut ctx.accounts.project;
@@ -31,7 +33,7 @@ pub fn handler(ctx: Context<FinalizeMilestoneVote>) -> Result<()> {
     let now = Clock::get()?.unix_timestamp;
 
     require!(
-        now > milestone.deadline,
+        voting_period_closed(now, milestone.deadline),
         ResearchEscrowError::VotingPeriodStillOpen
     );
 
@@ -60,4 +62,15 @@ pub struct FinalizeMilestoneVote<'info> {
         bump
     )]
     pub milestone: Account<'info, Milestone>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::voting_period_closed;
+
+    #[test]
+    fn finalize_is_rejected_before_deadline() {
+        assert!(!voting_period_closed(99, 100));
+        assert!(voting_period_closed(101, 100));
+    }
 }

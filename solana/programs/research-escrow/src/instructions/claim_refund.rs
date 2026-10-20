@@ -1,12 +1,29 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
-use crate::{
-    Contribution, EscrowVault, ProjectStatus, ResearchEscrowError, ResearchProject,
-};
+use crate::{Contribution, EscrowVault, ProjectStatus, ResearchEscrowError, ResearchProject};
+
+fn calculate_refund_amount(
+    contribution_amount: u64,
+    escrow_balance: u64,
+    refundable_funded_amount: u64,
+) -> Result<u64> {
+    require!(
+        refundable_funded_amount > 0,
+        ResearchEscrowError::InvalidAmount
+    );
+
+    let refund_amount_u128 = (contribution_amount as u128)
+        .checked_mul(escrow_balance as u128)
+        .ok_or(error!(ResearchEscrowError::MathOverflow))?
+        .checked_div(refundable_funded_amount as u128)
+        .ok_or(error!(ResearchEscrowError::MathOverflow))?;
+
+    u64::try_from(refund_amount_u128).map_err(|_| error!(ResearchEscrowError::MathOverflow))
+}
 
 pub fn handler(ctx: Context<ClaimRefund>) -> Result<()> {
-    let project = &ctx.accounts.project;
+    let project = &mut ctx.accounts.project;
     let contribution = &mut ctx.accounts.contribution;
 
     require!(
@@ -34,20 +51,25 @@ pub fn handler(ctx: Context<ClaimRefund>) -> Result<()> {
         ResearchEscrowError::ContributionAlreadyRefunded
     );
 
-    require!(project.funded_amount > 0, ResearchEscrowError::InvalidAmount);
+    let refundable_funded_amount = project
+        .funded_amount
+        .checked_sub(project.refunded_amount)
+        .ok_or(error!(ResearchEscrowError::MathOverflow))?;
+
+    require!(
+        refundable_funded_amount > 0,
+        ResearchEscrowError::InvalidAmount
+    );
 
     let escrow_balance = ctx.accounts.escrow_token_account.amount;
 
     require!(escrow_balance > 0, ResearchEscrowError::RefundUnavailable);
 
-    let refund_amount_u128 = (contribution.amount as u128)
-        .checked_mul(escrow_balance as u128)
-        .ok_or(error!(ResearchEscrowError::MathOverflow))?
-        .checked_div(project.funded_amount as u128)
-        .ok_or(error!(ResearchEscrowError::MathOverflow))?;
-
-    let refund_amount = u64::try_from(refund_amount_u128)
-        .map_err(|_| error!(ResearchEscrowError::MathOverflow))?;
+    let refund_amount = calculate_refund_amount(
+        contribution.amount,
+        escrow_balance,
+        refundable_funded_amount,
+    )?;
 
     require!(refund_amount > 0, ResearchEscrowError::RefundUnavailable);
 
@@ -74,12 +96,17 @@ pub fn handler(ctx: Context<ClaimRefund>) -> Result<()> {
     token::transfer(transfer_ctx, refund_amount)?;
 
     contribution.refunded = true;
+    project.refunded_amount = project
+        .refunded_amount
+        .checked_add(refund_amount)
+        .ok_or(error!(ResearchEscrowError::MathOverflow))?;
 
     Ok(())
 }
 
 #[derive(Accounts)]
 pub struct ClaimRefund<'info> {
+    #[account(mut)]
     pub project: Account<'info, ResearchProject>,
 
     #[account(
@@ -121,4 +148,19 @@ pub struct ClaimRefund<'info> {
     pub contributor: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::calculate_refund_amount;
+
+    #[test]
+    fn refunding_two_equal_contributors_returns_the_full_escrow() {
+        let first_refund = calculate_refund_amount(50, 100, 100).unwrap();
+        let second_refund = calculate_refund_amount(50, 50, 50).unwrap();
+
+        assert_eq!(first_refund, 50);
+        assert_eq!(second_refund, 50);
+        assert_eq!(first_refund + second_refund, 100);
+    }
 }

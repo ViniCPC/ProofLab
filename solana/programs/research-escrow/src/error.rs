@@ -17,6 +17,12 @@ pub enum ResearchEscrowError {
     #[msg("The milestone amount is greater than the project total amount.")]
     MilestoneAmountTooHigh,
 
+    #[msg("The sum of milestone amounts must equal the project total before funding.")]
+    MilestoneTotalMismatch,
+
+    #[msg("Funding cannot exceed the project total amount.")]
+    FundingAmountTooHigh,
+
     #[msg("The project is not accepting funding.")]
     ProjectNotFunding,
 
@@ -58,6 +64,9 @@ pub enum ResearchEscrowError {
 
     #[msg("Only contributors can vote.")]
     NotAContributor,
+
+    #[msg("The researcher cannot vote on their own milestone.")]
+    OwnerCannotVote,
 
     #[msg("The milestone was not approved.")]
     MilestoneNotApproved,

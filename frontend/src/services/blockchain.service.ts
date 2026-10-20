@@ -55,6 +55,32 @@ export const blockchainService = {
       { requestId, signature },
     ),
 
+  confirmTransactionWithRetry: async (
+    projectId: string,
+    requestId: string,
+    signature: string,
+    attempts = 6,
+    delayMs = 1500,
+  ) => {
+    let confirmation: ConfirmTransactionResponse
+
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      confirmation = await blockchainService.confirmTransaction(
+        projectId,
+        requestId,
+        signature,
+      )
+
+      if (confirmation.status === 'CONFIRMED' || attempt === attempts - 1) {
+        return confirmation
+      }
+
+      await new Promise((resolve) => window.setTimeout(resolve, delayMs))
+    }
+
+    return confirmation!
+  },
+
   createMilestoneOnChain: (projectId: string, milestoneId: string) =>
     api.post<SubmitMilestoneOnChainResponse>(
       `/research/${projectId}/milestones/${milestoneId}/create-on-chain`,

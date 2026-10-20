@@ -1,9 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
-use crate::{
-    Contribution, EscrowVault, ProjectStatus, ResearchEscrowError, ResearchProject,
-};
+use crate::{Contribution, EscrowVault, ProjectStatus, ResearchEscrowError, ResearchProject};
 
 pub fn handler(ctx: Context<FundProject>, amount: u64) -> Result<()> {
     require!(amount > 0, ResearchEscrowError::InvalidAmount);
@@ -15,16 +13,28 @@ pub fn handler(ctx: Context<FundProject>, amount: u64) -> Result<()> {
         ResearchEscrowError::ProjectNotFunding
     );
 
+    require!(
+        project.milestone_amount_total == project.total_amount,
+        ResearchEscrowError::MilestoneTotalMismatch
+    );
+
+    let next_funded_amount = project
+        .funded_amount
+        .checked_add(amount)
+        .ok_or(error!(ResearchEscrowError::MathOverflow))?;
+
+    require!(
+        next_funded_amount <= project.total_amount,
+        ResearchEscrowError::FundingAmountTooHigh
+    );
+
     let transfer_accounts = Transfer {
         from: ctx.accounts.donor_token_account.to_account_info(),
         to: ctx.accounts.escrow_token_account.to_account_info(),
         authority: ctx.accounts.contributor.to_account_info(),
     };
 
-    let transfer_ctx = CpiContext::new(
-        ctx.accounts.token_program.key(),
-        transfer_accounts,
-    );
+    let transfer_ctx = CpiContext::new(ctx.accounts.token_program.key(), transfer_accounts);
 
     token::transfer(transfer_ctx, amount)?;
 
@@ -58,10 +68,7 @@ pub fn handler(ctx: Context<FundProject>, amount: u64) -> Result<()> {
         .checked_add(amount)
         .ok_or(error!(ResearchEscrowError::MathOverflow))?;
 
-    project.funded_amount = project
-        .funded_amount
-        .checked_add(amount)
-        .ok_or(error!(ResearchEscrowError::MathOverflow))?;
+    project.funded_amount = next_funded_amount;
 
     if project.funded_amount >= project.total_amount {
         project.status = ProjectStatus::Active;

@@ -1,8 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{
-    Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError, ResearchProject,
-};
+use crate::{Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError, ResearchProject};
 
 pub fn handler(ctx: Context<SubmitMilestone>, voting_duration_seconds: i64) -> Result<()> {
     require!(

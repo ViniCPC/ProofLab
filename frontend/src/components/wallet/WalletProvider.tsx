@@ -15,7 +15,10 @@ interface Props {
 
 export function SolanaWalletProvider({ children }: Props) {
   const network = WalletAdapterNetwork.Devnet
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  const endpoint = useMemo(
+    () => import.meta.env.VITE_SOLANA_RPC_URL?.trim() || clusterApiUrl(network),
+    [network],
+  )
   const wallets = useMemo(
     () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
     [],

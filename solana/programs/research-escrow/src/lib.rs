@@ -22,12 +22,7 @@ pub mod research_escrow {
         title: String,
         total_amount: u64,
     ) -> Result<()> {
-        crate::instructions::create_project::handler(
-            ctx,
-            project_id,
-            title,
-            total_amount,
-        )
+        crate::instructions::create_project::handler(ctx, project_id, title, total_amount)
     }
 
     pub fn create_milestone(

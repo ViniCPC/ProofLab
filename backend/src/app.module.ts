@@ -11,10 +11,12 @@ import { DemoModule } from './demo/demo.module';
 import { MilestonesModule } from './milestones/milestones.module';
 import { ResearchModule } from './research/research.module';
 import { VotesModule } from './votes/votes.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 60 }]),
     AiModule,
     AuthModule,
     BlockchainModule,

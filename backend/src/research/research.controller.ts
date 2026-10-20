@@ -1,4 +1,5 @@
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   Body,
   Controller,
@@ -23,7 +24,8 @@ export class ResearchController {
 
   @Post()
   @ApiBearerAuth('wallet-jwt')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   create(
     @Body() body: CreateResearchDto,
     @Req() request: AuthenticatedRequest,
@@ -84,7 +86,8 @@ export class ResearchController {
 
   @Post(':id/reanalyze')
   @ApiBearerAuth('wallet-jwt')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   reanalyze(
     @Param('id') projectId: string,
     @Req() request: AuthenticatedRequest,

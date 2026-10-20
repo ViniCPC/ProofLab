@@ -138,6 +138,8 @@ export type ResearchEscrow = {
           Arg<'title', 'string'>,
           Arg<'totalAmount', 'u64'>,
           Arg<'fundedAmount', 'u64'>,
+          Arg<'refundedAmount', 'u64'>,
+          Arg<'milestoneAmountTotal', 'u64'>,
           Arg<'currentMilestone', 'u64'>,
           Arg<'milestoneCount', 'u64'>,
           {

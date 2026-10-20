@@ -150,7 +150,7 @@ export function useVoteMilestone({
           connection,
           sendTransaction,
         )
-        const confirmation = await blockchainService.confirmTransaction(
+        const confirmation = await blockchainService.confirmTransactionWithRetry(
           projectId,
           chainResponse.requestId,
           signature,

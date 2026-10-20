@@ -23,6 +23,8 @@ pub fn handler(
     project.title = title;
     project.total_amount = total_amount;
     project.funded_amount = 0;
+    project.refunded_amount = 0;
+    project.milestone_amount_total = 0;
     project.current_milestone = 1;
     project.milestone_count = 0;
     project.status = ProjectStatus::Funding;

@@ -73,7 +73,14 @@ export class AuthService {
   }
 
   async validateToken(token: string) {
-    const payload = this.jwtService.verify<JwtPayload>(token);
+    let payload: JwtPayload;
+
+    try {
+      payload = this.jwtService.verify<JwtPayload>(token);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+
     const user = await this.usersService.findById(payload.sub);
 
     if (!user || user.walletAddress !== payload.walletAddress) {

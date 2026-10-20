@@ -18,6 +18,11 @@ async function request<T>(
   })
 
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('prooflab_token')
+      window.dispatchEvent(new Event('prooflab:auth-expired'))
+    }
+
     const error = (await res.json().catch(() => ({
       statusCode: res.status,
       message: res.statusText,

@@ -1,6 +1,19 @@
 use anchor_lang::prelude::*;
 
-use crate::{Milestone, MilestoneStatus, ResearchEscrowError, ResearchProject};
+use crate::{Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError, ResearchProject};
+
+fn next_milestone_total(current_total: u64, amount: u64, project_total: u64) -> Result<u64> {
+    let next_total = current_total
+        .checked_add(amount)
+        .ok_or(error!(ResearchEscrowError::MathOverflow))?;
+
+    require!(
+        next_total <= project_total,
+        ResearchEscrowError::MilestoneAmountTooHigh
+    );
+
+    Ok(next_total)
+}
 
 pub fn handler(
     ctx: Context<CreateMilestone>,
@@ -14,9 +27,17 @@ pub fn handler(
     let project = &mut ctx.accounts.project;
 
     require!(
+        project.status == ProjectStatus::Funding,
+        ResearchEscrowError::ProjectNotFunding
+    );
+
+    require!(
         amount <= project.total_amount,
         ResearchEscrowError::MilestoneAmountTooHigh
     );
+
+    let milestone_amount_total =
+        next_milestone_total(project.milestone_amount_total, amount, project.total_amount)?;
 
     let expected_order = project
         .milestone_count
@@ -39,6 +60,7 @@ pub fn handler(
     milestone.deadline = deadline;
 
     project.milestone_count = expected_order;
+    project.milestone_amount_total = milestone_amount_total;
 
     Ok(())
 }
@@ -69,4 +91,15 @@ pub struct CreateMilestone<'info> {
     pub owner: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::next_milestone_total;
+
+    #[test]
+    fn milestone_totals_cannot_exceed_project_total() {
+        assert!(next_milestone_total(60, 41, 100).is_err());
+        assert_eq!(next_milestone_total(60, 40, 100).unwrap(), 100);
+    }
 }

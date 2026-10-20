@@ -48,7 +48,8 @@
       ],
       "accounts": [
         {
-          "name": "project"
+          "name": "project",
+          "writable": true
         },
         {
           "name": "escrow_vault",
@@ -585,7 +586,8 @@
       ],
       "accounts": [
         {
-          "name": "project"
+          "name": "project",
+          "writable": true
         },
         {
           "name": "milestone",
@@ -840,116 +842,136 @@
     },
     {
       "code": 6003,
+      "name": "InvalidMilestoneOrder",
+      "msg": "The milestone order is not sequential."
+    },
+    {
+      "code": 6004,
       "name": "MilestoneAmountTooHigh",
       "msg": "The milestone amount is greater than the project total amount."
     },
     {
-      "code": 6004,
+      "code": 6005,
+      "name": "MilestoneTotalMismatch",
+      "msg": "The sum of milestone amounts must equal the project total before funding."
+    },
+    {
+      "code": 6006,
+      "name": "FundingAmountTooHigh",
+      "msg": "Funding cannot exceed the project total amount."
+    },
+    {
+      "code": 6007,
       "name": "ProjectNotFunding",
       "msg": "The project is not accepting funding."
     },
     {
-      "code": 6005,
+      "code": 6008,
       "name": "ProjectNotActive",
       "msg": "The project is not active."
     },
     {
-      "code": 6006,
+      "code": 6009,
       "name": "InvalidContributionProject",
       "msg": "Invalid contribution project."
     },
     {
-      "code": 6007,
+      "code": 6010,
       "name": "InvalidContributionOwner",
       "msg": "Invalid contribution owner."
     },
     {
-      "code": 6008,
+      "code": 6011,
       "name": "ContributionAlreadyRefunded",
       "msg": "This contribution was already refunded."
     },
     {
-      "code": 6009,
+      "code": 6012,
       "name": "InvalidTokenAccount",
       "msg": "Invalid token account."
     },
     {
-      "code": 6010,
+      "code": 6013,
       "name": "InvalidMilestoneProject",
       "msg": "Invalid milestone project."
     },
     {
-      "code": 6011,
+      "code": 6014,
       "name": "InvalidCurrentMilestone",
       "msg": "Invalid current milestone."
     },
     {
-      "code": 6012,
+      "code": 6015,
       "name": "MilestoneCannotBeSubmitted",
       "msg": "This milestone cannot be submitted for review."
     },
     {
-      "code": 6013,
+      "code": 6016,
       "name": "MilestoneNotInReview",
       "msg": "This milestone is not in review."
     },
     {
-      "code": 6014,
+      "code": 6017,
       "name": "VotingPeriodClosed",
       "msg": "The voting period is closed."
     },
     {
-      "code": 6015,
+      "code": 6018,
       "name": "VotingPeriodStillOpen",
       "msg": "The voting period is still open."
     },
     {
-      "code": 6016,
+      "code": 6019,
       "name": "InvalidVotingDuration",
       "msg": "Invalid voting duration."
     },
     {
-      "code": 6017,
+      "code": 6020,
       "name": "NotAContributor",
       "msg": "Only contributors can vote."
     },
     {
-      "code": 6018,
+      "code": 6021,
+      "name": "OwnerCannotVote",
+      "msg": "The researcher cannot vote on their own milestone."
+    },
+    {
+      "code": 6022,
       "name": "MilestoneNotApproved",
       "msg": "The milestone was not approved."
     },
     {
-      "code": 6019,
+      "code": 6023,
       "name": "InsufficientEscrowBalance",
       "msg": "Insufficient escrow balance."
     },
     {
-      "code": 6020,
+      "code": 6024,
       "name": "ProjectNotCancelled",
       "msg": "The project is not cancelled."
     },
     {
-      "code": 6021,
+      "code": 6025,
       "name": "ProjectAlreadyCompleted",
       "msg": "The project is already completed."
     },
     {
-      "code": 6022,
+      "code": 6026,
       "name": "ProjectAlreadyCancelled",
       "msg": "The project is already cancelled."
     },
     {
-      "code": 6023,
+      "code": 6027,
       "name": "InvalidEscrowVault",
       "msg": "Invalid escrow vault."
     },
     {
-      "code": 6024,
+      "code": 6028,
       "name": "RefundUnavailable",
       "msg": "There is no refund available."
     },
     {
-      "code": 6025,
+      "code": 6029,
       "name": "MathOverflow",
       "msg": "Math overflow."
     }
@@ -1104,7 +1126,19 @@
             "type": "u64"
           },
           {
+            "name": "refunded_amount",
+            "type": "u64"
+          },
+          {
+            "name": "milestone_amount_total",
+            "type": "u64"
+          },
+          {
             "name": "current_milestone",
+            "type": "u64"
+          },
+          {
+            "name": "milestone_count",
             "type": "u64"
           },
           {

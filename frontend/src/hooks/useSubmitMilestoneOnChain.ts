@@ -41,7 +41,7 @@ export function useSubmitMilestoneOnChain({
       connection,
       sendTransaction,
     )
-    const confirmation = await blockchainService.confirmTransaction(
+    const confirmation = await blockchainService.confirmTransactionWithRetry(
       projectId,
       requestId,
       signature,
@@ -101,10 +101,14 @@ export function useSubmitMilestoneOnChain({
       }
 
       setMessage('Confirme a abertura de votacao na sua wallet.')
+      const votingDurationSeconds = Number.parseInt(
+        import.meta.env.VITE_VOTING_DURATION_SECONDS ?? '',
+        10,
+      ) || 60 * 60 * 24 * 3
       const response = await blockchainService.submitMilestoneOnChain(
         projectId,
         milestoneId,
-        60 * 60 * 24 * 3,
+        votingDurationSeconds,
       )
       const result = await signAndConfirmPrepared(
         response.transaction,

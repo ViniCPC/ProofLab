@@ -2,8 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 use crate::{
-    EscrowVault, Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError,
-    ResearchProject,
+    EscrowVault, Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError, ResearchProject,
 };
 
 pub fn handler(ctx: Context<ReleaseFunds>) -> Result<()> {

@@ -1,9 +1,13 @@
 use anchor_lang::prelude::*;
 
 use crate::{
-    Contribution, Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError,
-    ResearchProject, Vote,
+    Contribution, Milestone, MilestoneStatus, ProjectStatus, ResearchEscrowError, ResearchProject,
+    Vote,
 };
+
+fn can_vote(voter: Pubkey, owner: Pubkey) -> bool {
+    voter != owner
+}
 
 pub fn handler(ctx: Context<VoteMilestone>, approve: bool) -> Result<()> {
     let project = &ctx.accounts.project;
@@ -14,6 +18,11 @@ pub fn handler(ctx: Context<VoteMilestone>, approve: bool) -> Result<()> {
     require!(
         project.status == ProjectStatus::Active,
         ResearchEscrowError::ProjectNotActive
+    );
+
+    require!(
+        can_vote(ctx.accounts.voter.key(), project.owner),
+        ResearchEscrowError::OwnerCannotVote
     );
 
     require!(
@@ -124,4 +133,17 @@ pub struct VoteMilestone<'info> {
     pub voter: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::can_vote;
+    use anchor_lang::prelude::Pubkey;
+
+    #[test]
+    fn project_owner_cannot_vote() {
+        let owner = Pubkey::new_unique();
+        assert!(!can_vote(owner, owner));
+        assert!(can_vote(Pubkey::new_unique(), owner));
+    }
 }

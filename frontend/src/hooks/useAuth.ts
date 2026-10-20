@@ -51,5 +51,16 @@ export function useAuth() {
     }
   }, [connected, connecting, publicKey, user, login])
 
+  useEffect(() => {
+    const handleExpiredSession = () => {
+      setUser(null)
+      walletStore.setUser(null)
+    }
+
+    window.addEventListener('prooflab:auth-expired', handleExpiredSession)
+    return () =>
+      window.removeEventListener('prooflab:auth-expired', handleExpiredSession)
+  }, [])
+
   return { user, loading, login, logout, isAuthenticated: !!user }
 }

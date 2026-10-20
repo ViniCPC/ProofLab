@@ -87,7 +87,7 @@ test-ledger/
 
 # Arquivos gerados pelo Anchor
 **/target/
-**/Cargo.lock
+# Keep Rust lockfiles committed for reproducible on-chain builds.
 
 # Atenção:
 # Se for um projeto Rust/app normal, talvez você queira versionar Cargo.lock.
