@@ -47,12 +47,8 @@ export function MilestoneCard({
     <article className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
-          <p className="font-mono text-xs text-cyan-300">
-            Etapa {milestone.order}
-          </p>
-          <h3 className="text-base font-semibold text-slate-100">
-            {milestone.title}
-          </h3>
+          <p className="font-mono text-xs text-cyan-300">Etapa {milestone.order}</p>
+          <h3 className="text-base font-semibold text-slate-100">{milestone.title}</h3>
           <p className="max-w-3xl text-sm leading-6 text-slate-500">
             {milestone.description}
           </p>

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-export type DemoTransactionType =
+export type TransactionType =
   | 'create-project'
   | 'fund-project'
   | 'submit-milestone'
@@ -10,12 +10,12 @@ export type DemoTransactionType =
   | 'cancel-project'
   | 'claim-refund'
 
-export type DemoTransactionStatus = 'pending' | 'confirmed' | 'failed'
+export type TransactionStatus = 'pending' | 'confirmed' | 'failed'
 
-export interface DemoTransaction {
+export interface TransactionRecord {
   id: string
-  type: DemoTransactionType
-  status: DemoTransactionStatus
+  type: TransactionType
+  status: TransactionStatus
   title: string
   message?: string
   projectId?: string
@@ -24,24 +24,23 @@ export interface DemoTransaction {
   createdAt: string
 }
 
-interface DemoState {
+interface TransactionState {
   selectedProjectId: string | null
   currentMilestoneId: string | null
-  latestTransactions: DemoTransaction[]
+  latestTransactions: TransactionRecord[]
 }
 
-interface AddTransactionInput
-  extends Omit<DemoTransaction, 'id' | 'createdAt'> {
+interface AddTransactionInput extends Omit<TransactionRecord, 'id' | 'createdAt'> {
   id?: string
 }
 
-const initialDemoState: DemoState = {
+const initialTransactionState: TransactionState = {
   selectedProjectId: null,
   currentMilestoneId: null,
   latestTransactions: [],
 }
 
-let demoState = initialDemoState
+let transactionState = initialTransactionState
 const listeners = new Set<() => void>()
 
 function emitChange() {
@@ -52,16 +51,16 @@ function createTransactionId() {
   return `tx-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-function setDemoState(nextState: Partial<DemoState>) {
-  demoState = {
-    ...demoState,
+function setTransactionState(nextState: Partial<TransactionState>) {
+  transactionState = {
+    ...transactionState,
     ...nextState,
   }
   emitChange()
 }
 
-export const demoStore = {
-  getState: () => demoState,
+export const transactionStore = {
+  getState: () => transactionState,
 
   subscribe: (listener: () => void) => {
     listeners.add(listener)
@@ -69,24 +68,24 @@ export const demoStore = {
   },
 
   setSelectedProject: (projectId: string | null) => {
-    setDemoState({ selectedProjectId: projectId })
+    setTransactionState({ selectedProjectId: projectId })
   },
 
   setCurrentMilestone: (milestoneId: string | null) => {
-    setDemoState({ currentMilestoneId: milestoneId })
+    setTransactionState({ currentMilestoneId: milestoneId })
   },
 
   addTransaction: (transaction: AddTransactionInput) => {
-    const nextTransaction: DemoTransaction = {
+    const nextTransaction: TransactionRecord = {
       ...transaction,
       id: transaction.id ?? createTransactionId(),
       createdAt: new Date().toISOString(),
     }
 
-    setDemoState({
+    setTransactionState({
       latestTransactions: [
         nextTransaction,
-        ...demoState.latestTransactions,
+        ...transactionState.latestTransactions,
       ].slice(0, 8),
     })
 
@@ -95,10 +94,10 @@ export const demoStore = {
 
   updateTransaction: (
     transactionId: string,
-    nextTransaction: Partial<Omit<DemoTransaction, 'id' | 'createdAt'>>,
+    nextTransaction: Partial<Omit<TransactionRecord, 'id' | 'createdAt'>>,
   ) => {
-    setDemoState({
-      latestTransactions: demoState.latestTransactions.map((transaction) =>
+    setTransactionState({
+      latestTransactions: transactionState.latestTransactions.map((transaction) =>
         transaction.id === transactionId
           ? { ...transaction, ...nextTransaction }
           : transaction,
@@ -107,19 +106,19 @@ export const demoStore = {
   },
 
   clearTransactions: () => {
-    setDemoState({ latestTransactions: [] })
+    setTransactionState({ latestTransactions: [] })
   },
 
   reset: () => {
-    demoState = initialDemoState
+    transactionState = initialTransactionState
     emitChange()
   },
 }
 
-export function useDemoStore() {
+export function useTransactionStore() {
   return useSyncExternalStore(
-    demoStore.subscribe,
-    demoStore.getState,
-    demoStore.getState,
+    transactionStore.subscribe,
+    transactionStore.getState,
+    transactionStore.getState,
   )
 }

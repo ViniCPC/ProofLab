@@ -1,11 +1,4 @@
-import {
-  Bot,
-  CheckCircle2,
-  Gauge,
-  Percent,
-  RotateCcw,
-  ShieldAlert,
-} from 'lucide-react'
+import { Bot, CheckCircle2, Gauge, Percent, RotateCcw, ShieldAlert } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import type { Milestone } from '@/types'

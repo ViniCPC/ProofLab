@@ -28,8 +28,7 @@ async function getFundingByProjectId(projects: ResearchProject[]) {
   return projects.reduce<Record<string, FundingStats | null>>(
     (fundingMap, project, index) => {
       const result = fundingResults[index]
-      fundingMap[project.id] =
-        result.status === 'fulfilled' ? result.value : null
+      fundingMap[project.id] = result.status === 'fulfilled' ? result.value : null
       return fundingMap
     },
     {},

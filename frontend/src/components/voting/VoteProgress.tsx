@@ -31,15 +31,11 @@ export function VoteProgress({ summary, eligibleVoters }: VoteProgressProps) {
       <div className="grid gap-2 text-xs text-slate-400 sm:grid-cols-3">
         <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
           <p className="text-slate-500">Aprovar</p>
-          <p className="mt-1 font-mono text-sm text-green-200">
-            {summary.approved}
-          </p>
+          <p className="mt-1 font-mono text-sm text-green-200">{summary.approved}</p>
         </div>
         <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
           <p className="text-slate-500">Rejeitar</p>
-          <p className="mt-1 font-mono text-sm text-purple-200">
-            {summary.rejected}
-          </p>
+          <p className="mt-1 font-mono text-sm text-purple-200">{summary.rejected}</p>
         </div>
         <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
           <p className="text-slate-500">Quórum</p>

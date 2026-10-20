@@ -87,14 +87,10 @@ export function ResearchForm({
           </label>
 
           <label className="block space-y-2">
-            <span className="text-xs font-medium text-slate-400">
-              Descrição
-            </span>
+            <span className="text-xs font-medium text-slate-400">Descrição</span>
             <textarea
               value={values.description}
-              onChange={(event) =>
-                updateField('description', event.target.value)
-              }
+              onChange={(event) => updateField('description', event.target.value)}
               className="min-h-36 w-full resize-y rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-cyan-300/50"
               placeholder="Explique o problema científico, a hipótese e o impacto esperado."
               required
@@ -103,14 +99,10 @@ export function ResearchForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block space-y-2">
-              <span className="text-xs font-medium text-slate-400">
-                Categoria
-              </span>
+              <span className="text-xs font-medium text-slate-400">Categoria</span>
               <input
                 value={values.category}
-                onChange={(event) =>
-                  updateField('category', event.target.value)
-                }
+                onChange={(event) => updateField('category', event.target.value)}
                 className="h-10 w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/50"
                 placeholder="Ex.: Saúde, clima, biotecnologia"
                 required
@@ -118,14 +110,10 @@ export function ResearchForm({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-xs font-medium text-slate-400">
-                Valor total
-              </span>
+              <span className="text-xs font-medium text-slate-400">Valor total</span>
               <input
                 value={values.totalAmount}
-                onChange={(event) =>
-                  updateField('totalAmount', event.target.value)
-                }
+                onChange={(event) => updateField('totalAmount', event.target.value)}
                 className="h-10 w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 font-mono text-sm text-slate-100 outline-none transition focus:border-cyan-300/50"
                 inputMode="decimal"
                 placeholder="1000.000000"
@@ -135,10 +123,7 @@ export function ResearchForm({
           </div>
         </Card>
 
-        <MilestoneFormList
-          milestones={values.milestones}
-          onChange={updateMilestones}
-        />
+        <MilestoneFormList milestones={values.milestones} onChange={updateMilestones} />
 
         {error && (
           <p className="rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">

@@ -2,19 +2,9 @@ import { cn } from '@/lib/utils'
 import type { MilestoneStatus, OnChainStatus, ProjectStatus } from '@/types'
 
 type BadgeVariant =
-  | ProjectStatus
-  | MilestoneStatus
-  | OnChainStatus
-  | 'FUNDING'
-  | 'AI'
-  | 'default'
+  ProjectStatus | MilestoneStatus | OnChainStatus | 'FUNDING' | 'AI' | 'default'
 
-type BadgeStyleKey =
-  | ProjectStatus
-  | MilestoneStatus
-  | 'FUNDING'
-  | 'AI'
-  | 'default'
+type BadgeStyleKey = ProjectStatus | MilestoneStatus | 'FUNDING' | 'AI' | 'default'
 
 const onChainStatusMap: Record<OnChainStatus, BadgeStyleKey> = {
   Funding: 'FUNDING',

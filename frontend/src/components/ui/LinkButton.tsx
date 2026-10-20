@@ -8,11 +8,18 @@ const linkButtonStyles = cva(
   {
     variants: {
       variant: {
-        primary: 'border-cyan-300/40 bg-cyan-300 text-slate-950 shadow-[0_0_28px_-10px_rgba(34,211,238,0.9)] hover:bg-cyan-200',
-        secondary: 'border-purple-300/30 bg-purple-300/10 text-purple-100 hover:bg-purple-300/15',
-        ghost: 'border-transparent bg-transparent text-slate-400 hover:bg-slate-800/55 hover:text-slate-100',
+        primary:
+          'border-cyan-300/40 bg-cyan-300 text-slate-950 shadow-[0_0_28px_-10px_rgba(34,211,238,0.9)] hover:bg-cyan-200',
+        secondary:
+          'border-purple-300/30 bg-purple-300/10 text-purple-100 hover:bg-purple-300/15',
+        ghost:
+          'border-transparent bg-transparent text-slate-400 hover:bg-slate-800/55 hover:text-slate-100',
       },
-      size: { sm: 'h-8 px-3 text-xs', md: 'h-10 px-4 text-sm', lg: 'h-12 px-6 text-sm' },
+      size: {
+        sm: 'h-8 px-3 text-xs',
+        md: 'h-10 px-4 text-sm',
+        lg: 'h-12 px-6 text-sm',
+      },
     },
     defaultVariants: { variant: 'primary', size: 'md' },
   },
@@ -23,6 +30,7 @@ interface LinkButtonProps extends LinkProps, VariantProps<typeof linkButtonStyle
 }
 
 export function LinkButton({ className, variant, size, ...props }: LinkButtonProps) {
-  return <Link className={cn(linkButtonStyles({ variant, size }), className)} {...props} />
+  return (
+    <Link className={cn(linkButtonStyles({ variant, size }), className)} {...props} />
+  )
 }
-

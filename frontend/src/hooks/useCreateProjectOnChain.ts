@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { blockchainService } from '@/services/blockchain.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import type { Milestone } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
@@ -55,14 +55,11 @@ export function useCreateProjectOnChain({
         projectId!,
         milestone.id,
       )
-      const result = await confirmPrepared(
-        response.transaction,
-        response.requestId,
-      )
+      const result = await confirmPrepared(response.transaction, response.requestId)
 
       if (result.confirmation.status !== 'CONFIRMED') {
         setMessage('Transação enviada. Aguardando confirmação da milestone.')
-        demoStore.updateTransaction(transactionId, {
+        transactionStore.updateTransaction(transactionId, {
           status: 'pending',
           message: `Aguardando confirmação da milestone ${milestone.order}.`,
           transaction: result.signature,
@@ -70,7 +67,7 @@ export function useCreateProjectOnChain({
         return false
       }
 
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'pending',
         message: `Milestone ${milestone.order} criada on-chain.`,
         transaction: result.signature,
@@ -83,12 +80,12 @@ export function useCreateProjectOnChain({
   async function createOnChain() {
     if (!projectId) return
 
-    demoStore.setSelectedProject(projectId)
+    transactionStore.setSelectedProject(projectId)
     setLoading(true)
     setMessage(null)
     setError(null)
 
-    const transactionId = demoStore.addTransaction({
+    const transactionId = transactionStore.addTransaction({
       type: 'create-project',
       status: 'pending',
       title: 'Criar projeto on-chain',
@@ -108,14 +105,11 @@ export function useCreateProjectOnChain({
       if (!projectRegistered) {
         const response = await blockchainService.createProjectOnChain(projectId)
         setMessage('Confirme a criação do projeto na sua wallet.')
-        const result = await confirmPrepared(
-          response.transaction,
-          response.requestId,
-        )
+        const result = await confirmPrepared(response.transaction, response.requestId)
 
         if (result.confirmation.status !== 'CONFIRMED') {
           setMessage('Transação enviada. Aguardando confirmação do projeto.')
-          demoStore.updateTransaction(transactionId, {
+          transactionStore.updateTransaction(transactionId, {
             status: 'pending',
             message: 'Aguardando confirmação final do backend.',
             transaction: result.signature,
@@ -124,7 +118,7 @@ export function useCreateProjectOnChain({
         }
 
         projectRegistered = true
-        demoStore.updateTransaction(transactionId, {
+        transactionStore.updateTransaction(transactionId, {
           status: 'pending',
           message: 'Projeto registrado. Criando milestones on-chain.',
           transaction: result.signature,
@@ -141,7 +135,7 @@ export function useCreateProjectOnChain({
       await onPrepared?.()
 
       setMessage('Projeto e milestones registrados on-chain.')
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message: 'Projeto e milestones registrados on-chain.',
       })
@@ -152,7 +146,7 @@ export function useCreateProjectOnChain({
       )
 
       setError(errorMessage)
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'failed',
         message: errorMessage,
       })

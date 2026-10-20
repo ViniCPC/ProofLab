@@ -25,10 +25,7 @@ export function useReanalyzeResearch({
       await onReanalyzed?.()
     } catch (caughtError) {
       setError(
-        getApiErrorMessage(
-          caughtError,
-          'Não foi possível reanalisar a pesquisa.',
-        ),
+        getApiErrorMessage(caughtError, 'Não foi possível reanalisar a pesquisa.'),
       )
     } finally {
       setLoading(false)

@@ -1,10 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { AuthUser } from '@/types/user'
 
-export type WalletConnectionStatus =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
+export type WalletConnectionStatus = 'disconnected' | 'connecting' | 'connected'
 
 interface WalletState {
   walletAddress: string | null

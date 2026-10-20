@@ -22,8 +22,8 @@ export function OnChainActionsPanel({
         <h2 className="text-lg font-semibold">Ações on-chain</h2>
       </div>
       <p className="text-sm leading-6 text-slate-400">
-        Prepare transações para criar a conta do projeto, abrir votações de
-        milestone e liberar recursos conforme a validação.
+        Prepare transações para criar a conta do projeto, abrir votações de milestone e
+        liberar recursos conforme a validação.
       </p>
       <Button
         type="button"

@@ -1,11 +1,7 @@
 import type { ProjectStatus, ResearchProject } from '@/types'
 
 export type ResearchDisplayStatus =
-  | 'FUNDING'
-  | 'ACTIVE'
-  | 'IN_REVIEW'
-  | 'COMPLETED'
-  | 'CANCELLED'
+  'FUNDING' | 'ACTIVE' | 'IN_REVIEW' | 'COMPLETED' | 'CANCELLED'
 
 function mapProjectStatus(status: ProjectStatus): ResearchDisplayStatus {
   const statusMap: Record<ProjectStatus, ResearchDisplayStatus> = {

@@ -14,5 +14,16 @@ function PageFallback() {
 }
 
 export default function App() {
-  return <BrowserRouter><Suspense fallback={<PageFallback />}><Routes><Route element={<LandingLayout />}><Route index element={<HomePage />} /></Route><Route path="/*" element={<AppRoutes />} /></Routes></Suspense></BrowserRouter>
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<PageFallback />}>
+        <Routes>
+          <Route element={<LandingLayout />}>
+            <Route index element={<HomePage />} />
+          </Route>
+          <Route path="/*" element={<AppRoutes />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
+  )
 }

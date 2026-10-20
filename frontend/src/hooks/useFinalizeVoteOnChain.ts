@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import {
-  type TransactionStatusState,
-} from '@/components/blockchain/TransactionStatusToast'
+import { type TransactionStatusState } from '@/components/blockchain/TransactionStatusToast'
 import { blockchainService } from '@/services/blockchain.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
 import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
@@ -26,9 +24,7 @@ export function useFinalizeVoteOnChain({
   const { walletAddress } = useWalletStore()
   const { connection } = useConnection()
   const { sendTransaction, signMessage } = useWallet()
-  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(
-    null,
-  )
+  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [transactionStatus, setTransactionStatus] =
     useState<TransactionStatusState>(idleTransaction)
@@ -36,8 +32,8 @@ export function useFinalizeVoteOnChain({
   async function finalizeVoteOnChain(milestoneId: string) {
     if (!projectId) return
 
-    demoStore.setSelectedProject(projectId)
-    demoStore.setCurrentMilestone(milestoneId)
+    transactionStore.setSelectedProject(projectId)
+    transactionStore.setCurrentMilestone(milestoneId)
     setLoadingMilestoneId(milestoneId)
     setError(null)
     setTransactionStatus({
@@ -46,7 +42,7 @@ export function useFinalizeVoteOnChain({
       message: 'A transacao de fechamento da votacao esta sendo montada.',
     })
 
-    const transactionId = demoStore.addTransaction({
+    const transactionId = transactionStore.addTransaction({
       type: 'finalize-vote',
       status: 'pending',
       title: 'Finalizacao de votacao',
@@ -90,7 +86,7 @@ export function useFinalizeVoteOnChain({
           message: 'Aguardando confirmacao final do backend.',
           transaction: signature,
         })
-        demoStore.updateTransaction(transactionId, {
+        transactionStore.updateTransaction(transactionId, {
           status: 'pending',
           message: 'Aguardando confirmacao final do backend.',
           transaction: signature,
@@ -106,7 +102,7 @@ export function useFinalizeVoteOnChain({
         message: 'Finalizacao confirmada on-chain.',
         transaction: signature,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message: 'Finalizacao confirmada on-chain.',
         transaction: signature,
@@ -123,7 +119,7 @@ export function useFinalizeVoteOnChain({
         title: 'Finalizacao falhou',
         message: errorMessage,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'failed',
         message: errorMessage,
       })

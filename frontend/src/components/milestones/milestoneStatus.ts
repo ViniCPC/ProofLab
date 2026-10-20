@@ -1,11 +1,7 @@
 import type { Milestone } from '@/types'
 
 export type MilestoneDisplayStatus =
-  | 'LOCKED'
-  | 'CURRENT'
-  | 'PENDING_REVIEW'
-  | 'APPROVED'
-  | 'REJECTED'
+  'LOCKED' | 'CURRENT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
 
 function previousMilestonesApproved(
   milestone: Milestone,

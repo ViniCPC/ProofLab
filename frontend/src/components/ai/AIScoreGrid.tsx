@@ -85,9 +85,7 @@ function NumericScore({ item }: { item: NumericScoreItem }) {
           )}
         />
       </div>
-      <p className="mt-2 font-mono text-lg text-slate-100">
-        {formatScore(item.value)}
-      </p>
+      <p className="mt-2 font-mono text-lg text-slate-100">{formatScore(item.value)}</p>
       <ProgressBar value={item.value ?? 0} tone={item.tone} className="mt-3" />
     </div>
   )

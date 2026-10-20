@@ -49,8 +49,7 @@ export function DAOVotingCard({
   onFinalizeVote,
 }: DAOVotingCardProps) {
   const displayStatus = getMilestoneDisplayStatus(milestone, orderedMilestones)
-  const canVote =
-    connected && isContributor && !isCreator && isVotingOpen(milestone)
+  const canVote = connected && isContributor && !isCreator && isVotingOpen(milestone)
 
   return (
     <Card glow="purple" className="space-y-4">
@@ -67,10 +66,7 @@ export function DAOVotingCard({
         <MilestoneStatusBadge status={displayStatus} />
       </div>
 
-      <VoteProgress
-        summary={voteResult.summary}
-        eligibleVoters={eligibleVoters}
-      />
+      <VoteProgress summary={voteResult.summary} eligibleVoters={eligibleVoters} />
 
       <VotingEligibilityNotice
         connected={connected}

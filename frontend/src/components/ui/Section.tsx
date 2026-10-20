@@ -13,7 +13,8 @@ const sectionStyles = cva('relative py-20 sm:py-28', {
   defaultVariants: { tone: 'base' },
 })
 
-interface SectionProps extends HTMLAttributes<HTMLElement>, VariantProps<typeof sectionStyles> {
+interface SectionProps
+  extends HTMLAttributes<HTMLElement>, VariantProps<typeof sectionStyles> {
   id?: string
 }
 

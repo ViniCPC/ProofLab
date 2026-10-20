@@ -64,9 +64,7 @@ export async function signAndSendTransaction(
   connection: Connection,
   sendTransaction: SendTransaction,
 ): Promise<string> {
-  const transaction = VersionedTransaction.deserialize(
-    base64ToBytes(base64Transaction),
-  )
+  const transaction = VersionedTransaction.deserialize(base64ToBytes(base64Transaction))
 
   const signature = await sendTransaction(transaction, connection)
   await connection.confirmTransaction(signature, 'confirmed')

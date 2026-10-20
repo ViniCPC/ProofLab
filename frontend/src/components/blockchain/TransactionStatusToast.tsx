@@ -62,9 +62,7 @@ export function TransactionStatusToast({
           <div>
             <p className="text-sm font-semibold">{state.title}</p>
             {state.message && (
-              <p className="mt-1 text-sm leading-5 opacity-80">
-                {state.message}
-              </p>
+              <p className="mt-1 text-sm leading-5 opacity-80">{state.message}</p>
             )}
             {state.transaction && (
               <a

@@ -43,12 +43,8 @@ export function AIAnalysisCard({
 
       {project.aiRecommendation && (
         <div className="rounded-lg border border-slate-800 bg-slate-950/55 p-4">
-          <div className="mb-1 text-sm font-medium text-purple-100">
-            Recomendação
-          </div>
-          <p className="text-sm leading-6 text-slate-400">
-            {project.aiRecommendation}
-          </p>
+          <div className="mb-1 text-sm font-medium text-purple-100">Recomendação</div>
+          <p className="text-sm leading-6 text-slate-400">{project.aiRecommendation}</p>
         </div>
       )}
 

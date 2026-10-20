@@ -10,6 +10,24 @@ const tones: Record<IconBadgeTone, string> = {
   orange: 'border-orange-300/25 bg-orange-300/10 text-orange-200',
 }
 
-export function IconBadge({ icon: Icon, tone = 'cyan', className }: { icon: LucideIcon; tone?: IconBadgeTone; className?: string }) {
-  return <span className={cn('grid size-11 place-items-center rounded-xl border', tones[tone], className)}><Icon aria-hidden className="size-5" /></span>
+export function IconBadge({
+  icon: Icon,
+  tone = 'cyan',
+  className,
+}: {
+  icon: LucideIcon
+  tone?: IconBadgeTone
+  className?: string
+}) {
+  return (
+    <span
+      className={cn(
+        'grid size-11 place-items-center rounded-xl border',
+        tones[tone],
+        className,
+      )}
+    >
+      <Icon aria-hidden className="size-5" />
+    </span>
+  )
 }

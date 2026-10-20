@@ -5,8 +5,7 @@ import type { AuthUser } from '@/types/user'
 import { signInWithWallet } from '@/utils/wallet'
 
 export function useAuth() {
-  const { publicKey, connected, connecting, disconnect, signMessage } =
-    useWallet()
+  const { publicKey, connected, connecting, disconnect, signMessage } = useWallet()
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -32,8 +31,11 @@ export function useAuth() {
 
   useEffect(() => {
     const walletAddress = publicKey?.toBase58() ?? null
-    const connectionStatus =
-      connecting ? 'connecting' : connected && walletAddress ? 'connected' : 'disconnected'
+    const connectionStatus = connecting
+      ? 'connecting'
+      : connected && walletAddress
+        ? 'connected'
+        : 'disconnected'
 
     queueMicrotask(() => {
       walletStore.setConnection(walletAddress, connectionStatus)

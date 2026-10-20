@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import {
-  type TransactionStatusState,
-} from '@/components/blockchain/TransactionStatusToast'
+import { type TransactionStatusState } from '@/components/blockchain/TransactionStatusToast'
 import { blockchainService } from '@/services/blockchain.service'
 import { votingService } from '@/services/voting.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import type { Milestone, MilestoneVoteResult } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
@@ -36,15 +34,10 @@ const initialState: VoteMilestoneState = {
 }
 
 function isVoteOpen(milestone: Milestone) {
-  return (
-    milestone.status === 'PENDING_REVIEW' || milestone.status === 'SUBMITTED'
-  )
+  return milestone.status === 'PENDING_REVIEW' || milestone.status === 'SUBMITTED'
 }
 
-export function useVoteMilestone({
-  projectId,
-  milestones,
-}: UseVoteMilestoneOptions) {
+export function useVoteMilestone({ projectId, milestones }: UseVoteMilestoneOptions) {
   const { walletAddress } = useWalletStore()
   const { connection } = useConnection()
   const { sendTransaction, signMessage } = useWallet()
@@ -61,31 +54,27 @@ export function useVoteMilestone({
 
     try {
       const voteResults = await Promise.all(
-        milestones
-          .filter(isVoteOpen)
-          .map(async (milestone) => ({
-            milestoneId: milestone.id,
-            result: await votingService.getByMilestone(projectId, milestone.id),
-          })),
+        milestones.filter(isVoteOpen).map(async (milestone) => ({
+          milestoneId: milestone.id,
+          result: await votingService.getByMilestone(projectId, milestone.id),
+        })),
       )
 
       setState((currentState) => ({
         ...currentState,
         error: null,
-        votesByMilestoneId: voteResults.reduce<
-          Record<string, MilestoneVoteResult>
-        >((acc, item) => {
-          acc[item.milestoneId] = item.result
-          return acc
-        }, {}),
+        votesByMilestoneId: voteResults.reduce<Record<string, MilestoneVoteResult>>(
+          (acc, item) => {
+            acc[item.milestoneId] = item.result
+            return acc
+          },
+          {},
+        ),
       }))
     } catch (error) {
       setState((currentState) => ({
         ...currentState,
-        error: getApiErrorMessage(
-          error,
-          'Nao foi possivel carregar os votos agora.',
-        ),
+        error: getApiErrorMessage(error, 'Nao foi possivel carregar os votos agora.'),
       }))
     }
   }, [milestones, projectId])
@@ -93,8 +82,8 @@ export function useVoteMilestone({
   async function submitVote(milestone: Milestone, approve: boolean) {
     if (!projectId) return
 
-    demoStore.setSelectedProject(projectId)
-    demoStore.setCurrentMilestone(milestone.id)
+    transactionStore.setSelectedProject(projectId)
+    transactionStore.setCurrentMilestone(milestone.id)
 
     setState((currentState) => ({
       ...currentState,
@@ -105,17 +94,17 @@ export function useVoteMilestone({
         title: approve ? 'Registrando aprovacao' : 'Registrando rejeicao',
         message: milestone.onChainMilestoneAddress
           ? 'Seu voto on-chain esta sendo preparado.'
-          : 'Seu voto esta sendo salvo na demo.',
+          : 'Seu voto está sendo salvo no backend.',
       },
     }))
 
-    const transactionId = demoStore.addTransaction({
+    const transactionId = transactionStore.addTransaction({
       type: 'vote',
       status: 'pending',
       title: approve ? 'Voto de aprovacao' : 'Voto de rejeicao',
       message: milestone.onChainMilestoneAddress
         ? 'Preparando voto on-chain.'
-        : 'Enviando voto para a DAO da demo.',
+        : 'Enviando voto para a DAO.',
       projectId,
       milestoneId: milestone.id,
     })
@@ -167,7 +156,7 @@ export function useVoteMilestone({
               transaction: signature,
             },
           }))
-          demoStore.updateTransaction(transactionId, {
+          transactionStore.updateTransaction(transactionId, {
             status: 'pending',
             message: 'Aguardando confirmacao final do backend.',
             transaction: signature,
@@ -178,14 +167,11 @@ export function useVoteMilestone({
         await votingService.vote(projectId, milestone.id, { approve })
       }
 
-      const updatedVotes = await votingService.getByMilestone(
-        projectId,
-        milestone.id,
-      )
+      const updatedVotes = await votingService.getByMilestone(projectId, milestone.id)
 
       const message = milestone.onChainMilestoneAddress
         ? 'Voto confirmado on-chain.'
-        : 'Voto salvo no backend da demo.'
+        : 'Voto salvo no backend.'
 
       setState((currentState) => ({
         ...currentState,
@@ -202,7 +188,7 @@ export function useVoteMilestone({
         },
       }))
 
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message,
         transaction: signature,
@@ -224,7 +210,7 @@ export function useVoteMilestone({
         },
       }))
 
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'failed',
         message: errorMessage,
       })

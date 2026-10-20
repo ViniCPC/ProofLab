@@ -34,22 +34,12 @@ export const blockchainService = {
     }),
 
   cancelProjectOnChain: (projectId: string) =>
-    api.post<PreparedTransactionResponse>(
-      `/research/${projectId}/cancel-on-chain`,
-      {},
-    ),
+    api.post<PreparedTransactionResponse>(`/research/${projectId}/cancel-on-chain`, {}),
 
   claimRefund: (projectId: string) =>
-    api.post<PreparedTransactionResponse>(
-      `/research/${projectId}/claim-refund`,
-      {},
-    ),
+    api.post<PreparedTransactionResponse>(`/research/${projectId}/claim-refund`, {}),
 
-  confirmTransaction: (
-    projectId: string,
-    requestId: string,
-    signature: string,
-  ) =>
+  confirmTransaction: (projectId: string, requestId: string, signature: string) =>
     api.post<ConfirmTransactionResponse>(
       `/research/${projectId}/on-chain/confirm-transaction`,
       { requestId, signature },
@@ -97,11 +87,7 @@ export const blockchainService = {
       { votingDurationSeconds },
     ),
 
-  voteMilestoneOnChain: (
-    projectId: string,
-    milestoneId: string,
-    approve: boolean,
-  ) =>
+  voteMilestoneOnChain: (projectId: string, milestoneId: string, approve: boolean) =>
     api.post<VoteMilestoneOnChainResponse>(
       `/research/${projectId}/milestones/${milestoneId}/vote-on-chain`,
       { approve },

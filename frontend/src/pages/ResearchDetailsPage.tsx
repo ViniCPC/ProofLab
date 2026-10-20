@@ -154,9 +154,7 @@ export default function ResearchDetailsPage() {
         <div className="space-y-6">
           <AIAnalysisCard
             project={project}
-            onReanalyze={
-              isCreator ? () => void reanalyzeResearch() : undefined
-            }
+            onReanalyze={isCreator ? () => void reanalyzeResearch() : undefined}
             reanalyzing={reanalyzeResearchLoading}
           />
           <MilestoneTimeline
@@ -214,19 +212,19 @@ export default function ResearchDetailsPage() {
           fundToastIsActive
             ? fundTransactionStatus
             : releaseToastIsActive
-            ? releaseTransactionStatus
-            : cancelToastIsActive
-            ? cancelTransactionStatus
-            : refundTransactionStatus
+              ? releaseTransactionStatus
+              : cancelToastIsActive
+                ? cancelTransactionStatus
+                : refundTransactionStatus
         }
         onDismiss={
           fundToastIsActive
             ? dismissFundTransactionStatus
             : releaseToastIsActive
-            ? dismissReleaseTransactionStatus
-            : cancelToastIsActive
-            ? dismissCancelTransactionStatus
-            : dismissRefundTransactionStatus
+              ? dismissReleaseTransactionStatus
+              : cancelToastIsActive
+                ? dismissCancelTransactionStatus
+                : dismissRefundTransactionStatus
         }
       />
     </div>

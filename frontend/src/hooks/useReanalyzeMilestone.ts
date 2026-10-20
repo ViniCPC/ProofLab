@@ -11,9 +11,7 @@ export function useReanalyzeMilestone({
   projectId,
   onReanalyzed,
 }: UseReanalyzeMilestoneOptions) {
-  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(
-    null,
-  )
+  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function reanalyze(milestoneId: string) {
@@ -27,10 +25,7 @@ export function useReanalyzeMilestone({
       await onReanalyzed?.()
     } catch (caughtError) {
       setError(
-        getApiErrorMessage(
-          caughtError,
-          'Não foi possível reanalisar a milestone.',
-        ),
+        getApiErrorMessage(caughtError, 'Não foi possível reanalisar a milestone.'),
       )
     } finally {
       setLoadingMilestoneId(null)

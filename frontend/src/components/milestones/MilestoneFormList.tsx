@@ -1,9 +1,6 @@
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import {
-  MilestoneFormItem,
-  type MilestoneDraft,
-} from './MilestoneFormItem'
+import { MilestoneFormItem, type MilestoneDraft } from './MilestoneFormItem'
 
 interface MilestoneFormListProps {
   milestones: MilestoneDraft[]
@@ -26,10 +23,7 @@ function normalizeOrders(milestones: MilestoneDraft[]) {
   }))
 }
 
-export function MilestoneFormList({
-  milestones,
-  onChange,
-}: MilestoneFormListProps) {
+export function MilestoneFormList({ milestones, onChange }: MilestoneFormListProps) {
   function addMilestone() {
     onChange([...milestones, createMilestone(milestones.length + 1)])
   }

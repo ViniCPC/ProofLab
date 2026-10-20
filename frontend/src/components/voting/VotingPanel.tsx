@@ -32,10 +32,7 @@ function getWalletIsContributor(
   )
 }
 
-function getWalletIsCreator(
-  project: ResearchProject,
-  walletAddress: string | null,
-) {
+function getWalletIsCreator(project: ResearchProject, walletAddress: string | null) {
   if (!walletAddress || !project.creator?.walletAddress) return false
   return project.creator.walletAddress === walletAddress
 }
@@ -124,9 +121,7 @@ export function VotingPanel({
       ))}
 
       <TransactionStatusToast
-        state={
-          finalizeToastIsActive ? finalizeTransactionStatus : transactionStatus
-        }
+        state={finalizeToastIsActive ? finalizeTransactionStatus : transactionStatus}
         onDismiss={
           finalizeToastIsActive
             ? dismissFinalizeTransactionStatus

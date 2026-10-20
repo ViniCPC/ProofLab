@@ -36,9 +36,7 @@ export function MilestoneFormItem({
     <Card glow="none" className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="font-mono text-xs text-cyan-300">
-            Etapa {milestone.order}
-          </p>
+          <p className="font-mono text-xs text-cyan-300">Etapa {milestone.order}</p>
           <h3 className="text-sm font-semibold text-slate-100">
             Milestone da pesquisa
           </h3>

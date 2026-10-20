@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import {
-  type TransactionStatusState,
-} from '@/components/blockchain/TransactionStatusToast'
+import { type TransactionStatusState } from '@/components/blockchain/TransactionStatusToast'
 import { blockchainService } from '@/services/blockchain.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
 import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
@@ -34,7 +32,7 @@ export function useCancelProjectOnChain({
   async function cancelProjectOnChain() {
     if (!projectId) return
 
-    demoStore.setSelectedProject(projectId)
+    transactionStore.setSelectedProject(projectId)
     setLoading(true)
     setError(null)
     setTransactionStatus({
@@ -43,7 +41,7 @@ export function useCancelProjectOnChain({
       message: 'A transacao de cancelamento esta sendo montada.',
     })
 
-    const transactionId = demoStore.addTransaction({
+    const transactionId = transactionStore.addTransaction({
       type: 'cancel-project',
       status: 'pending',
       title: 'Cancelamento on-chain',
@@ -83,7 +81,7 @@ export function useCancelProjectOnChain({
           message: 'Aguardando confirmacao final do backend.',
           transaction: signature,
         })
-        demoStore.updateTransaction(transactionId, {
+        transactionStore.updateTransaction(transactionId, {
           status: 'pending',
           message: 'Aguardando confirmacao final do backend.',
           transaction: signature,
@@ -99,7 +97,7 @@ export function useCancelProjectOnChain({
         message: 'Cancelamento confirmado on-chain.',
         transaction: signature,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message: 'Cancelamento confirmado on-chain.',
         transaction: signature,
@@ -116,7 +114,7 @@ export function useCancelProjectOnChain({
         title: 'Cancelamento falhou',
         message: errorMessage,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'failed',
         message: errorMessage,
       })

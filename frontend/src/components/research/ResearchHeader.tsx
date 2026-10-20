@@ -31,9 +31,7 @@ export function ResearchHeader({ project }: ResearchHeaderProps) {
       <div className="grid gap-3 border-t border-slate-800/80 pt-4 sm:grid-cols-2">
         <div>
           <p className="text-xs text-slate-500">Pesquisador</p>
-          <p className="mt-1 text-sm font-medium text-slate-200">
-            {researcher}
-          </p>
+          <p className="mt-1 text-sm font-medium text-slate-200">{researcher}</p>
         </div>
         <div>
           <p className="text-xs text-slate-500">Wallet/projeto</p>

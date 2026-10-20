@@ -10,8 +10,5 @@ export const contributionService = {
     api.get<FundingStats>(`/research/${projectId}/contributions`),
 
   contribute: (projectId: string, payload: ContributePayload) =>
-    api.post<ContributionResponse>(
-      `/research/${projectId}/contribute`,
-      payload,
-    ),
+    api.post<ContributionResponse>(`/research/${projectId}/contribute`, payload),
 }

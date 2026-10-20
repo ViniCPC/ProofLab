@@ -22,9 +22,7 @@ export default function ExploreResearchPage() {
       <PageHeader
         title="Explorar pesquisas"
         subtitle="Projetos científicos disponíveis para financiamento transparente, com etapas e validação comunitária."
-        action={
-          <LinkButton to="/create">Enviar pesquisa</LinkButton>
-        }
+        action={<LinkButton to="/create">Enviar pesquisa</LinkButton>}
       />
 
       {loading && (
@@ -45,8 +43,8 @@ export default function ExploreResearchPage() {
       {!loading && !error && !hasProjects && (
         <Card glow="green">
           <p className="text-sm text-slate-400">
-            Ainda não há pesquisas disponíveis. Seja o primeiro a criar uma
-            proposta científica para funding.
+            Ainda não há pesquisas disponíveis. Seja o primeiro a criar uma proposta
+            científica para funding.
           </p>
         </Card>
       )}
@@ -59,10 +57,7 @@ export default function ExploreResearchPage() {
               Página {meta?.page ?? page} de {totalPages}
             </span>
           </div>
-          <ResearchList
-            projects={projects}
-            fundingByProjectId={fundingByProjectId}
-          />
+          <ResearchList projects={projects} fundingByProjectId={fundingByProjectId} />
           <div className="flex items-center justify-end gap-2">
             <Button
               type="button"

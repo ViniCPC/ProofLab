@@ -2,10 +2,8 @@ import {
   AlertTriangle,
   ArrowDownToLine,
   Bot,
-  CheckCircle2,
   CircleDollarSign,
   FlaskConical,
-  GitBranch,
   Landmark,
   LockKeyhole,
   Network,
@@ -14,6 +12,10 @@ import {
   Vote,
   WalletCards,
 } from 'lucide-react'
+
+const presentationVideoUrl =
+  import.meta.env.VITE_PRESENTATION_VIDEO_URL?.trim() ||
+  'https://github.com/ViniCPC/ProofLab'
 
 export const landingContent = {
   nav: {
@@ -29,112 +31,224 @@ export const landingContent = {
   },
   hero: {
     eyebrow: 'Financiamento científico verificável',
-    title: 'Ciência avança quando o capital também é transparente.',
+    title: 'Financie ciência. Acompanhe cada etapa.',
     description:
-      'A ProofLab conecta pesquisadores e financiadores em um escrow Solana: cada etapa tem evidências, IA para dar contexto e voto da comunidade antes da liberação.',
+      'A ProofLab conecta pesquisadores e financiadores em um escrow Solana, com evidências, análise contextual e votação antes de cada liberação.',
     primaryCta: 'Explorar pesquisas',
     secondaryCta: 'Criar pesquisa',
-    previewLabel: 'Projeto em destaque',
-    previewFallback: 'A primeira pesquisa da comunidade aparece aqui.',
-    previewEmpty: 'Nenhum projeto publicado ainda.',
-    previewProgress: 'financiado',
-    previewMilestones: 'milestones',
-    previewDeadline: 'Escrow on-chain',
-    previewAiComplete: 'IA analisou',
-    previewAiPending: 'IA pendente',
-    previewLink: 'Ver projeto',
   },
-  stats: {
-    eyebrow: 'Protocolo em números',
-    projects: 'projetos publicados',
-    escrow: 'USDC em escrow',
-    released: 'milestones liberadas',
+  productShot: {
+    browserLabel: 'app.prooflab.org',
+    projectTitle: 'Sensoriamento de rios urbanos',
+    projectDescription: 'Pesquisa aplicada · escrow científico',
+    escrowLabel: 'Escrow protegido',
+    statusLabel: 'Em andamento',
+    stageLabel: 'Etapa atual',
+    stages: [
+      { label: 'Proposta', status: 'Concluída' },
+      { label: 'Financiamento', status: 'Em análise' },
+      { label: 'Evidências', status: 'A seguir' },
+      { label: 'Votação', status: 'A seguir' },
+      { label: 'Liberação', status: 'A seguir' },
+    ],
   },
+  trustBadges: [
+    { label: 'Solana', icon: Network },
+    { label: 'USDC', icon: CircleDollarSign },
+    { label: 'Código aberto', icon: LockKeyhole },
+    { label: 'Transações verificáveis', icon: ShieldCheck },
+  ],
   problemSolution: {
     eyebrow: 'Por que ProofLab',
     title: 'O financiamento científico não precisa ser uma caixa-preta.',
-    description: 'Transformamos confiança em regras que qualquer pessoa consegue acompanhar.',
+    description:
+      'Transformamos confiança em regras que qualquer pessoa consegue acompanhar.',
     items: [
-      { icon: AlertTriangle, problem: 'Capital sem rastreabilidade', solution: 'Escrow on-chain mantém o dinheiro condicionado ao plano aprovado.', tone: 'orange' as const },
-      { icon: Bot, problem: 'Resultados difíceis de entender', solution: 'IA resume evidências e sinaliza riscos sem substituir o julgamento humano.', tone: 'purple' as const },
-      { icon: Network, problem: 'Decisões concentradas', solution: 'Financiadores votam milestone por milestone, com peso proporcional ao apoio.', tone: 'cyan' as const },
+      {
+        icon: AlertTriangle,
+        problem: 'Capital sem rastreabilidade',
+        solution: 'Escrow on-chain mantém o dinheiro condicionado ao plano aprovado.',
+        tone: 'orange' as const,
+      },
+      {
+        icon: Bot,
+        problem: 'Resultados difíceis de entender',
+        solution:
+          'IA resume evidências e sinaliza riscos sem substituir o julgamento humano.',
+        tone: 'purple' as const,
+      },
+      {
+        icon: Network,
+        problem: 'Decisões concentradas',
+        solution:
+          'Financiadores votam etapa por etapa, com peso proporcional ao apoio.',
+        tone: 'cyan' as const,
+      },
     ],
   },
   howItWorks: {
     eyebrow: 'Fluxo verificável',
-    title: 'Da proposta ao release, cada etapa deixa uma trilha.',
+    title: 'Da proposta à liberação, cada etapa deixa uma trilha.',
     description: 'O contrato executa as regras; a comunidade acompanha o contexto.',
     steps: [
-      { icon: FlaskConical, title: 'Criar', description: 'O pesquisador publica a proposta, orçamento e milestones.' },
-      { icon: WalletCards, title: 'Financiar', description: 'A comunidade aporta USDC diretamente no escrow do projeto.' },
-      { icon: Bot, title: 'Revisar', description: 'A IA organiza a entrega e destaca evidências para leitura rápida.' },
-      { icon: Vote, title: 'Votar', description: 'Financiadores avaliam cada milestone antes da liberação.' },
-      { icon: ArrowDownToLine, title: 'Liberar ou devolver', description: 'O contrato libera a etapa aprovada ou calcula o refund proporcional.' },
+      {
+        icon: FlaskConical,
+        title: 'Criar',
+        description: 'O pesquisador publica a proposta, orçamento e etapas.',
+      },
+      {
+        icon: WalletCards,
+        title: 'Financiar',
+        description: 'A comunidade aporta USDC diretamente no escrow do projeto.',
+      },
+      {
+        icon: Bot,
+        title: 'Revisar',
+        description:
+          'A IA organiza a entrega e destaca evidências para leitura rápida.',
+      },
+      {
+        icon: Vote,
+        title: 'Votar',
+        description: 'Financiadores avaliam cada etapa antes da liberação.',
+      },
+      {
+        icon: ArrowDownToLine,
+        title: 'Liberar ou devolver',
+        description:
+          'O contrato libera a etapa aprovada ou calcula o reembolso proporcional.',
+      },
     ],
   },
   features: {
     eyebrow: 'Regras do contrato',
     title: 'Menos promessa. Mais estado verificável.',
     items: [
-      { icon: Vote, title: 'Voto ponderado', description: 'O peso acompanha o valor contribuído, sem votação simbólica.', tone: 'purple' as const },
-      { icon: ShieldCheck, title: 'Owner não vota', description: 'Quem pesquisa não pode aprovar a própria milestone on-chain.', tone: 'cyan' as const },
-      { icon: CircleDollarSign, title: 'Refund proporcional', description: 'Se uma etapa falhar, o saldo disponível volta de forma proporcional.', tone: 'green' as const },
-      { icon: LockKeyhole, title: 'Escrow por milestone', description: 'Cada liberação depende do estado da entrega e do voto registrado.', tone: 'cyan' as const },
-      { icon: Sparkles, title: 'IA como contexto', description: 'A análise acelera a leitura, mas a decisão continua auditável pela comunidade.', tone: 'green' as const },
-      { icon: Landmark, title: 'Regras públicas', description: 'O programa Solana e seus estados ficam disponíveis para verificação.', tone: 'purple' as const },
+      {
+        icon: Vote,
+        title: 'Voto ponderado',
+        description: 'O peso acompanha o valor contribuído, sem votação simbólica.',
+        tone: 'purple' as const,
+      },
+      {
+        icon: ShieldCheck,
+        title: 'Owner não vota',
+        description: 'Quem pesquisa não pode aprovar a própria etapa on-chain.',
+        tone: 'cyan' as const,
+      },
+      {
+        icon: CircleDollarSign,
+        title: 'Reembolso proporcional',
+        description: 'Se uma etapa falhar, o saldo disponível volta proporcionalmente.',
+        tone: 'green' as const,
+      },
+      {
+        icon: LockKeyhole,
+        title: 'Escrow por etapa',
+        description:
+          'Cada liberação depende do estado da entrega e do voto registrado.',
+        tone: 'cyan' as const,
+      },
+      {
+        icon: Sparkles,
+        title: 'IA como contexto',
+        description: 'A análise acelera a leitura, mas a decisão continua auditável.',
+        tone: 'green' as const,
+      },
+      {
+        icon: Landmark,
+        title: 'Regras públicas',
+        description:
+          'O programa Solana e seus estados ficam disponíveis para verificação.',
+        tone: 'purple' as const,
+      },
     ],
   },
   audience: {
     eyebrow: 'Escolha seu papel',
     title: 'Uma camada de confiança para os dois lados.',
-    researcher: { title: 'Sou pesquisador', description: 'Estruture sua proposta, mostre progresso e receba capital conforme entrega valor.', cta: 'Publicar pesquisa' },
-    funder: { title: 'Quero financiar', description: 'Descubra ciência promissora, entenda os riscos e acompanhe cada decisão do escrow.', cta: 'Encontrar projetos' },
+    researcher: {
+      title: 'Sou pesquisador',
+      description:
+        'Estruture sua proposta, mostre progresso e receba capital conforme entrega valor.',
+      cta: 'Publicar pesquisa',
+    },
+    funder: {
+      title: 'Quero financiar',
+      description:
+        'Descubra ciência promissora, entenda os riscos e acompanhe cada decisão do escrow.',
+      cta: 'Encontrar projetos',
+    },
   },
   trust: {
     eyebrow: 'Confiança verificável',
     title: 'O contrato é a regra do jogo.',
-    description: 'A ProofLab é um MVP em Solana Devnet. Use valores de teste e revise o código antes de confiar capital real.',
+    description:
+      'A ProofLab roda em Solana Devnet e ainda não foi auditada. Use valores de teste e revise o código antes de confiar capital real.',
     rules: [
       'O pesquisador não controla o escrow diretamente.',
-      'A comunidade vota em cada milestone submetida.',
-      'Uma milestone rejeitada abre o caminho para refund proporcional.',
+      'A comunidade vota em cada etapa submetida.',
+      'Uma etapa rejeitada abre o caminho para reembolso proporcional.',
     ],
     programLabel: 'Programa Solana',
-    disclaimer: 'Devnet · MVP · não auditado',
+    disclaimer: 'Devnet · não auditado',
     explorerLabel: 'Ver no Explorer',
-  },
-  tech: {
-    eyebrow: 'Stack aberta',
-    title: 'Uma arquitetura curta, com responsabilidades claras.',
-    badges: ['Solana', 'Anchor', 'NestJS', 'Prisma', 'React', 'OpenAI'],
-    nodes: ['React + wallet', 'API NestJS', 'Escrow Anchor', 'USDC Devnet'],
   },
   faq: {
     eyebrow: 'Perguntas frequentes',
     title: 'Comece sem precisar decorar cripto.',
     items: [
-      { question: 'Preciso de cripto?', answer: 'Para testar a demo, você precisa de uma wallet compatível com Solana e USDC de Devnet. A landing pode ser explorada sem conectar nada.' },
-      { question: 'Quem controla o dinheiro?', answer: 'O programa de escrow controla as regras de custódia. O pesquisador só recebe quando a milestone é liberada pelo fluxo on-chain.' },
-      { question: 'E se o pesquisador sumir?', answer: 'O projeto pode ser cancelado conforme as regras do contrato e os financiadores podem buscar refund quando a milestone atual perde o prazo.' },
+      {
+        question: 'Preciso de cripto?',
+        answer:
+          'Para financiar uma pesquisa, você precisa de uma wallet compatível com Solana e USDC de Devnet. A landing pode ser explorada sem conectar nada.',
+      },
+      {
+        question: 'Quem controla o dinheiro?',
+        answer:
+          'O programa de escrow controla as regras de custódia. O pesquisador só recebe quando a etapa é liberada pelo fluxo on-chain.',
+      },
+      {
+        question: 'E se o pesquisador sumir?',
+        answer:
+          'Se a etapa atual passar do prazo sem submissão, qualquer pessoa pode iniciar o cancelamento. Depois disso, os financiadores podem solicitar o reembolso proporcional do saldo disponível.',
+      },
     ],
   },
   cta: {
-    eyebrow: 'ProofLab no hackathon',
-    title: 'Veja a ideia funcionando antes de conectar sua wallet.',
-    description: 'A demo mostra o caminho completo: proposta, escrow, evidência, voto e liberação.',
-    button: 'Assistir demo',
-    videoUrl: 'https://www.youtube.com/',
+    eyebrow: 'Conheça o projeto',
+    title: 'Veja como a ProofLab torna o financiamento verificável.',
+    description:
+      'A apresentação mostra o caminho completo: proposta, escrow, evidência, voto e liberação.',
+    button: 'Ver apresentação',
+    videoUrl: presentationVideoUrl,
   },
   footer: {
     description: 'Financiamento científico com regras que podem ser verificadas.',
     columns: [
-      { title: 'Produto', links: [{ label: 'Explorar pesquisas', href: '/explore' }, { label: 'Criar pesquisa', href: '/create' }] },
-      { title: 'Projeto', links: [{ label: 'GitHub', href: 'https://github.com/ViniCPC/ProofLab' }, { label: 'Swagger', href: 'http://localhost:3000/docs' }] },
-      { title: 'Links', links: [{ label: 'Vídeo da demo', href: 'https://www.youtube.com/' }, { label: 'Confiança', href: '#confianca' }] },
+      {
+        title: 'Produto',
+        links: [
+          { label: 'Explorar pesquisas', href: '/explore' },
+          { label: 'Criar pesquisa', href: '/create' },
+        ],
+      },
+      {
+        title: 'Projeto',
+        links: [
+          { label: 'GitHub', href: 'https://github.com/ViniCPC/ProofLab' },
+          { label: 'API', href: 'https://prooflab-9ffw.onrender.com/docs' },
+        ],
+      },
+      {
+        title: 'Links',
+        links: [
+          { label: 'Apresentação', href: presentationVideoUrl },
+          { label: 'Confiança', href: '#confianca' },
+        ],
+      },
     ],
     disclaimer: 'Devnet · não auditado',
     copyright: 'ProofLab. Feito para ciência aberta.',
-    githubIcon: GitBranch,
-    checkIcon: CheckCircle2,
   },
 } as const

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { blockchainService } from '@/services/blockchain.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
 import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
@@ -18,22 +18,20 @@ export function useSubmitMilestoneOnChain({
   const { walletAddress } = useWalletStore()
   const { connection } = useConnection()
   const { sendTransaction, signMessage } = useWallet()
-  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(
-    null,
-  )
+  const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function submitMilestoneOnChain(milestoneId: string) {
     if (!projectId) return
 
-    demoStore.setSelectedProject(projectId)
-    demoStore.setCurrentMilestone(milestoneId)
+    transactionStore.setSelectedProject(projectId)
+    transactionStore.setCurrentMilestone(milestoneId)
     setLoadingMilestoneId(milestoneId)
     setMessage(null)
     setError(null)
 
-    const transactionId = demoStore.addTransaction({
+    const transactionId = transactionStore.addTransaction({
       type: 'submit-milestone',
       status: 'pending',
       title: 'Submeter milestone on-chain',
@@ -71,7 +69,7 @@ export function useSubmitMilestoneOnChain({
 
       if (confirmation.status !== 'CONFIRMED') {
         setMessage('Transação enviada. Aguardando confirmação final.')
-        demoStore.updateTransaction(transactionId, {
+        transactionStore.updateTransaction(transactionId, {
           status: 'pending',
           message: 'Aguardando confirmação final do backend.',
           transaction: signature,
@@ -82,7 +80,7 @@ export function useSubmitMilestoneOnChain({
       await onPrepared?.()
 
       setMessage('Milestone preparada para votação on-chain.')
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message: 'Milestone preparada para votação on-chain.',
         transaction: signature,
@@ -94,7 +92,7 @@ export function useSubmitMilestoneOnChain({
       )
 
       setError(errorMessage)
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'failed',
         message: errorMessage,
       })

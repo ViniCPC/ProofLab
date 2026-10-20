@@ -10,8 +10,7 @@ interface GlassPanelProps extends HTMLAttributes<HTMLDivElement> {
 
 const toneStyles: Record<GlassPanelTone, string> = {
   cyan: 'border-cyan-300/18 shadow-[0_0_40px_-24px_rgba(34,211,238,0.75)]',
-  purple:
-    'border-purple-300/18 shadow-[0_0_40px_-24px_rgba(168,85,247,0.72)]',
+  purple: 'border-purple-300/18 shadow-[0_0_40px_-24px_rgba(168,85,247,0.72)]',
   green: 'border-green-300/18 shadow-[0_0_40px_-24px_rgba(74,222,128,0.65)]',
   neutral: 'border-slate-700/70 shadow-[0_0_36px_-28px_rgba(226,232,240,0.55)]',
 }
@@ -31,7 +30,8 @@ export function GlassPanel({
         'after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(115deg,rgba(255,255,255,0.075),transparent_28%,transparent_72%,rgba(34,211,238,0.055))]',
         'transition-all duration-300',
         toneStyles[tone],
-        interactive && 'hover:-translate-y-0.5 hover:border-cyan-300/35 hover:bg-slate-950/58',
+        interactive &&
+          'hover:-translate-y-0.5 hover:border-cyan-300/35 hover:bg-slate-950/58',
         className,
       )}
       {...props}

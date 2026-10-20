@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import type { ResearchFormValues } from '@/components/research/ResearchForm'
 import { researchService } from '@/services/research.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import type { ResearchProject } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
@@ -24,10 +24,7 @@ function isValidAmount(value: string) {
 
 function toBaseUnits(value: string) {
   const [whole, fraction = ''] = value.trim().split('.')
-  return (
-    BigInt(whole) * 1_000_000n +
-    BigInt(fraction.padEnd(6, '0').slice(0, 6))
-  )
+  return BigInt(whole) * 1_000_000n + BigInt(fraction.padEnd(6, '0').slice(0, 6))
 }
 
 function formatBaseUnits(value: bigint) {
@@ -119,8 +116,8 @@ export function useCreateResearch() {
         })),
       })
 
-      demoStore.setSelectedProject(createdResearch.id)
-      demoStore.setCurrentMilestone(createdResearch.milestones?.[0]?.id ?? null)
+      transactionStore.setSelectedProject(createdResearch.id)
+      transactionStore.setCurrentMilestone(createdResearch.milestones?.[0]?.id ?? null)
 
       setState({
         loading: false,
@@ -131,10 +128,7 @@ export function useCreateResearch() {
     } catch (error) {
       setState({
         loading: false,
-        error: getApiErrorMessage(
-          error,
-          'Não foi possível criar a pesquisa agora.',
-        ),
+        error: getApiErrorMessage(error, 'Não foi possível criar a pesquisa agora.'),
         success: false,
         createdResearch: null,
       })

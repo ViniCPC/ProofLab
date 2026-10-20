@@ -16,7 +16,10 @@ function isCancelled(project: ResearchProject) {
   return project.status === 'CANCELLED' || project.onChainStatus === 'Cancelled'
 }
 
-function getEstimatedRefund(funding: FundingStats | null, walletAddress: string | null) {
+function getEstimatedRefund(
+  funding: FundingStats | null,
+  walletAddress: string | null,
+) {
   if (!funding || !walletAddress) return 0
 
   return funding.investors

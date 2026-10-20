@@ -9,19 +9,12 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const glowMap: Record<CardGlow, string> = {
   purple:
     'hover:border-purple-400/45 hover:shadow-[0_0_28px_-6px_rgba(168,85,247,0.26)]',
-  cyan:
-    'hover:border-cyan-300/45 hover:shadow-[0_0_28px_-6px_rgba(34,211,238,0.26)]',
-  green:
-    'hover:border-green-300/45 hover:shadow-[0_0_28px_-6px_rgba(74,222,128,0.24)]',
+  cyan: 'hover:border-cyan-300/45 hover:shadow-[0_0_28px_-6px_rgba(34,211,238,0.26)]',
+  green: 'hover:border-green-300/45 hover:shadow-[0_0_28px_-6px_rgba(74,222,128,0.24)]',
   none: '',
 }
 
-export function Card({
-  className,
-  glow = 'purple',
-  children,
-  ...props
-}: CardProps) {
+export function Card({ className, glow = 'purple', children, ...props }: CardProps) {
   return (
     <div
       className={cn(

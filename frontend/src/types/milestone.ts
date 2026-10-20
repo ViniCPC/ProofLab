@@ -2,11 +2,7 @@ import type { AiAnalysisStatus } from './research'
 import type { RiskLevel } from './ai'
 
 export type MilestoneStatus =
-  | 'PENDING'
-  | 'PENDING_REVIEW'
-  | 'SUBMITTED'
-  | 'APPROVED'
-  | 'REJECTED'
+  'PENDING' | 'PENDING_REVIEW' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
 
 export interface Milestone {
   id: string

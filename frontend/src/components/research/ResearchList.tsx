@@ -6,10 +6,7 @@ interface ResearchListProps {
   fundingByProjectId: Record<string, FundingStats | null>
 }
 
-export function ResearchList({
-  projects,
-  fundingByProjectId,
-}: ResearchListProps) {
+export function ResearchList({ projects, fundingByProjectId }: ResearchListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {projects.map((project) => (

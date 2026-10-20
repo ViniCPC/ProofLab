@@ -13,7 +13,9 @@ export default defineConfig(({ command, mode }) => {
         throw new Error('Invalid API origin')
       }
     } catch {
-      throw new Error('Set VITE_API_URL to the exact HTTPS origin of the deployed backend before building for production.')
+      throw new Error(
+        'Set VITE_API_URL to the exact HTTPS origin of the deployed backend before building for production.',
+      )
     }
   }
 

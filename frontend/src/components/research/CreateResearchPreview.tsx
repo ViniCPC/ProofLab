@@ -41,9 +41,7 @@ export function CreateResearchPreview({
   return (
     <Card glow="cyan" className="sticky top-24 space-y-5">
       <div>
-        <p className="font-mono text-xs uppercase text-cyan-300">
-          Previa da pesquisa
-        </p>
+        <p className="font-mono text-xs uppercase text-cyan-300">Previa da pesquisa</p>
         <h2 className="mt-2 text-lg font-semibold text-slate-100">
           {title || 'Pesquisa sem titulo'}
         </h2>

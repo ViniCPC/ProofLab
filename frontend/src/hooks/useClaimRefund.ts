@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import {
-  type TransactionStatusState,
-} from '@/components/blockchain/TransactionStatusToast'
+import { type TransactionStatusState } from '@/components/blockchain/TransactionStatusToast'
 import { blockchainService } from '@/services/blockchain.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
 import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
@@ -30,7 +28,7 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
   async function claimRefund() {
     if (!projectId) return
 
-    demoStore.setSelectedProject(projectId)
+    transactionStore.setSelectedProject(projectId)
     setLoading(true)
     setTransactionStatus({
       status: 'pending',
@@ -38,7 +36,7 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
       message: 'A transacao de reembolso esta sendo montada.',
     })
 
-    const transactionId = demoStore.addTransaction({
+    const transactionId = transactionStore.addTransaction({
       type: 'claim-refund',
       status: 'pending',
       title: 'Solicitacao de refund',
@@ -78,7 +76,7 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
           message: 'Aguardando confirmacao final do backend.',
           transaction: signature,
         })
-        demoStore.updateTransaction(transactionId, {
+        transactionStore.updateTransaction(transactionId, {
           status: 'pending',
           message: 'Aguardando confirmacao final do backend.',
           transaction: signature,
@@ -94,7 +92,7 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
         message: 'Reembolso confirmado on-chain.',
         transaction: signature,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message: 'Reembolso confirmado on-chain.',
         transaction: signature,
@@ -109,7 +107,7 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
         title: 'Refund falhou',
         message: errorMessage,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'failed',
         message: errorMessage,
       })

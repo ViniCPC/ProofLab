@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import {
-  type TransactionStatusState,
-} from '@/components/blockchain/TransactionStatusToast'
+import { type TransactionStatusState } from '@/components/blockchain/TransactionStatusToast'
 import { blockchainService } from '@/services/blockchain.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import { getApiErrorMessage } from '@/utils/errors'
 import { ensureWalletSession, signAndSendTransaction } from '@/utils/wallet'
@@ -31,7 +29,7 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
   async function fundOnChain(amount: string) {
     if (!projectId) return
 
-    demoStore.setSelectedProject(projectId)
+    transactionStore.setSelectedProject(projectId)
     setLoading(true)
     setError(null)
     setTransactionStatus({
@@ -40,7 +38,7 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
       message: 'A transação de contribuição está sendo montada.',
     })
 
-    const transactionId = demoStore.addTransaction({
+    const transactionId = transactionStore.addTransaction({
       type: 'fund-project',
       status: 'pending',
       title: 'Funding on-chain',
@@ -84,7 +82,7 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
           message: 'Aguardando confirmação final do backend.',
           transaction: signature,
         })
-        demoStore.updateTransaction(transactionId, {
+        transactionStore.updateTransaction(transactionId, {
           status: 'pending',
           message: 'Aguardando confirmação final do backend.',
           transaction: signature,
@@ -100,7 +98,7 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
         message: 'Transação on-chain confirmada.',
         transaction: signature,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
         message: 'Transação on-chain confirmada.',
         transaction: signature,
@@ -117,7 +115,7 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
         title: 'Funding on-chain falhou',
         message: errorMessage,
       })
-      demoStore.updateTransaction(transactionId, {
+      transactionStore.updateTransaction(transactionId, {
         status: 'failed',
         message: errorMessage,
       })

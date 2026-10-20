@@ -23,9 +23,7 @@ export function Navbar() {
             <FlaskConical className="size-5 text-cyan-200" />
           </span>
           <span>
-            <span className="block text-sm font-semibold tracking-tight">
-              ProofLab
-            </span>
+            <span className="block text-sm font-semibold tracking-tight">ProofLab</span>
             <span className="hidden items-center gap-1 font-mono text-[10px] uppercase text-green-300/80 sm:flex">
               <Network className="size-3" />
               Custódia científica Solana

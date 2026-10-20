@@ -101,9 +101,7 @@ export function SubmitMilestoneDialog({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-xs font-medium text-slate-400">
-                Evidências
-              </span>
+              <span className="text-xs font-medium text-slate-400">Evidências</span>
               <textarea
                 value={evidenceText}
                 onChange={(event) => setEvidenceText(event.target.value)}

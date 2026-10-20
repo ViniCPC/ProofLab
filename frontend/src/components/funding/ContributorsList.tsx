@@ -31,9 +31,7 @@ export function ContributorsList({ contributors }: ContributorsListProps) {
                 <p className="font-mono text-sm text-cyan-200">
                   {shortenAddress(contribution.wallet, 6)}
                 </p>
-                <p className="text-xs text-slate-500">
-                  {contribution.funder.name}
-                </p>
+                <p className="text-xs text-slate-500">{contribution.funder.name}</p>
               </div>
               <p className="font-mono text-sm text-slate-100">
                 {formatUsdc(contribution.amount)} USDC

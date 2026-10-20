@@ -10,8 +10,7 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border-purple-300/30 bg-purple-300/10 text-purple-100 hover:bg-purple-300/15',
   ghost:
     'border-transparent bg-transparent text-slate-400 hover:bg-slate-800/55 hover:text-slate-100',
-  danger:
-    'border-red-400/35 bg-red-500/15 text-red-200 hover:bg-red-500/25',
+  danger: 'border-red-400/35 bg-red-500/15 text-red-200 hover:bg-red-500/25',
 }
 
 const sizeStyles: Record<ButtonSize, string> = {

@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom'
 import { contributionService } from '@/services/contribution.service'
 import { milestoneService } from '@/services/milestone.service'
 import { researchService } from '@/services/research.service'
-import { demoStore } from '@/store/demoStore'
+import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import type { FundingStats, Milestone, ResearchProject } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
@@ -42,9 +42,11 @@ const initialState: ResearchDetailsState = {
 const fallbackError = 'Não foi possível carregar a pesquisa agora.'
 
 function getCurrentMilestoneId(milestones: Milestone[]) {
-  return milestones.find((milestone) =>
-    ['PENDING_REVIEW', 'SUBMITTED', 'PENDING'].includes(milestone.status),
-  )?.id ?? null
+  return (
+    milestones.find((milestone) =>
+      ['PENDING_REVIEW', 'SUBMITTED', 'PENDING'].includes(milestone.status),
+    )?.id ?? null
+  )
 }
 
 export function useResearchDetails() {
@@ -133,14 +135,11 @@ export function useResearchDetails() {
   )
 
   const submitMilestoneReview = useCallback(
-    async (
-      milestoneId: string,
-      payload: SubmitMilestoneReviewPayload,
-    ) => {
+    async (milestoneId: string, payload: SubmitMilestoneReviewPayload) => {
       if (!id) return
 
-      demoStore.setSelectedProject(id)
-      demoStore.setCurrentMilestone(milestoneId)
+      transactionStore.setSelectedProject(id)
+      transactionStore.setCurrentMilestone(milestoneId)
       setState((currentState) => ({
         ...currentState,
         reviewLoading: true,
@@ -189,8 +188,8 @@ export function useResearchDetails() {
   useEffect(() => {
     if (!state.project) return
 
-    demoStore.setSelectedProject(state.project.id)
-    demoStore.setCurrentMilestone(getCurrentMilestoneId(state.milestones))
+    transactionStore.setSelectedProject(state.project.id)
+    transactionStore.setCurrentMilestone(getCurrentMilestoneId(state.milestones))
   }, [state.milestones, state.project])
 
   return {
