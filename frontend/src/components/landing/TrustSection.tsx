@@ -10,7 +10,7 @@ import { explorerUrl, PROGRAM_ID } from '@/utils/explorer'
 export function TrustSection() {
   const copy = landingContent.trust
   return (
-    <Section id="confianca" tone="surface">
+    <Section id="confianca" spacing="compact" tone="surface">
       <Container>
         <div className="grid gap-12 lg:grid-cols-[1fr_0.85fr] lg:items-end">
           <div>

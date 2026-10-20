@@ -8,7 +8,7 @@ import { landingContent } from '@/content/landing'
 export function AudienceSplit() {
   const copy = landingContent.audience
   return (
-    <Section tone="accent">
+    <Section spacing="compact" tone="accent">
       <Container>
         <SectionHeading eyebrow={copy.eyebrow} title={copy.title} align="center" />
         <div className="mt-12 grid gap-4 md:grid-cols-2">

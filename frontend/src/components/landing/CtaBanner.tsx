@@ -7,7 +7,7 @@ import { landingContent } from '@/content/landing'
 export function CtaBanner() {
   const copy = landingContent.cta
   return (
-    <Section>
+    <Section spacing="compact">
       <Container>
         <div className="flex flex-col gap-7 rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-cyan-300/[0.12] via-slate-950/80 to-purple-300/[0.1] p-8 sm:p-12 md:flex-row md:items-center md:justify-between">
           <div>

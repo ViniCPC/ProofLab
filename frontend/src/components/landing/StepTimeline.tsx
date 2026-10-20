@@ -14,7 +14,7 @@ export function StepTimeline() {
   }, [])
 
   return (
-    <Section id="como-funciona" tone="surface">
+    <Section id="como-funciona" spacing="compact" tone="surface">
       <Container>
         <SectionHeading
           eyebrow={copy.eyebrow}
@@ -22,6 +22,11 @@ export function StepTimeline() {
           description={copy.description}
         />
         <div className="mt-12 grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+          <div className="lg:hidden">
+            <div className="sticky top-20 z-10">
+              <ProductShot variant={active as ProductShotVariant} />
+            </div>
+          </div>
           <div className="space-y-10">
             {copy.steps.map((step, index) => (
               <StepItem
@@ -32,9 +37,6 @@ export function StepTimeline() {
                 onVisible={handleVisible}
               />
             ))}
-          </div>
-          <div className="lg:hidden">
-            <ProductShot variant={active as ProductShotVariant} />
           </div>
           <div className="sticky top-28 hidden lg:block">
             <ProductShot variant={active as ProductShotVariant} />

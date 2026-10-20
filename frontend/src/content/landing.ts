@@ -13,14 +13,18 @@ import {
   WalletCards,
 } from 'lucide-react'
 
-const presentationVideoUrl =
-  import.meta.env.VITE_PRESENTATION_VIDEO_URL?.trim() ||
-  'https://github.com/ViniCPC/ProofLab'
+const githubUrl = 'https://github.com/ViniCPC/ProofLab'
+const presentationVideoUrl = import.meta.env.VITE_PRESENTATION_VIDEO_URL?.trim()
+const presentationLabel = presentationVideoUrl
+  ? 'Ver apresentação'
+  : 'Ver código no GitHub'
 
 export const landingContent = {
   nav: {
     links: [
+      { href: '#problema', label: 'Por que ProofLab' },
       { href: '#como-funciona', label: 'Como funciona' },
+      { href: '#produto', label: 'Produto' },
       { href: '#recursos', label: 'Recursos' },
       { href: '#confianca', label: 'Confiança' },
       { href: '#faq', label: 'FAQ' },
@@ -38,11 +42,11 @@ export const landingContent = {
     secondaryCta: 'Criar pesquisa',
   },
   productShot: {
-    browserLabel: 'app.prooflab.org',
+    browserLabel: 'Exemplo de interface',
     projectTitle: 'Sensoriamento de rios urbanos',
-    projectDescription: 'Pesquisa aplicada · escrow científico',
-    escrowLabel: 'Escrow protegido',
-    statusLabel: 'Em andamento',
+    projectDescription: 'Pesquisa de exemplo · fluxo ilustrativo',
+    escrowLabel: 'Exemplo de fluxo',
+    statusLabel: 'Ilustrativo',
     stageLabel: 'Etapa atual',
     stages: [
       { label: 'Proposta', status: 'Concluída' },
@@ -85,6 +89,14 @@ export const landingContent = {
         tone: 'cyan' as const,
       },
     ],
+  },
+  product: {
+    eyebrow: 'Produto na prática',
+    title: 'Veja a proposta como uma experiência, não como uma promessa.',
+    description:
+      'A interface abaixo é uma representação visual do fluxo. Explore pesquisas públicas para ver o restante da experiência no aplicativo.',
+    cta: 'Explorar pesquisa de exemplo',
+    note: 'Os dados exibidos neste painel são ilustrativos e não representam saldo real.',
   },
   howItWorks: {
     eyebrow: 'Fluxo verificável',
@@ -129,18 +141,21 @@ export const landingContent = {
         title: 'Voto ponderado',
         description: 'O peso acompanha o valor contribuído, sem votação simbólica.',
         tone: 'purple' as const,
+        visual: 'vote' as const,
       },
       {
         icon: ShieldCheck,
         title: 'Owner não vota',
         description: 'Quem pesquisa não pode aprovar a própria etapa on-chain.',
         tone: 'cyan' as const,
+        visual: 'icon' as const,
       },
       {
         icon: CircleDollarSign,
         title: 'Reembolso proporcional',
         description: 'Se uma etapa falhar, o saldo disponível volta proporcionalmente.',
         tone: 'green' as const,
+        visual: 'icon' as const,
       },
       {
         icon: LockKeyhole,
@@ -148,12 +163,14 @@ export const landingContent = {
         description:
           'Cada liberação depende do estado da entrega e do voto registrado.',
         tone: 'cyan' as const,
+        visual: 'progress' as const,
       },
       {
         icon: Sparkles,
         title: 'IA como contexto',
         description: 'A análise acelera a leitura, mas a decisão continua auditável.',
         tone: 'green' as const,
+        visual: 'ai' as const,
       },
       {
         icon: Landmark,
@@ -161,6 +178,7 @@ export const landingContent = {
         description:
           'O programa Solana e seus estados ficam disponíveis para verificação.',
         tone: 'purple' as const,
+        visual: 'icon' as const,
       },
     ],
   },
@@ -220,8 +238,8 @@ export const landingContent = {
     title: 'Veja como a ProofLab torna o financiamento verificável.',
     description:
       'A apresentação mostra o caminho completo: proposta, escrow, evidência, voto e liberação.',
-    button: 'Ver apresentação',
-    videoUrl: presentationVideoUrl,
+    button: presentationLabel,
+    videoUrl: presentationVideoUrl || githubUrl,
   },
   footer: {
     description: 'Financiamento científico com regras que podem ser verificadas.',
@@ -236,14 +254,14 @@ export const landingContent = {
       {
         title: 'Projeto',
         links: [
-          { label: 'GitHub', href: 'https://github.com/ViniCPC/ProofLab' },
+          { label: 'GitHub', href: githubUrl },
           { label: 'API', href: 'https://prooflab-9ffw.onrender.com/docs' },
         ],
       },
       {
         title: 'Links',
         links: [
-          { label: 'Apresentação', href: presentationVideoUrl },
+          { label: presentationLabel, href: presentationVideoUrl || githubUrl },
           { label: 'Confiança', href: '#confianca' },
         ],
       },
