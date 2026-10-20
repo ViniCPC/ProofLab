@@ -22,6 +22,25 @@ function isValidAmount(value: string) {
   return decimalPattern.test(value.trim())
 }
 
+function toBaseUnits(value: string) {
+  const [whole, fraction = ''] = value.trim().split('.')
+  return (
+    BigInt(whole) * 1_000_000n +
+    BigInt(fraction.padEnd(6, '0').slice(0, 6))
+  )
+}
+
+function formatBaseUnits(value: bigint) {
+  const absolute = value < 0n ? -value : value
+  const whole = absolute / 1_000_000n
+  const fraction = (absolute % 1_000_000n)
+    .toString()
+    .padStart(6, '0')
+    .replace(/0+$/, '')
+
+  return `${value < 0n ? '-' : ''}${whole}${fraction ? `.${fraction}` : ''}`
+}
+
 function validateResearch(values: ResearchFormValues) {
   if (!isValidAmount(values.totalAmount)) {
     return 'Informe um valor total maior que zero com até 6 casas decimais.'
@@ -33,6 +52,19 @@ function validateResearch(values: ResearchFormValues) {
 
   if (invalidMilestone) {
     return 'Todas as milestones precisam ter valor maior que zero com até 6 casas decimais.'
+  }
+
+  const totalAmount = toBaseUnits(values.totalAmount)
+  const milestoneTotal = values.milestones.reduce(
+    (sum, milestone) => sum + toBaseUnits(milestone.amount),
+    0n,
+  )
+
+  if (milestoneTotal !== totalAmount) {
+    const difference = totalAmount - milestoneTotal
+    return difference > 0n
+      ? `Faltam ${formatBaseUnits(difference)} USDC para fechar o total.`
+      : `As milestones excedem o total em ${formatBaseUnits(-difference)} USDC.`
   }
 
   return null

@@ -105,6 +105,23 @@ export class ResearchService {
   ) {}
 
   async create(dto: CreateResearchDto, creator: PublicUser) {
+    const totalAmount = new Prisma.Decimal(dto.totalAmount);
+    const milestoneTotal = dto.milestones.reduce(
+      (sum, milestone) => sum.plus(milestone.amount),
+      new Prisma.Decimal(0),
+    );
+
+    if (!milestoneTotal.equals(totalAmount)) {
+      const difference = totalAmount.minus(milestoneTotal);
+      throw new BadRequestException(
+        difference.greaterThan(0)
+          ? `Milestone total is missing ${difference.toFixed(6)} USDC`
+          : `Milestone total exceeds the project total by ${difference
+              .abs()
+              .toFixed(6)} USDC`,
+      );
+    }
+
     const analysis = await this.runResearchAnalysis(
       {
         title: dto.title,

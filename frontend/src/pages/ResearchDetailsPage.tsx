@@ -40,7 +40,12 @@ export default function ResearchDetailsPage() {
     message: createProjectOnChainMessage,
     error: createProjectOnChainError,
     createOnChain,
-  } = useCreateProjectOnChain({ projectId: project?.id, onPrepared: refetch })
+  } = useCreateProjectOnChain({
+    projectId: project?.id,
+    onChainProjectAddress: project?.onChainProjectAddress,
+    milestones,
+    onPrepared: refetch,
+  })
   const {
     loadingMilestoneId: submitMilestoneOnChainLoadingId,
     message: submitMilestoneOnChainMessage,

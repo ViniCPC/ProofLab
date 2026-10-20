@@ -98,7 +98,7 @@ pub fn handler(ctx: Context<ClaimRefund>) -> Result<()> {
     contribution.refunded = true;
     project.refunded_amount = project
         .refunded_amount
-        .checked_add(refund_amount)
+        .checked_add(contribution.amount)
         .ok_or(error!(ResearchEscrowError::MathOverflow))?;
 
     Ok(())
@@ -162,5 +162,15 @@ mod tests {
         assert_eq!(first_refund, 50);
         assert_eq!(second_refund, 50);
         assert_eq!(first_refund + second_refund, 100);
+    }
+
+    #[test]
+    fn refund_uses_contribution_quota_after_funds_were_released() {
+        let first_refund = calculate_refund_amount(50, 70, 100).unwrap();
+        let second_refund = calculate_refund_amount(50, 35, 50).unwrap();
+
+        assert_eq!(first_refund, 35);
+        assert_eq!(second_refund, 35);
+        assert_eq!(first_refund + second_refund, 70);
     }
 }

@@ -1,12 +1,12 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsDecimal,
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsString,
   MaxLength,
   Min,
@@ -54,15 +54,15 @@ export class CreateResearchDto {
   @ApiProperty({ type: String, example: '1000.000000' })
   totalAmount!: string;
 
-  @IsOptional()
   @IsArray()
+  @ArrayMinSize(1)
   @ArrayMaxSize(50)
   @ValidateNested({ each: true })
   @Type(() => CreateMilestoneDto)
-  @ApiPropertyOptional({
+  @ApiProperty({
     type: () => CreateMilestoneDto,
     isArray: true,
     maxItems: 50,
   })
-  milestones?: CreateMilestoneDto[];
+  milestones!: CreateMilestoneDto[];
 }

@@ -11,10 +11,6 @@ interface UseSubmitMilestoneOnChainOptions {
   onPrepared?: () => Promise<void> | void
 }
 
-function isAlreadyCreatedOnChain(error: unknown) {
-  return getApiErrorMessage(error, '').toLowerCase().includes('already created')
-}
-
 export function useSubmitMilestoneOnChain({
   projectId,
   onPrepared,
@@ -28,28 +24,6 @@ export function useSubmitMilestoneOnChain({
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  async function signAndConfirmPrepared(
-    transaction: string,
-    requestId: string,
-  ) {
-    if (!projectId) {
-      throw new Error('Project is required')
-    }
-
-    const signature = await signAndSendTransaction(
-      transaction,
-      connection,
-      sendTransaction,
-    )
-    const confirmation = await blockchainService.confirmTransactionWithRetry(
-      projectId,
-      requestId,
-      signature,
-    )
-
-    return { confirmation, signature }
-  }
-
   async function submitMilestoneOnChain(milestoneId: string) {
     if (!projectId) return
 
@@ -62,8 +36,8 @@ export function useSubmitMilestoneOnChain({
     const transactionId = demoStore.addTransaction({
       type: 'submit-milestone',
       status: 'pending',
-      title: 'Preparar milestone on-chain',
-      message: 'Abrindo milestone para votacao on-chain.',
+      title: 'Submeter milestone on-chain',
+      message: 'Abrindo a milestone para votação on-chain.',
       projectId,
       milestoneId,
     })
@@ -72,70 +46,51 @@ export function useSubmitMilestoneOnChain({
       await ensureWalletSession(
         walletAddress,
         signMessage,
-        'Conecte sua wallet para preparar a milestone on-chain.',
+        'Conecte sua wallet para submeter a milestone on-chain.',
       )
 
-      try {
-        setMessage('Confirme a criacao da milestone na sua wallet.')
-        const createResponse = await blockchainService.createMilestoneOnChain(
-          projectId,
-          milestoneId,
-        )
-        const createResult = await signAndConfirmPrepared(
-          createResponse.transaction,
-          createResponse.requestId,
-        )
-
-        if (createResult.confirmation.status !== 'CONFIRMED') {
-          demoStore.updateTransaction(transactionId, {
-            status: 'pending',
-            message: 'Aguardando confirmacao da milestone.',
-            transaction: createResult.signature,
-          })
-          return
-        }
-      } catch (caughtError) {
-        if (!isAlreadyCreatedOnChain(caughtError)) {
-          throw caughtError
-        }
-      }
-
-      setMessage('Confirme a abertura de votacao na sua wallet.')
-      const votingDurationSeconds = Number.parseInt(
-        import.meta.env.VITE_VOTING_DURATION_SECONDS ?? '',
-        10,
-      ) || 60 * 60 * 24 * 3
+      const votingDurationSeconds =
+        Number.parseInt(import.meta.env.VITE_VOTING_DURATION_SECONDS ?? '', 10) ||
+        60 * 60 * 24 * 3
+      setMessage('Confirme a abertura da votação na sua wallet.')
       const response = await blockchainService.submitMilestoneOnChain(
         projectId,
         milestoneId,
         votingDurationSeconds,
       )
-      const result = await signAndConfirmPrepared(
+      const signature = await signAndSendTransaction(
         response.transaction,
+        connection,
+        sendTransaction,
+      )
+      const confirmation = await blockchainService.confirmTransactionWithRetry(
+        projectId,
         response.requestId,
+        signature,
       )
 
-      if (result.confirmation.status !== 'CONFIRMED') {
+      if (confirmation.status !== 'CONFIRMED') {
+        setMessage('Transação enviada. Aguardando confirmação final.')
         demoStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Aguardando confirmacao final do backend.',
-          transaction: result.signature,
+          message: 'Aguardando confirmação final do backend.',
+          transaction: signature,
         })
         return
       }
 
       await onPrepared?.()
 
-      setMessage('Milestone preparada para votacao on-chain.')
+      setMessage('Milestone preparada para votação on-chain.')
       demoStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Milestone preparada para votacao on-chain.',
-        transaction: result.signature,
+        message: 'Milestone preparada para votação on-chain.',
+        transaction: signature,
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
         caughtError,
-        'Nao foi possivel preparar a milestone on-chain.',
+        'Não foi possível submeter a milestone on-chain.',
       )
 
       setError(errorMessage)
