@@ -14,7 +14,7 @@ export function ProductShot({
   const copy = landingContent.productShot
 
   return (
-    <div key={variant} aria-live="polite" className="product-shot-transition">
+    <div key={variant} className="product-shot-transition">
       <BrowserFrame className={className} label={copy.browserLabel}>
         <div className="bg-[#0a101c] p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4">

@@ -9,7 +9,11 @@ export function Faq() {
   return (
     <Section id="faq" spacing="compact" tone="surface">
       <Container>
-        <SectionHeading eyebrow={copy.eyebrow} title={copy.title} />
+        <SectionHeading
+          eyebrow={copy.eyebrow}
+          title={copy.title}
+          description={copy.description}
+        />
         <div className="mt-10 max-w-3xl divide-y divide-slate-800 rounded-2xl border border-slate-800 bg-slate-950/45">
           {copy.items.map((item) => (
             <FaqItem key={item.question} {...item} />

@@ -1,6 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import { useInView } from '@/hooks/useInView'
+import type { MouseEventHandler } from 'react'
 import { cn } from '@/lib/utils'
 
 interface StepItemProps {
@@ -9,7 +8,7 @@ interface StepItemProps {
   title: string
   description: string
   active: boolean
-  onVisible: (index: number) => void
+  onSelect: MouseEventHandler<HTMLButtonElement>
 }
 
 export function StepItem({
@@ -18,18 +17,15 @@ export function StepItem({
   title,
   description,
   active,
-  onVisible,
+  onSelect,
 }: StepItemProps) {
-  const ref = useRef<HTMLElement>(null)
-  const visible = useInView(ref, 0.55)
-  useEffect(() => {
-    if (visible) onVisible(index)
-  }, [index, onVisible, visible])
   return (
-    <article
-      ref={ref}
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
       className={cn(
-        'relative border-l border-slate-800 pl-8 transition-colors',
+        'relative block w-full border-l border-slate-800 pl-8 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950',
         active && 'border-cyan-300/70',
       )}
     >
@@ -57,6 +53,6 @@ export function StepItem({
         <h3 className="text-base font-semibold text-white">{title}</h3>
       </div>
       <p className="mt-4 max-w-md text-sm leading-6 text-slate-400">{description}</p>
-    </article>
+    </button>
   )
 }

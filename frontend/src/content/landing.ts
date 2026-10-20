@@ -214,22 +214,44 @@ export const landingContent = {
   },
   faq: {
     eyebrow: 'Perguntas frequentes',
-    title: 'Comece sem precisar decorar cripto.',
+    title: 'Entenda como funciona antes de participar.',
+    description:
+      'Veja como a ProofLab organiza financiamento, evidências, votação e reembolso.',
     items: [
       {
-        question: 'Preciso de cripto?',
+        question: 'O que é a ProofLab?',
         answer:
-          'Para financiar uma pesquisa, você precisa de uma wallet compatível com Solana e USDC de Devnet. A landing pode ser explorada sem conectar nada.',
+          'A ProofLab é uma plataforma para organizar financiamento científico por etapas. Pesquisadores apresentam uma proposta, financiadores acompanham as evidências e a comunidade decide quando uma etapa pode ser liberada.',
       },
       {
-        question: 'Quem controla o dinheiro?',
+        question: 'Preciso de uma wallet ou de cripto para explorar a plataforma?',
         answer:
-          'O programa de escrow controla as regras de custódia. O pesquisador só recebe quando a etapa é liberada pelo fluxo on-chain.',
+          'Não. Você pode conhecer a plataforma, ler pesquisas e explorar a interface sem conectar uma wallet. Para participar de uma contribuição de teste, a wallet é a carteira digital usada para assinar a transação e o USDC é o token de teste usado na Solana Devnet.',
       },
       {
-        question: 'E se o pesquisador sumir?',
+        question: 'Como os recursos ficam protegidos?',
         answer:
-          'Se a etapa atual passar do prazo sem submissão, qualquer pessoa pode iniciar o cancelamento. Depois disso, os financiadores podem solicitar o reembolso proporcional do saldo disponível.',
+          'As contribuições ficam em um escrow, que é uma custódia automática com regras públicas. O pesquisador não movimenta esse saldo diretamente: o programa on-chain, isto é, executado na rede Solana, registra as condições para liberar ou devolver os recursos.',
+      },
+      {
+        question: 'Quem decide se uma etapa deve ser liberada?',
+        answer:
+          'A decisão final vem da votação dos financiadores elegíveis. O peso do voto acompanha o valor contribuído, e o pesquisador não pode votar na própria etapa.',
+      },
+      {
+        question: 'A IA aprova uma pesquisa ou entrega?',
+        answer:
+          'Não. A IA apenas organiza e resume evidências, além de destacar pontos que merecem atenção. Ela não aprova pesquisa, não libera recursos e não substitui a decisão da votação.',
+      },
+      {
+        question: 'O que acontece se o pesquisador não entregar uma etapa?',
+        answer:
+          'Se o prazo da etapa passar sem submissão, qualquer pessoa pode iniciar o cancelamento. Em seguida, os financiadores podem solicitar um reembolso proporcional ao saldo que ainda estiver disponível no escrow.',
+      },
+      {
+        question: 'Posso usar dinheiro real?',
+        answer:
+          'Não use dinheiro real. O projeto está em Solana Devnet, uma rede de testes, e as contribuições da experiência não transferem dinheiro real. Mesmo assim, o reembolso depende do saldo disponível no escrow e a ProofLab ainda não foi auditada.',
       },
     ],
   },
