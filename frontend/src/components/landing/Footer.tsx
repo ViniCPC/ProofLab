@@ -1,13 +1,34 @@
 import { FlaskConical } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Container } from '@/components/ui/Container'
+import { ExternalLink } from '@/components/ui/ExternalLink'
 import { landingContent } from '@/content/landing'
 
 export function Footer() {
   const copy = landingContent.footer
+  const cta = landingContent.cta
   return (
     <footer className="border-t border-slate-800/80 bg-slate-950/50 py-12">
       <Container>
+        <div className="mb-12 flex flex-col gap-7 rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-cyan-300/[0.12] via-slate-950/80 to-purple-300/[0.1] p-8 sm:p-10 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan-300">
+              {cta.eyebrow}
+            </p>
+            <h2 className="mt-4 max-w-xl text-3xl font-semibold text-white sm:text-4xl">
+              {cta.title}
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400">
+              {cta.description}
+            </p>
+          </div>
+          <ExternalLink
+            href={cta.videoUrl}
+            className="w-fit rounded-lg border border-cyan-300/30 bg-cyan-300 px-5 py-3 font-medium text-slate-950 hover:bg-cyan-200"
+          >
+            {cta.button}
+          </ExternalLink>
+        </div>
         <div className="grid gap-10 md:grid-cols-[1.2fr_2fr]">
           <div>
             <Link
@@ -20,7 +41,6 @@ export function Footer() {
             <p className="mt-4 max-w-xs text-sm leading-6 text-slate-500">
               {copy.description}
             </p>
-            <p className="mt-5 text-xs text-orange-200">{copy.disclaimer}</p>
           </div>
           <div className="grid gap-8 sm:grid-cols-3">
             {copy.columns.map((column) => (
@@ -55,7 +75,7 @@ export function Footer() {
         </div>
         <div className="mt-10 flex flex-col gap-2 border-t border-slate-800 pt-5 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
           <span>{copy.copyright}</span>
-          <span>Solana Devnet</span>
+          <span>{copy.network}</span>
         </div>
       </Container>
     </footer>

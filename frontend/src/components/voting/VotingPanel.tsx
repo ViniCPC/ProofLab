@@ -76,7 +76,6 @@ export function VotingPanel({
   })
   const isContributor = getWalletIsContributor(funding, walletAddress)
   const isCreator = getWalletIsCreator(project, walletAddress)
-  const eligibleVoters = funding?.investors.length ?? 0
   const finalizeToastIsActive = finalizeTransactionStatus.status !== 'idle'
 
   if (votingMilestones.length === 0) {
@@ -107,7 +106,6 @@ export function VotingPanel({
           milestone={milestone}
           orderedMilestones={orderedMilestones}
           voteResult={votesByMilestoneId[milestone.id]}
-          eligibleVoters={eligibleVoters}
           connected={connected}
           isContributor={isContributor}
           isCreator={isCreator}

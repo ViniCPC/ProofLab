@@ -1,57 +1,46 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 
-type DemoPrisma = Prisma.TransactionClient;
+type SeedPrisma = Prisma.TransactionClient;
 
-export const DEMO_PRIMARY_PROJECT_ID = '11111111-1111-4111-8111-111111111111';
-export const DEMO_SECONDARY_PROJECT_ID = '22222222-2222-4222-8222-222222222222';
-export const DEMO_DONOR_FLOW_PROJECT_ID =
+export const SEED_PRIMARY_PROJECT_ID = '11111111-1111-4111-8111-111111111111';
+export const SEED_SECONDARY_PROJECT_ID = '22222222-2222-4222-8222-222222222222';
+export const SEED_DONOR_FLOW_PROJECT_ID =
   '55555555-5555-4555-8555-555555555555';
-export const DEMO_PENDING_REVIEW_MILESTONE_ID =
+export const SEED_PENDING_REVIEW_MILESTONE_ID =
   '33333333-3333-4333-8333-333333333331';
-export const DEMO_DONOR_FLOW_MILESTONE_ID =
+export const SEED_DONOR_FLOW_MILESTONE_ID =
   '66666666-6666-4666-8666-666666666661';
-
-export const demoScenarios = [
-  'baseline',
-  'funding',
-  'pending-review',
-  'approved',
-  'cancelled',
-  'completed',
-] as const;
-
-export type DemoScenario = (typeof demoScenarios)[number];
 
 const users = [
   {
     id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
     name: 'Dra. Lina Azevedo',
-    email: 'lina.azevedo@prooflab.demo',
-    walletAddress: 'DemoResearcher111111111111111111111111111111',
+    email: 'lina.azevedo@prooflab.example',
+    walletAddress: 'SeedResearcher111111111111111111111111111111',
     role: 'RESEARCHER' as const,
     reputation: 91,
   },
   {
     id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2',
     name: 'Marcos Veras',
-    email: 'marcos.veras@prooflab.demo',
-    walletAddress: 'DemoFunder111111111111111111111111111111111',
+    email: 'marcos.veras@prooflab.example',
+    walletAddress: 'SeedFunder111111111111111111111111111111111',
     role: 'FUNDER' as const,
     reputation: 42,
   },
   {
     id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3',
     name: 'Nadia Chen',
-    email: 'nadia.chen@prooflab.demo',
-    walletAddress: 'DemoFunder222222222222222222222222222222222',
+    email: 'nadia.chen@prooflab.example',
+    walletAddress: 'SeedFunder222222222222222222222222222222222',
     role: 'FUNDER' as const,
     reputation: 58,
   },
   {
     id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa4',
     name: 'Olivia Hart',
-    email: 'olivia.hart@prooflab.demo',
-    walletAddress: 'DemoFunder333333333333333333333333333333333',
+    email: 'olivia.hart@prooflab.example',
+    walletAddress: 'SeedFunder333333333333333333333333333333333',
     role: 'FUNDER' as const,
     reputation: 37,
   },
@@ -59,7 +48,7 @@ const users = [
 
 const primaryMilestones = [
   {
-    id: DEMO_PENDING_REVIEW_MILESTONE_ID,
+    id: SEED_PENDING_REVIEW_MILESTONE_ID,
     title: 'Protótipo microfluídico validado',
     description:
       'Construir e validar um chip de baixo custo capaz de separar biomarcadores em amostras clínicas simuladas.',
@@ -124,7 +113,7 @@ const secondaryMilestones = [
 
 const donorFlowMilestones = [
   {
-    id: DEMO_DONOR_FLOW_MILESTONE_ID,
+    id: SEED_DONOR_FLOW_MILESTONE_ID,
     title: 'Relatório de bancada pronto para votação',
     description:
       'Validar os primeiros resultados do protocolo, incluindo fotos do setup, tabela de amostras e comparação com o plano aprovado.',
@@ -132,7 +121,7 @@ const donorFlowMilestones = [
     order: 1,
     status: 'PENDING_REVIEW' as const,
     aiSummary:
-      'A entrega está bem documentada para uma demo: o relatório descreve o setup, os resultados iniciais e os próximos riscos de validação. A IA recomenda votação comunitária antes de liberar a etapa.',
+      'A entrega está bem documentada: o relatório descreve o método, os resultados iniciais e os próximos riscos de validação. A IA recomenda votação comunitária antes de liberar a etapa.',
     consistencyScore: 86,
     completionEstimate: 81,
     aiRiskLevel: 'LOW',
@@ -156,45 +145,45 @@ const primaryContributions = [
   {
     wallet: users[1].walletAddress,
     amount: '40000.000000',
-    transactionHash: 'demo-tx-funding-001',
-    onChainContributionAddress: 'DemoContribution1111111111111111111111111',
+    transactionHash: 'seed-tx-funding-001',
+    onChainContributionAddress: 'SeedContribution1111111111111111111111111',
   },
   {
     wallet: users[2].walletAddress,
     amount: '35000.000000',
-    transactionHash: 'demo-tx-funding-002',
-    onChainContributionAddress: 'DemoContribution2222222222222222222222222',
+    transactionHash: 'seed-tx-funding-002',
+    onChainContributionAddress: 'SeedContribution2222222222222222222222222',
   },
   {
     wallet: users[3].walletAddress,
     amount: '45000.000000',
-    transactionHash: 'demo-tx-funding-003',
-    onChainContributionAddress: 'DemoContribution3333333333333333333333333',
+    transactionHash: 'seed-tx-funding-003',
+    onChainContributionAddress: 'SeedContribution3333333333333333333333333',
   },
 ];
 
-async function clearDemoProjects(tx: DemoPrisma) {
-  const demoProjectIds = [
-    DEMO_PRIMARY_PROJECT_ID,
-    DEMO_SECONDARY_PROJECT_ID,
-    DEMO_DONOR_FLOW_PROJECT_ID,
+async function clearSeedProjects(tx: SeedPrisma) {
+  const seedProjectIds = [
+    SEED_PRIMARY_PROJECT_ID,
+    SEED_SECONDARY_PROJECT_ID,
+    SEED_DONOR_FLOW_PROJECT_ID,
   ];
 
   await tx.vote.deleteMany({
-    where: { milestone: { projectId: { in: demoProjectIds } } },
+    where: { milestone: { projectId: { in: seedProjectIds } } },
   });
   await tx.contribution.deleteMany({
-    where: { projectId: { in: demoProjectIds } },
+    where: { projectId: { in: seedProjectIds } },
   });
   await tx.milestone.deleteMany({
-    where: { projectId: { in: demoProjectIds } },
+    where: { projectId: { in: seedProjectIds } },
   });
   await tx.researchProject.deleteMany({
-    where: { id: { in: demoProjectIds } },
+    where: { id: { in: seedProjectIds } },
   });
 }
 
-async function upsertDemoUsers(tx: DemoPrisma) {
+async function upsertSeedUsers(tx: SeedPrisma) {
   for (const user of users) {
     await tx.user.upsert({
       where: { walletAddress: user.walletAddress },
@@ -204,10 +193,10 @@ async function upsertDemoUsers(tx: DemoPrisma) {
   }
 }
 
-async function createDemoProjects(tx: DemoPrisma) {
+async function createSeedProjects(tx: SeedPrisma) {
   await tx.researchProject.create({
     data: {
-      id: DEMO_PRIMARY_PROJECT_ID,
+      id: SEED_PRIMARY_PROJECT_ID,
       title: 'Lab-on-a-chip para diagnóstico rápido',
       description:
         'Pesquisa para criar um dispositivo microfluídico aberto que reduz custo e tempo de diagnóstico em regiões com baixa infraestrutura laboratorial.',
@@ -220,8 +209,8 @@ async function createDemoProjects(tx: DemoPrisma) {
       complexityLevel: 'HIGH',
       status: 'ACTIVE',
       onChainProjectNonce: BigInt(101),
-      onChainProjectAddress: 'DemoProjectPda111111111111111111111111111',
-      escrowVaultAddress: 'DemoEscrowVault11111111111111111111111111',
+      onChainProjectAddress: 'SeedProjectPda111111111111111111111111111',
+      escrowVaultAddress: 'SeedEscrowVault11111111111111111111111111',
       onChainStatus: 'Active',
       creatorId: users[0].id,
       milestones: {
@@ -232,7 +221,7 @@ async function createDemoProjects(tx: DemoPrisma) {
 
   await tx.researchProject.create({
     data: {
-      id: DEMO_SECONDARY_PROJECT_ID,
+      id: SEED_SECONDARY_PROJECT_ID,
       title: 'Sensores abertos para ilhas de calor',
       description:
         'Rede experimental de sensores urbanos para mapear variações de temperatura e gerar alertas comunitários em tempo quase real.',
@@ -245,8 +234,8 @@ async function createDemoProjects(tx: DemoPrisma) {
       complexityLevel: 'MEDIUM',
       status: 'ACTIVE',
       onChainProjectNonce: BigInt(202),
-      onChainProjectAddress: 'DemoProjectPda222222222222222222222222222',
-      escrowVaultAddress: 'DemoEscrowVault22222222222222222222222222',
+      onChainProjectAddress: 'SeedProjectPda222222222222222222222222222',
+      escrowVaultAddress: 'SeedEscrowVault22222222222222222222222222',
       onChainStatus: 'Funding',
       creatorId: users[0].id,
       milestones: {
@@ -257,13 +246,13 @@ async function createDemoProjects(tx: DemoPrisma) {
 
   await tx.researchProject.create({
     data: {
-      id: DEMO_DONOR_FLOW_PROJECT_ID,
-      title: 'Demo rápida para doação e voto',
+      id: SEED_DONOR_FLOW_PROJECT_ID,
+      title: 'Fluxo rápido para doação e voto',
       description:
         'Projeto preparado para gravar o fluxo do financiador: conecte sua wallet, faça uma contribuição mockada e vote na milestone em revisão.',
       totalAmount: '25000.000000',
       aiSummary:
-        'Projeto de demonstração com escopo curto, baixo risco e milestone já pronta para revisão. Ideal para mostrar como um financiador entra, contribui e vota com apoio de análise da IA.',
+        'Projeto de exemplo com escopo curto, baixo risco e etapa pronta para revisão. Permite observar como um financiador entra, contribui e vota com apoio da análise da IA.',
       innovationScore: 74,
       feasibilityScore: 92,
       riskLevel: 'LOW',
@@ -284,7 +273,7 @@ async function createDemoProjects(tx: DemoPrisma) {
     await tx.contribution.create({
       data: {
         ...contribution,
-        projectId: DEMO_PRIMARY_PROJECT_ID,
+        projectId: SEED_PRIMARY_PROJECT_ID,
       },
     });
   }
@@ -293,11 +282,11 @@ async function createDemoProjects(tx: DemoPrisma) {
 }
 
 async function seedPendingReviewVotes(
-  tx: DemoPrisma,
+  tx: SeedPrisma,
   summary: { approvedVotes: number; rejectedVotes: number },
 ) {
   await tx.vote.deleteMany({
-    where: { milestoneId: DEMO_PENDING_REVIEW_MILESTONE_ID },
+    where: { milestoneId: SEED_PENDING_REVIEW_MILESTONE_ID },
   });
 
   const votes = [
@@ -320,20 +309,20 @@ async function seedPendingReviewVotes(
     await tx.vote.create({
       data: {
         ...vote,
-        milestoneId: DEMO_PENDING_REVIEW_MILESTONE_ID,
+        milestoneId: SEED_PENDING_REVIEW_MILESTONE_ID,
       },
     });
   }
 }
 
-export async function getDemoSummary(prisma: PrismaClient) {
+export async function getSeedSummary(prisma: PrismaClient) {
   const projects = await prisma.researchProject.findMany({
     where: {
       id: {
         in: [
-          DEMO_PRIMARY_PROJECT_ID,
-          DEMO_SECONDARY_PROJECT_ID,
-          DEMO_DONOR_FLOW_PROJECT_ID,
+          SEED_PRIMARY_PROJECT_ID,
+          SEED_SECONDARY_PROJECT_ID,
+          SEED_DONOR_FLOW_PROJECT_ID,
         ],
       },
     },
@@ -352,8 +341,8 @@ export async function getDemoSummary(prisma: PrismaClient) {
   });
 
   return {
-    primaryProjectId: DEMO_PRIMARY_PROJECT_ID,
-    pendingReviewMilestoneId: DEMO_PENDING_REVIEW_MILESTONE_ID,
+    primaryProjectId: SEED_PRIMARY_PROJECT_ID,
+    pendingReviewMilestoneId: SEED_PENDING_REVIEW_MILESTONE_ID,
     projects: projects.map((project) => ({
       id: project.id,
       title: project.title,
@@ -377,91 +366,12 @@ export async function getDemoSummary(prisma: PrismaClient) {
   };
 }
 
-export async function seedDemoData(prisma: PrismaClient) {
+export async function seedData(prisma: PrismaClient) {
   await prisma.$transaction(async (tx) => {
-    await clearDemoProjects(tx);
-    await upsertDemoUsers(tx);
-    await createDemoProjects(tx);
+    await clearSeedProjects(tx);
+    await upsertSeedUsers(tx);
+    await createSeedProjects(tx);
   });
 
-  return getDemoSummary(prisma);
-}
-
-export async function applyDemoScenario(
-  prisma: PrismaClient,
-  scenario: DemoScenario,
-) {
-  if (scenario === 'baseline') {
-    return seedDemoData(prisma);
-  }
-
-  await seedDemoData(prisma);
-
-  if (scenario === 'funding') {
-    await prisma.$transaction([
-      prisma.vote.deleteMany({
-        where: { milestoneId: DEMO_PENDING_REVIEW_MILESTONE_ID },
-      }),
-      prisma.milestone.update({
-        where: { id: DEMO_PENDING_REVIEW_MILESTONE_ID },
-        data: {
-          status: 'PENDING',
-          submittedReport: null,
-          submittedAt: null,
-          aiSummary: null,
-          consistencyScore: null,
-          completionEstimate: null,
-          aiRiskLevel: null,
-        },
-      }),
-    ]);
-  }
-
-  if (scenario === 'pending-review') {
-    await prisma.milestone.update({
-      where: { id: DEMO_PENDING_REVIEW_MILESTONE_ID },
-      data: { status: 'PENDING_REVIEW' },
-    });
-  }
-
-  if (scenario === 'approved') {
-    await prisma.$transaction(async (tx) => {
-      await tx.milestone.update({
-        where: { id: DEMO_PENDING_REVIEW_MILESTONE_ID },
-        data: { status: 'APPROVED' },
-      });
-      await seedPendingReviewVotes(tx, { approvedVotes: 3, rejectedVotes: 0 });
-    });
-  }
-
-  if (scenario === 'cancelled') {
-    await prisma.$transaction([
-      prisma.researchProject.update({
-        where: { id: DEMO_PRIMARY_PROJECT_ID },
-        data: { status: 'CANCELLED', onChainStatus: 'Cancelled' },
-      }),
-      prisma.milestone.update({
-        where: { id: DEMO_PENDING_REVIEW_MILESTONE_ID },
-        data: { status: 'REJECTED' },
-      }),
-    ]);
-  }
-
-  if (scenario === 'completed') {
-    await prisma.$transaction([
-      prisma.researchProject.update({
-        where: { id: DEMO_PRIMARY_PROJECT_ID },
-        data: { status: 'COMPLETED', onChainStatus: 'Completed' },
-      }),
-      prisma.milestone.update({
-        where: { id: DEMO_PENDING_REVIEW_MILESTONE_ID },
-        data: {
-          status: 'APPROVED',
-          releaseTransactionHash: 'demo-release-tx-001',
-        },
-      }),
-    ]);
-  }
-
-  return getDemoSummary(prisma);
+  return getSeedSummary(prisma);
 }

@@ -7,7 +7,6 @@ import { AuthModule } from './auth/auth.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { ContributionsModule } from './contributions/contributions.module';
 import { validateEnvironment } from './config/environment';
-import { DemoModule } from './demo/demo.module';
 import { MilestonesModule } from './milestones/milestones.module';
 import { ResearchModule } from './research/research.module';
 import { VotesModule } from './votes/votes.module';
@@ -24,7 +23,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
     MilestonesModule,
     ContributionsModule,
     VotesModule,
-    DemoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -31,7 +31,10 @@ export function Hero() {
             </LinkButton>
           </div>
         </div>
-        <ProductShot className="-rotate-1 transition-transform duration-700 hover:rotate-0 lg:translate-x-4" />
+        <ProductShot
+          showDisclaimer
+          className="-rotate-1 transition-transform duration-700 hover:rotate-0 lg:translate-x-4"
+        />
       </Container>
     </section>
   )

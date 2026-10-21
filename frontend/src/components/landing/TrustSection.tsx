@@ -39,9 +39,6 @@ export function TrustSection() {
             >
               {copy.explorerLabel}
             </ExternalLink>
-            <p className="mt-8 border-t border-slate-800 pt-5 text-xs text-orange-200">
-              {copy.disclaimer}
-            </p>
           </div>
         </div>
       </Container>

@@ -33,11 +33,6 @@ export function BentoCard({
             {description}
           </p>
         </div>
-        {size === 'lg' && (
-          <span className="rounded-full border border-slate-700 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">
-            Interface
-          </span>
-        )}
       </div>
       {children && <div className="mt-6">{children}</div>}
     </article>

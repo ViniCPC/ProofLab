@@ -12,7 +12,6 @@ interface DAOVotingCardProps {
   milestone: Milestone
   orderedMilestones: Milestone[]
   voteResult?: MilestoneVoteResult
-  eligibleVoters: number
   connected: boolean
   isContributor: boolean
   isCreator: boolean
@@ -39,7 +38,6 @@ export function DAOVotingCard({
   milestone,
   orderedMilestones,
   voteResult = emptyVoteResult,
-  eligibleVoters,
   connected,
   isContributor,
   isCreator,
@@ -66,7 +64,7 @@ export function DAOVotingCard({
         <MilestoneStatusBadge status={displayStatus} />
       </div>
 
-      <VoteProgress summary={voteResult.summary} eligibleVoters={eligibleVoters} />
+      <VoteProgress summary={voteResult.summary} />
 
       <VotingEligibilityNotice
         connected={connected}

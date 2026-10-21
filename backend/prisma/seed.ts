@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
-import { seedDemoData } from '../src/demo/demo.seed';
+import { seedData } from '../src/seed/seed-data';
 
 async function main() {
   const adapter = new PrismaPg({
@@ -10,9 +10,9 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   try {
-    const summary = await seedDemoData(prisma);
+    const summary = await seedData(prisma);
     console.log(
-      `Demo seed ready: ${summary.projects.length} projects, primary project ${summary.primaryProjectId}`,
+      `Seed ready: ${summary.projects.length} projects, primary project ${summary.primaryProjectId}`,
     );
   } finally {
     await prisma.$disconnect();

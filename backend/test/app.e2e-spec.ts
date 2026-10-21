@@ -52,9 +52,6 @@ describe('AppController (e2e)', () => {
     expect(document.paths['/research'].post.security).toEqual([
       { 'wallet-jwt': [] },
     ]);
-    expect(document.paths['/demo/seed'].post.security).toEqual([
-      { 'demo-admin': [] },
-    ]);
     expect(document.components.schemas.CreateResearchDto.required).toEqual(
       expect.arrayContaining(['title', 'description', 'totalAmount']),
     );
@@ -62,9 +59,6 @@ describe('AppController (e2e)', () => {
       document.components.schemas.CreateResearchDto.properties.milestones.items
         .$ref,
     ).toContain('CreateMilestoneDto');
-    expect(
-      document.components.schemas.ApplyDemoScenarioDto.properties.scenario.enum,
-    ).toContain('funding');
     expect(document.paths['/auth/nonce']).toBeDefined();
     expect(document.paths['/ai/analyze-research'].post.security).toEqual([
       { 'wallet-jwt': [] },

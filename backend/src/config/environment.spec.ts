@@ -24,7 +24,7 @@ describe('validateEnvironment', () => {
     ['JWT_SECRET', 'change-me'],
     ['FRONTEND_URL', 'http://localhost:5173'],
     ['FRONTEND_URL', 'https://prooflab.vercel.app/'],
-    ['FRONTEND_URL', 'https://prooflab.vercel.app/demo'],
+    ['FRONTEND_URL', 'https://prooflab.vercel.app/explore'],
   ])('rejects an invalid %s', (key, value) => {
     expect(() =>
       validateEnvironment({ ...productionConfig, [key]: value }),

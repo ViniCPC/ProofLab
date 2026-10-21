@@ -36,7 +36,7 @@ export class AiService {
       return {
         source: 'unavailable',
         summary:
-          'A análise automática está indisponível nesta demonstração. A pesquisa foi recebida, mas ainda não foi avaliada pela IA.',
+          'A análise automática está temporariamente indisponível. A pesquisa foi recebida, mas ainda não foi avaliada pela IA.',
         recommendation:
           'Revise a proposta, o orçamento e as milestones manualmente. Nenhuma nota ou recomendação de financiamento foi gerada.',
         innovationScore: null,
@@ -67,7 +67,7 @@ export class AiService {
       return {
         source: 'unavailable',
         summary:
-          'A análise automática está indisponível nesta demonstração. A entrega pode seguir para revisão manual da comunidade, sem avaliação da IA.',
+          'A análise automática está temporariamente indisponível. A entrega pode seguir para revisão manual da comunidade, sem avaliação da IA.',
         recommendation:
           'Compare o relatório e as evidências com a entrega prometida antes de votar. Não houve validação automática nem aprovação de liberação de fundos.',
         consistencyScore: null,
