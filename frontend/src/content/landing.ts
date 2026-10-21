@@ -1,12 +1,10 @@
 import {
-  AlertTriangle,
   ArrowDownToLine,
   Bot,
   CircleDollarSign,
   FlaskConical,
   Landmark,
   LockKeyhole,
-  Network,
   ShieldCheck,
   Sparkles,
   Vote,
@@ -22,9 +20,7 @@ const presentationLabel = presentationVideoUrl
 export const landingContent = {
   nav: {
     links: [
-      { href: '#problema', label: 'Por que ProofLab' },
       { href: '#como-funciona', label: 'Como funciona' },
-      { href: '#produto', label: 'Produto' },
       { href: '#recursos', label: 'Recursos' },
       { href: '#confianca', label: 'Confiança' },
       { href: '#faq', label: 'FAQ' },
@@ -42,12 +38,13 @@ export const landingContent = {
     secondaryCta: 'Criar pesquisa',
   },
   productShot: {
-    browserLabel: 'Exemplo de interface',
+    browserLabel: 'ProofLab · pesquisa',
     projectTitle: 'Sensoriamento de rios urbanos',
-    projectDescription: 'Pesquisa de exemplo · fluxo ilustrativo',
-    escrowLabel: 'Exemplo de fluxo',
-    statusLabel: 'Ilustrativo',
+    projectDescription: 'Pesquisa aplicada · financiamento por etapas',
+    escrowLabel: 'Fluxo do projeto',
+    statusLabel: 'Em andamento',
     stageLabel: 'Etapa atual',
+    disclaimer: 'Visual de exemplo',
     stages: [
       { label: 'Proposta', status: 'Concluída' },
       { label: 'Financiamento', status: 'Em análise' },
@@ -55,48 +52,78 @@ export const landingContent = {
       { label: 'Votação', status: 'A seguir' },
       { label: 'Liberação', status: 'A seguir' },
     ],
-  },
-  trustBadges: [
-    { label: 'Solana', icon: Network },
-    { label: 'USDC', icon: CircleDollarSign },
-    { label: 'Código aberto', icon: LockKeyhole },
-    { label: 'Transações verificáveis', icon: ShieldCheck },
-  ],
-  problemSolution: {
-    eyebrow: 'Por que ProofLab',
-    title: 'O financiamento científico não precisa ser uma caixa-preta.',
-    description:
-      'Transformamos confiança em regras que qualquer pessoa consegue acompanhar.',
-    items: [
+    doneLabel: 'Concluída',
+    nextLabel: 'A seguir',
+    scenes: [
       {
-        icon: AlertTriangle,
-        problem: 'Capital sem rastreabilidade',
-        solution: 'Escrow on-chain mantém o dinheiro condicionado ao plano aprovado.',
-        tone: 'orange' as const,
+        browserLabel: 'ProofLab · criar pesquisa',
+        statusLabel: 'Rascunho',
+        stageStatus: 'Proposta publicada',
+        eyebrow: 'Prévia da pesquisa',
+        title: 'Etapas e orçamento',
+        aiBadge: 'IA pronta para análise',
+        totalLabel: 'Meta total',
+        total: 12000,
+        allocatedLabel: 'Etapas alocadas',
+        milestones: [
+          { title: 'Coleta de campo', amount: 4000 },
+          { title: 'Análise laboratorial', amount: 5000 },
+          { title: 'Relatório público', amount: 3000 },
+        ],
       },
       {
-        icon: Bot,
-        problem: 'Resultados difíceis de entender',
-        solution:
-          'IA resume evidências e sinaliza riscos sem substituir o julgamento humano.',
-        tone: 'purple' as const,
+        browserLabel: 'ProofLab · financiar',
+        statusLabel: 'Funding',
+        stageStatus: 'Aportes abertos',
+        eyebrow: 'funding',
+        title: 'Progresso financeiro',
+        goalLabel: 'Meta total',
+        goal: 12000,
+        raisedLabel: 'Arrecadado',
+        raised: 8400,
+        progressLabel: 'Financiado',
+        lastWallet: '7xKpQa9mR2vT8nLwE4sJ6dHcY1bZ3fQa21',
+        lastFunder: 'Instituto Águas Vivas',
+        lastAmount: 250,
       },
       {
-        icon: Network,
-        problem: 'Decisões concentradas',
-        solution:
-          'Financiadores votam etapa por etapa, com peso proporcional ao apoio.',
-        tone: 'cyan' as const,
+        browserLabel: 'ProofLab · revisão',
+        statusLabel: 'Em revisão',
+        stageStatus: 'Evidências enviadas',
+        title: 'Revisão da IA',
+        milestone: 'Etapa 1 · Coleta de campo',
+        summary:
+          'Relatório com dataset de 14 pontos de coleta e laudo laboratorial anexado.',
+        completionLabel: 'Estimativa de conclusão',
+        completion: 90,
+        consistencyLabel: 'Score de consistência',
+        consistency: 82,
+        recommendationLabel: 'Recomendação',
+        recommendation: 'Evidências consistentes com o escopo da etapa.',
+      },
+      {
+        browserLabel: 'ProofLab · votação',
+        statusLabel: 'Em revisão',
+        stageStatus: 'Votação aberta',
+        title: 'Votação DAO',
+        milestone: 'Etapa 1: Coleta de campo',
+        badge: 'Em revisão',
+        votes: { total: 32, approved: 25, rejected: 7 },
+      },
+      {
+        browserLabel: 'ProofLab · liberação',
+        statusLabel: 'Aprovada',
+        stageStatus: 'Fundos liberados',
+        title: 'Liberar fundos',
+        milestone: 'Etapa 1',
+        amount: 4000,
+        badge: 'Aprovada',
+        toastTitle: 'Fundos liberados',
+        toastMessage: 'Release confirmado on-chain.',
+        signature:
+          '5Hq2xVb8NcLm3RtY7kPw9JdF4sGzA6eUoQ1iTnBhXyC2vM8rKjL5pWq7ZaE3fD9tWd',
       },
     ],
-  },
-  product: {
-    eyebrow: 'Produto na prática',
-    title: 'Veja a proposta como uma experiência, não como uma promessa.',
-    description:
-      'A interface abaixo é uma representação visual do fluxo. Explore pesquisas públicas para ver o restante da experiência no aplicativo.',
-    cta: 'Explorar pesquisa de exemplo',
-    note: 'Os dados exibidos neste painel são ilustrativos e não representam saldo real.',
   },
   howItWorks: {
     eyebrow: 'Fluxo verificável',
@@ -163,7 +190,7 @@ export const landingContent = {
         description:
           'Cada liberação depende do estado da entrega e do voto registrado.',
         tone: 'cyan' as const,
-        visual: 'progress' as const,
+        visual: 'icon' as const,
       },
       {
         icon: Sparkles,
@@ -202,14 +229,13 @@ export const landingContent = {
     eyebrow: 'Confiança verificável',
     title: 'O contrato é a regra do jogo.',
     description:
-      'A ProofLab roda em Solana Devnet e ainda não foi auditada. Use valores de teste e revise o código antes de confiar capital real.',
+      'A ProofLab registra regras e estados do projeto em Solana Devnet para consulta pública.',
     rules: [
       'O pesquisador não controla o escrow diretamente.',
       'A comunidade vota em cada etapa submetida.',
       'Uma etapa rejeitada abre o caminho para reembolso proporcional.',
     ],
     programLabel: 'Programa Solana',
-    disclaimer: 'Devnet · não auditado',
     explorerLabel: 'Ver no Explorer',
   },
   faq: {
@@ -246,20 +272,23 @@ export const landingContent = {
       {
         question: 'O que acontece se o pesquisador não entregar uma etapa?',
         answer:
-          'Se o prazo da etapa passar sem submissão, qualquer pessoa pode iniciar o cancelamento. Em seguida, os financiadores podem solicitar um reembolso proporcional ao saldo que ainda estiver disponível no escrow.',
+          'O pesquisador pode cancelar o projeto, e os financiadores recebem de volta, de forma proporcional, o saldo que ainda estiver no escrow.',
       },
       {
         question: 'Posso usar dinheiro real?',
         answer:
-          'Não use dinheiro real. O projeto está em Solana Devnet, uma rede de testes, e as contribuições da experiência não transferem dinheiro real. Mesmo assim, o reembolso depende do saldo disponível no escrow e a ProofLab ainda não foi auditada.',
+          'Não use dinheiro real. O projeto está em Solana Devnet, uma rede de testes, e as contribuições da experiência não transferem dinheiro real. O reembolso depende do saldo disponível no escrow.',
       },
     ],
   },
   cta: {
-    eyebrow: 'Conheça o projeto',
-    title: 'Veja como a ProofLab torna o financiamento verificável.',
-    description:
-      'A apresentação mostra o caminho completo: proposta, escrow, evidência, voto e liberação.',
+    eyebrow: presentationVideoUrl ? 'Conheça o projeto' : 'Código aberto',
+    title: presentationVideoUrl
+      ? 'Veja como a ProofLab torna o financiamento verificável.'
+      : 'Revise como o fluxo verificável foi implementado.',
+    description: presentationVideoUrl
+      ? 'A apresentação mostra o caminho completo: proposta, escrow, evidência, voto e liberação.'
+      : 'O repositório reúne frontend, API e programa Solana para consulta.',
     button: presentationLabel,
     videoUrl: presentationVideoUrl || githubUrl,
   },
@@ -288,7 +317,7 @@ export const landingContent = {
         ],
       },
     ],
-    disclaimer: 'Devnet · não auditado',
+    network: 'Rede: Solana Devnet',
     copyright: 'ProofLab. Feito para ciência aberta.',
   },
 } as const
