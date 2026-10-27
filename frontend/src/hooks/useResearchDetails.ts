@@ -8,7 +8,6 @@ import { transactionStore } from '@/store/transactionStore'
 import { useWalletStore } from '@/store/walletStore'
 import type { FundingStats, Milestone, ResearchProject } from '@/types'
 import { getApiErrorMessage } from '@/utils/errors'
-import { normalizeDecimal } from '@/utils/format'
 import { ensureWalletSession } from '@/utils/wallet'
 
 interface ResearchDetailsState {
@@ -16,7 +15,6 @@ interface ResearchDetailsState {
   funding: FundingStats | null
   milestones: Milestone[]
   loading: boolean
-  fundingLoading: boolean
   reviewLoading: boolean
   error: string | null
   actionMessage: string | null
@@ -33,7 +31,6 @@ const initialState: ResearchDetailsState = {
   funding: null,
   milestones: [],
   loading: true,
-  fundingLoading: false,
   reviewLoading: false,
   error: null,
   actionMessage: null,
@@ -87,52 +84,14 @@ export function useResearchDetails() {
         error: null,
       }))
     } catch (error) {
-      setState({
-        ...initialState,
-        loading: false,
-        error: getApiErrorMessage(error, fallbackError),
-      })
-    }
-  }, [id])
-
-  const contribute = useCallback(
-    async (amount: string) => {
-      if (!id) return
-
+      // Keep what is already on screen; a failed refetch shows as a page error.
       setState((currentState) => ({
         ...currentState,
-        fundingLoading: true,
-        actionMessage: null,
-        error: null,
+        loading: false,
+        error: getApiErrorMessage(error, fallbackError),
       }))
-
-      try {
-        await ensureWalletSession(
-          walletAddress,
-          signMessage,
-          'Conecte sua wallet para contribuir.',
-        )
-
-        const response = await contributionService.contribute(id, {
-          amount: normalizeDecimal(amount),
-        })
-
-        setState((currentState) => ({
-          ...currentState,
-          funding: response.funding,
-          fundingLoading: false,
-          actionMessage: 'Contribuição registrada com sucesso.',
-        }))
-      } catch (error) {
-        setState((currentState) => ({
-          ...currentState,
-          fundingLoading: false,
-          error: getApiErrorMessage(error, fallbackError),
-        }))
-      }
-    },
-    [id, walletAddress, signMessage],
-  )
+    }
+  }, [id])
 
   const submitMilestoneReview = useCallback(
     async (milestoneId: string, payload: SubmitMilestoneReviewPayload) => {
@@ -151,7 +110,7 @@ export function useResearchDetails() {
         await ensureWalletSession(
           walletAddress,
           signMessage,
-          'Conecte sua wallet para submeter a milestone.',
+          'Conecte sua wallet para enviar o relatório.',
         )
 
         const updatedMilestone = await milestoneService.submitReview(
@@ -167,7 +126,7 @@ export function useResearchDetails() {
           ),
           reviewLoading: false,
           actionMessage:
-            'Relatório enviado. A IA analisou a entrega e abriu revisão da comunidade.',
+            'Relatório enviado e analisado pela IA. Confirme na wallet para abrir a votação.',
         }))
       } catch (error) {
         setState((currentState) => ({
@@ -194,7 +153,6 @@ export function useResearchDetails() {
 
   return {
     ...state,
-    contribute,
     submitMilestoneReview,
     refetch: loadDetails,
   }

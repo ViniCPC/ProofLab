@@ -47,7 +47,7 @@ export function MilestoneFormItem({
             variant="ghost"
             size="sm"
             onClick={() => onRemove(index)}
-            aria-label="Remover milestone"
+            aria-label="Remover etapa"
           >
             <Trash2 className="size-4" />
           </Button>

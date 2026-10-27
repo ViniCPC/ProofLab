@@ -52,11 +52,12 @@ export function RefundPanel({
       </div>
 
       <p className="text-sm leading-6 text-slate-400">
-        Projeto cancelado. Doadores podem preparar a transação de refund.
+        Projeto cancelado. Quem contribuiu recebe de volta a sua parte proporcional do
+        saldo que ainda está no escrow.
       </p>
 
       <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
-        <p className="text-xs text-slate-500">Refund estimado</p>
+        <p className="text-xs text-slate-500">Sua contribuição</p>
         <p className="mt-1 font-mono text-lg text-slate-100">
           {formatUsdc(estimatedRefund)} USDC
         </p>
@@ -75,7 +76,7 @@ export function RefundPanel({
         onClick={() => void onClaimRefund()}
       >
         <RotateCcw className="size-3.5" />
-        Solicitar refund
+        Solicitar reembolso
       </Button>
 
       {!walletAddress && (

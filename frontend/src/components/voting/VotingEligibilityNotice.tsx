@@ -42,14 +42,14 @@ function getNotice({
   if (!isContributor) {
     return {
       icon: LockKeyhole,
-      text: 'Apenas doadores podem votar.',
+      text: 'Apenas quem contribuiu com o projeto pode votar.',
       className: 'border-purple-300/20 bg-purple-300/10 text-purple-100',
     }
   }
 
   return {
     icon: Info,
-    text: 'Votação indisponível para esta milestone.',
+    text: 'Votação indisponível para esta etapa.',
     className: 'border-slate-700 bg-slate-900/80 text-slate-400',
   }
 }

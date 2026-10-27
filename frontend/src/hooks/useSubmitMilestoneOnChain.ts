@@ -34,8 +34,8 @@ export function useSubmitMilestoneOnChain({
     const transactionId = transactionStore.addTransaction({
       type: 'submit-milestone',
       status: 'pending',
-      title: 'Submeter milestone on-chain',
-      message: 'Abrindo a milestone para votação on-chain.',
+      title: 'Abrir votação',
+      message: 'Abrindo a etapa para votação dos financiadores.',
       projectId,
       milestoneId,
     })
@@ -44,7 +44,7 @@ export function useSubmitMilestoneOnChain({
       await ensureWalletSession(
         walletAddress,
         signMessage,
-        'Conecte sua wallet para submeter a milestone on-chain.',
+        'Conecte sua wallet para abrir a votação.',
       )
 
       const votingDurationSeconds =
@@ -68,10 +68,10 @@ export function useSubmitMilestoneOnChain({
       )
 
       if (confirmation.status !== 'CONFIRMED') {
-        setMessage('Transação enviada. Aguardando confirmação final.')
+        setMessage('Transação enviada. Aguardando a confirmação da rede.')
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Aguardando confirmação final do backend.',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         return
@@ -79,16 +79,16 @@ export function useSubmitMilestoneOnChain({
 
       await onPrepared?.()
 
-      setMessage('Milestone preparada para votação on-chain.')
+      setMessage('Votação aberta. Os financiadores já podem votar nesta etapa.')
       transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Milestone preparada para votação on-chain.',
+        message: 'Votação aberta para os financiadores.',
         transaction: signature,
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
         caughtError,
-        'Não foi possível submeter a milestone on-chain.',
+        'Não foi possível abrir a votação.',
       )
 
       setError(errorMessage)

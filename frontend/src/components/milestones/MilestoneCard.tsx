@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react'
+import { Vote } from 'lucide-react'
 import { MilestoneAIReviewCard } from '@/components/ai/MilestoneAIReviewCard'
 import { Button } from '@/components/ui/Button'
 import type { Milestone } from '@/types'
@@ -10,6 +10,8 @@ import { SubmitMilestoneDialog } from './SubmitMilestoneDialog'
 interface MilestoneCardProps {
   milestone: Milestone
   orderedMilestones: Milestone[]
+  isCreator: boolean
+  projectActive: boolean
   loading?: boolean
   onSubmitReview: (
     milestoneId: string,
@@ -19,29 +21,27 @@ interface MilestoneCardProps {
       evidenceText: string
     },
   ) => Promise<void>
-  onPrepareOnChain: (milestoneId: string) => Promise<void>
+  onOpenVoting: (milestoneId: string) => Promise<void>
   onReanalyze?: (milestoneId: string) => void
   reanalyzingMilestoneId?: string | null
-}
-
-function canSubmitReview(status: ReturnType<typeof getMilestoneDisplayStatus>) {
-  return status === 'CURRENT' || status === 'REJECTED'
-}
-
-function canPrepareOnChain(milestone: Milestone) {
-  return milestone.status === 'APPROVED' && !milestone.onChainMilestoneAddress
 }
 
 export function MilestoneCard({
   milestone,
   orderedMilestones,
+  isCreator,
+  projectActive,
   loading,
   onSubmitReview,
-  onPrepareOnChain,
+  onOpenVoting,
   onReanalyze,
   reanalyzingMilestoneId,
 }: MilestoneCardProps) {
   const displayStatus = getMilestoneDisplayStatus(milestone, orderedMilestones)
+  const canSubmitReview =
+    isCreator && projectActive && (displayStatus === 'CURRENT' || displayStatus === 'REJECTED')
+  const awaitingFunding = isCreator && !projectActive && displayStatus === 'CURRENT'
+  const canOpenVoting = isCreator && projectActive && displayStatus === 'SUBMITTED'
 
   return (
     <article className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
@@ -70,24 +70,28 @@ export function MilestoneCard({
         />
 
         <div className="flex flex-wrap content-start gap-2">
-          {canSubmitReview(displayStatus) && (
+          {canSubmitReview && (
             <SubmitMilestoneDialog
               milestoneTitle={milestone.title}
               disabled={loading}
               onSubmit={(payload) => onSubmitReview(milestone.id, payload)}
             />
           )}
-          {canPrepareOnChain(milestone) && (
+          {canOpenVoting && (
             <Button
               type="button"
               size="sm"
-              variant="secondary"
               loading={loading}
-              onClick={() => void onPrepareOnChain(milestone.id)}
+              onClick={() => void onOpenVoting(milestone.id)}
             >
-              <ExternalLink className="size-3.5" />
-              Preparar on-chain
+              <Vote className="size-3.5" />
+              Abrir votação
             </Button>
+          )}
+          {awaitingFunding && (
+            <p className="text-xs leading-5 text-slate-500">
+              O relatório pode ser enviado quando o financiamento atingir 100%.
+            </p>
           )}
         </div>
       </div>

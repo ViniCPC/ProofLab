@@ -47,7 +47,7 @@ export function MilestoneAIReviewCard({
 
       <p className="text-sm leading-6 text-slate-500">
         {milestone.aiSummary ??
-          'A IA ainda não analisou uma entrega para esta milestone.'}
+          'A IA ainda não analisou uma entrega para esta etapa.'}
       </p>
 
       {(milestone.completionEstimate !== null ||

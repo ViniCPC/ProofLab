@@ -27,7 +27,9 @@ export default function ExploreResearchPage() {
 
       {loading && (
         <Card glow="cyan">
-          <p className="text-sm text-slate-400">Carregando pesquisas...</p>
+          <p className="text-sm text-slate-400">
+            Carregando pesquisas… O servidor pode levar alguns segundos para iniciar.
+          </p>
         </Card>
       )}
 
@@ -44,7 +46,7 @@ export default function ExploreResearchPage() {
         <Card glow="green">
           <p className="text-sm text-slate-400">
             Ainda não há pesquisas disponíveis. Seja o primeiro a criar uma proposta
-            científica para funding.
+            científica para financiamento.
           </p>
         </Card>
       )}

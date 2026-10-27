@@ -38,14 +38,14 @@ export function useCancelProjectOnChain({
     setTransactionStatus({
       status: 'pending',
       title: 'Cancelando projeto',
-      message: 'A transacao de cancelamento esta sendo montada.',
+      message: 'Montando a transação de cancelamento.',
     })
 
     const transactionId = transactionStore.addTransaction({
       type: 'cancel-project',
       status: 'pending',
-      title: 'Cancelamento on-chain',
-      message: 'Preparando transacao de cancelamento.',
+      title: 'Cancelamento do projeto',
+      message: 'Preparando a transação de cancelamento.',
       projectId,
     })
 
@@ -60,7 +60,7 @@ export function useCancelProjectOnChain({
       setTransactionStatus({
         status: 'pending',
         title: 'Aguardando assinatura',
-        message: 'Confirme a transacao na sua wallet.',
+        message: 'Confirme a transação na sua wallet.',
       })
 
       const signature = await signAndSendTransaction(
@@ -78,12 +78,12 @@ export function useCancelProjectOnChain({
         setTransactionStatus({
           status: 'pending',
           title: 'Cancelamento enviado',
-          message: 'Aguardando confirmacao final do backend.',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Aguardando confirmacao final do backend.',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         return
@@ -94,24 +94,24 @@ export function useCancelProjectOnChain({
       setTransactionStatus({
         status: 'confirmed',
         title: 'Projeto cancelado',
-        message: 'Cancelamento confirmado on-chain.',
+        message: 'O projeto foi cancelado e o reembolso está disponível.',
         transaction: signature,
       })
       transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Cancelamento confirmado on-chain.',
+        message: 'O projeto foi cancelado e o reembolso está disponível.',
         transaction: signature,
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
         caughtError,
-        'Nao foi possivel cancelar o projeto on-chain.',
+        'Não foi possível cancelar o projeto.',
       )
 
       setError(errorMessage)
       setTransactionStatus({
         status: 'failed',
-        title: 'Cancelamento falhou',
+        title: 'Cancelamento não concluído',
         message: errorMessage,
       })
       transactionStore.updateTransaction(transactionId, {

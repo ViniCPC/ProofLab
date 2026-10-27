@@ -32,15 +32,15 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
     setLoading(true)
     setTransactionStatus({
       status: 'pending',
-      title: 'Preparando refund',
-      message: 'A transacao de reembolso esta sendo montada.',
+      title: 'Preparando reembolso',
+      message: 'Montando a transação de reembolso.',
     })
 
     const transactionId = transactionStore.addTransaction({
       type: 'claim-refund',
       status: 'pending',
-      title: 'Solicitacao de refund',
-      message: 'Preparando transacao on-chain de reembolso.',
+      title: 'Solicitação de reembolso',
+      message: 'Preparando a transação de reembolso.',
       projectId,
     })
 
@@ -48,14 +48,14 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
       await ensureWalletSession(
         walletAddress,
         signMessage,
-        'Conecte sua wallet para solicitar refund.',
+        'Conecte sua wallet para solicitar o reembolso.',
       )
 
       const response = await blockchainService.claimRefund(projectId)
       setTransactionStatus({
         status: 'pending',
         title: 'Aguardando assinatura',
-        message: 'Confirme a transacao na sua wallet.',
+        message: 'Confirme a transação na sua wallet.',
       })
 
       const signature = await signAndSendTransaction(
@@ -72,13 +72,13 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
       if (confirmation.status !== 'CONFIRMED') {
         setTransactionStatus({
           status: 'pending',
-          title: 'Refund enviado',
-          message: 'Aguardando confirmacao final do backend.',
+          title: 'Reembolso enviado',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Aguardando confirmacao final do backend.',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         return
@@ -88,23 +88,23 @@ export function useClaimRefund({ projectId, onClaimed }: UseClaimRefundOptions) 
 
       setTransactionStatus({
         status: 'confirmed',
-        title: 'Refund confirmado',
-        message: 'Reembolso confirmado on-chain.',
+        title: 'Reembolso confirmado',
+        message: 'O valor voltou para a sua wallet.',
         transaction: signature,
       })
       transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Reembolso confirmado on-chain.',
+        message: 'O valor voltou para a sua wallet.',
         transaction: signature,
       })
     } catch (error) {
       const errorMessage = getApiErrorMessage(
         error,
-        'Nao foi possivel preparar o reembolso.',
+        'Não foi possível solicitar o reembolso.',
       )
       setTransactionStatus({
         status: 'failed',
-        title: 'Refund falhou',
+        title: 'Reembolso não concluído',
         message: errorMessage,
       })
       transactionStore.updateTransaction(transactionId, {

@@ -46,7 +46,7 @@ export function MilestoneFormList({ milestones, onChange }: MilestoneFormListPro
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100">Milestones</h2>
+          <h2 className="text-lg font-semibold text-slate-100">Etapas</h2>
           <p className="text-sm text-slate-500">
             Divida a pesquisa em entregas verificáveis.
           </p>

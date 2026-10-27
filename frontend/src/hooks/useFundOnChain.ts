@@ -34,15 +34,15 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
     setError(null)
     setTransactionStatus({
       status: 'pending',
-      title: 'Preparando funding on-chain',
-      message: 'A transação de contribuição está sendo montada.',
+      title: 'Preparando contribuição',
+      message: 'Montando a transação de contribuição.',
     })
 
     const transactionId = transactionStore.addTransaction({
       type: 'fund-project',
       status: 'pending',
-      title: 'Funding on-chain',
-      message: 'Preparando transação de contribuição.',
+      title: 'Contribuição',
+      message: 'Preparando a transação de contribuição.',
       projectId,
     })
 
@@ -50,7 +50,7 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
       await ensureWalletSession(
         walletAddress,
         signMessage,
-        'Conecte sua wallet para contribuir on-chain.',
+        'Conecte sua wallet para contribuir.',
       )
 
       const response = await blockchainService.fundProjectOnChain(
@@ -78,13 +78,13 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
       if (confirmation.status !== 'CONFIRMED') {
         setTransactionStatus({
           status: 'pending',
-          title: 'Funding enviado',
-          message: 'Aguardando confirmação final do backend.',
+          title: 'Contribuição enviada',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Aguardando confirmação final do backend.',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         return
@@ -94,25 +94,25 @@ export function useFundOnChain({ projectId, onFunded }: UseFundOnChainOptions) {
 
       setTransactionStatus({
         status: 'confirmed',
-        title: 'Funding confirmado',
-        message: 'Transação on-chain confirmada.',
+        title: 'Contribuição confirmada',
+        message: 'O valor está no escrow do projeto.',
         transaction: signature,
       })
       transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Transação on-chain confirmada.',
+        message: 'O valor está no escrow do projeto.',
         transaction: signature,
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
         caughtError,
-        'Não foi possível preparar o funding on-chain.',
+        'Não foi possível concluir a contribuição.',
       )
 
       setError(errorMessage)
       setTransactionStatus({
         status: 'failed',
-        title: 'Funding on-chain falhou',
+        title: 'Contribuição não concluída',
         message: errorMessage,
       })
       transactionStore.updateTransaction(transactionId, {

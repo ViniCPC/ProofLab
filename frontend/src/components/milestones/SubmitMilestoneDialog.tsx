@@ -37,7 +37,7 @@ export function SubmitMilestoneDialog({
       setEvidenceText('')
       setOpen(false)
     } catch {
-      setError('Não foi possível enviar o relatório da milestone.')
+      setError('Não foi possível enviar o relatório da etapa.')
     } finally {
       setLoading(false)
     }
@@ -56,7 +56,7 @@ export function SubmitMilestoneDialog({
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
               <Dialog.Title className="text-lg font-semibold text-slate-100">
-                Enviar relatório da milestone
+                Enviar relatório da etapa
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-sm text-slate-500">
                 {milestoneTitle}

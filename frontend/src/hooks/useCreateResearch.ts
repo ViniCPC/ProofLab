@@ -48,7 +48,7 @@ function validateResearch(values: ResearchFormValues) {
   )
 
   if (invalidMilestone) {
-    return 'Todas as milestones precisam ter valor maior que zero com até 6 casas decimais.'
+    return 'Todas as etapas precisam ter valor maior que zero com até 6 casas decimais.'
   }
 
   const totalAmount = toBaseUnits(values.totalAmount)
@@ -61,7 +61,7 @@ function validateResearch(values: ResearchFormValues) {
     const difference = totalAmount - milestoneTotal
     return difference > 0n
       ? `Faltam ${formatBaseUnits(difference)} USDC para fechar o total.`
-      : `As milestones excedem o total em ${formatBaseUnits(-difference)} USDC.`
+      : `As etapas excedem o total em ${formatBaseUnits(-difference)} USDC.`
   }
 
   return null

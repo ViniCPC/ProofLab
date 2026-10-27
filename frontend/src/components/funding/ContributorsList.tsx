@@ -10,9 +10,9 @@ export function ContributorsList({ contributors }: ContributorsListProps) {
   return (
     <Card glow="none" className="space-y-4">
       <div>
-        <p className="font-mono text-xs uppercase text-green-300">doadores</p>
+        <p className="font-mono text-xs uppercase text-green-300">financiadores</p>
         <h2 className="mt-2 text-lg font-semibold text-slate-100">
-          Investidores do projeto
+          Quem financiou
         </h2>
       </div>
 

@@ -27,11 +27,9 @@ export default function ResearchDetailsPage() {
     funding,
     milestones,
     loading,
-    fundingLoading,
     reviewLoading,
     error,
     actionMessage,
-    contribute,
     submitMilestoneReview,
     refetch,
   } = useResearchDetails()
@@ -106,15 +104,29 @@ export default function ResearchDetailsPage() {
     cancelProjectOnChainError ??
     reanalyzeResearchError ??
     reanalyzeMilestoneError
+  // Most recent step first: opening the vote follows the report submission.
   const pageActionMessage =
-    actionMessage ?? createProjectOnChainMessage ?? submitMilestoneOnChainMessage
+    submitMilestoneOnChainMessage ?? actionMessage ?? createProjectOnChainMessage
   const onChainLoading =
     createProjectOnChainLoading || Boolean(submitMilestoneOnChainLoadingId)
 
-  if (loading) {
+  // Sending the report and opening the vote on-chain are one step for the
+  // researcher. If the wallet prompt is dismissed, "Abrir votação" stays available.
+  async function submitReviewAndOpenVoting(
+    milestoneId: string,
+    payload: Parameters<typeof submitMilestoneReview>[1],
+  ) {
+    await submitMilestoneReview(milestoneId, payload)
+    void submitMilestoneOnChain(milestoneId)
+  }
+
+  // Only the first load replaces the page; refetches after a transaction keep it visible.
+  if (loading && !project) {
     return (
       <Card glow="cyan">
-        <p className="text-sm text-slate-400">Carregando pesquisa...</p>
+        <p className="text-sm text-slate-400">
+          Carregando pesquisa… O servidor pode levar alguns segundos para iniciar.
+        </p>
       </Card>
     )
   }
@@ -159,9 +171,11 @@ export default function ResearchDetailsPage() {
           />
           <MilestoneTimeline
             milestones={milestones}
+            isCreator={isCreator}
+            projectActive={project.onChainStatus === 'Active'}
             loading={reviewLoading || onChainLoading}
-            onSubmitReview={submitMilestoneReview}
-            onPrepareOnChain={submitMilestoneOnChain}
+            onSubmitReview={submitReviewAndOpenVoting}
+            onOpenVoting={submitMilestoneOnChain}
             onReanalyze={
               isCreator
                 ? (milestoneId) => void reanalyzeMilestone(milestoneId)
@@ -178,19 +192,27 @@ export default function ResearchDetailsPage() {
         </div>
 
         <aside className="space-y-6">
+          {isCreator && (
+            <OnChainActionsPanel
+              project={project}
+              loading={onChainLoading}
+              cancelLoading={cancelProjectOnChainLoading}
+              onCreateProject={createOnChain}
+              onCancelProject={cancelProjectOnChain}
+            />
+          )}
+          {isCreator && (
+            <ReleaseFundsPanel
+              milestones={milestones}
+              loadingMilestoneId={releaseLoadingMilestoneId}
+              onRelease={releaseFunds}
+            />
+          )}
           <FundingPanel
+            project={project}
             funding={funding}
-            totalAmount={project.totalAmount}
-            loading={fundingLoading}
-            onChainLoading={fundOnChainLoading}
-            onFund={contribute}
-            onFundOnChain={fundOnChain}
-          />
-          <ContributorsList contributors={funding?.investors ?? []} />
-          <ReleaseFundsPanel
-            milestones={milestones}
-            loadingMilestoneId={releaseLoadingMilestoneId}
-            onRelease={releaseFunds}
+            loading={fundOnChainLoading}
+            onFund={fundOnChain}
           />
           <RefundPanel
             project={project}
@@ -198,12 +220,7 @@ export default function ResearchDetailsPage() {
             loading={refundLoading}
             onClaimRefund={claimRefund}
           />
-          <OnChainActionsPanel
-            loading={onChainLoading}
-            cancelLoading={cancelProjectOnChainLoading}
-            onCreateProject={createOnChain}
-            onCancelProject={cancelProjectOnChain}
-          />
+          <ContributorsList contributors={funding?.investors ?? []} />
         </aside>
       </div>
 

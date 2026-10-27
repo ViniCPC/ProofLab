@@ -24,8 +24,11 @@ Pré-requisitos: Node.js 20+, npm, Docker e Docker Compose. Para compilar ou tes
 ```bash
 git clone https://github.com/ViniCPC/ProofLab.git
 cd ProofLab
+cp .env.example .env
 docker compose up -d
 ```
+
+O `.env` da raiz define as credenciais do Postgres usadas pelo Docker. Elas já batem com o `DATABASE_URL` de `backend/.env.example`.
 
 Configure e inicie a API:
 
@@ -34,9 +37,11 @@ cd backend
 npm ci
 cp .env.example .env
 npx prisma migrate deploy
-npm run seed
+npm run seed   # opcional: dados de exemplo apenas para desenvolvimento local
 npm run start:dev
 ```
+
+Para gerar análises com IA, preencha `OPENAI_API_KEY` em `backend/.env`. Sem a chave, os projetos são salvos sem a análise.
 
 Em outro terminal, inicie o frontend:
 
@@ -48,3 +53,5 @@ npm run dev
 ```
 
 O frontend abre em `http://localhost:5173` e a API em `http://localhost:3000`.
+
+`VITE_VOTING_DURATION_SECONDS` define quanto tempo cada votação fica aberta (padrão: 3 dias). Para uma demonstração completa em poucos minutos, use um valor curto, como `180`.

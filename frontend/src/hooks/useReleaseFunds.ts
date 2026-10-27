@@ -33,15 +33,15 @@ export function useReleaseFunds({ projectId, onReleased }: UseReleaseFundsOption
     setLoadingMilestoneId(milestoneId)
     setTransactionStatus({
       status: 'pending',
-      title: 'Preparando liberacao',
-      message: 'A transacao de release esta sendo montada.',
+      title: 'Preparando liberação',
+      message: 'Montando a transação de liberação.',
     })
 
     const transactionId = transactionStore.addTransaction({
       type: 'release-funds',
       status: 'pending',
-      title: 'Liberacao de fundos',
-      message: 'Preparando transacao on-chain de release.',
+      title: 'Liberação de fundos',
+      message: 'Preparando a transação de liberação.',
       projectId,
       milestoneId,
     })
@@ -57,7 +57,7 @@ export function useReleaseFunds({ projectId, onReleased }: UseReleaseFundsOption
       setTransactionStatus({
         status: 'pending',
         title: 'Aguardando assinatura',
-        message: 'Confirme a transacao na sua wallet.',
+        message: 'Confirme a transação na sua wallet.',
       })
 
       const signature = await signAndSendTransaction(
@@ -74,13 +74,13 @@ export function useReleaseFunds({ projectId, onReleased }: UseReleaseFundsOption
       if (confirmation.status !== 'CONFIRMED') {
         setTransactionStatus({
           status: 'pending',
-          title: 'Release enviado',
-          message: 'Aguardando confirmacao final do backend.',
+          title: 'Liberação enviada',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Aguardando confirmacao final do backend.',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         return
@@ -91,22 +91,22 @@ export function useReleaseFunds({ projectId, onReleased }: UseReleaseFundsOption
       setTransactionStatus({
         status: 'confirmed',
         title: 'Fundos liberados',
-        message: 'Release confirmado on-chain.',
+        message: 'O valor da etapa foi transferido para a sua wallet.',
         transaction: signature,
       })
       transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Release confirmado on-chain.',
+        message: 'O valor da etapa foi transferido para a sua wallet.',
         transaction: signature,
       })
     } catch (error) {
       const errorMessage = getApiErrorMessage(
         error,
-        'Nao foi possivel preparar a liberacao dos fundos.',
+        'Não foi possível liberar os fundos.',
       )
       setTransactionStatus({
         status: 'failed',
-        title: 'Release falhou',
+        title: 'Liberação não concluída',
         message: errorMessage,
       })
       transactionStore.updateTransaction(transactionId, {

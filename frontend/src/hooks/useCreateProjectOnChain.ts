@@ -50,7 +50,7 @@ export function useCreateProjectOnChain({
     for (const milestone of milestones) {
       if (milestone.onChainMilestoneAddress) continue
 
-      setMessage(`Confirme a criação da milestone ${milestone.order} na wallet.`)
+      setMessage(`Confirme o registro da etapa ${milestone.order} na wallet.`)
       const response = await blockchainService.createMilestoneOnChain(
         projectId!,
         milestone.id,
@@ -58,10 +58,10 @@ export function useCreateProjectOnChain({
       const result = await confirmPrepared(response.transaction, response.requestId)
 
       if (result.confirmation.status !== 'CONFIRMED') {
-        setMessage('Transação enviada. Aguardando confirmação da milestone.')
+        setMessage('Transação enviada. Aguardando a confirmação da etapa.')
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: `Aguardando confirmação da milestone ${milestone.order}.`,
+          message: `Aguardando a confirmação da etapa ${milestone.order}.`,
           transaction: result.signature,
         })
         return false
@@ -69,7 +69,7 @@ export function useCreateProjectOnChain({
 
       transactionStore.updateTransaction(transactionId, {
         status: 'pending',
-        message: `Milestone ${milestone.order} criada on-chain.`,
+        message: `Etapa ${milestone.order} registrada na Solana.`,
         transaction: result.signature,
       })
     }
@@ -88,8 +88,8 @@ export function useCreateProjectOnChain({
     const transactionId = transactionStore.addTransaction({
       type: 'create-project',
       status: 'pending',
-      title: 'Criar projeto on-chain',
-      message: 'Preparando projeto e milestones na Solana.',
+      title: 'Registrar projeto',
+      message: 'Preparando o registro do projeto e das etapas na Solana.',
       projectId,
     })
 
@@ -97,7 +97,7 @@ export function useCreateProjectOnChain({
       await ensureWalletSession(
         walletAddress,
         signMessage,
-        'Conecte sua wallet para criar o projeto on-chain.',
+        'Conecte sua wallet para registrar o projeto.',
       )
 
       let projectRegistered = Boolean(onChainProjectAddress)
@@ -111,7 +111,7 @@ export function useCreateProjectOnChain({
           setMessage('Transação enviada. Aguardando confirmação do projeto.')
           transactionStore.updateTransaction(transactionId, {
             status: 'pending',
-            message: 'Aguardando confirmação final do backend.',
+            message: 'Aguardando a confirmação da rede.',
             transaction: result.signature,
           })
           return
@@ -120,13 +120,13 @@ export function useCreateProjectOnChain({
         projectRegistered = true
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Projeto registrado. Criando milestones on-chain.',
+          message: 'Projeto registrado. Registrando as etapas.',
           transaction: result.signature,
         })
       }
 
       if (!projectRegistered || milestones.length === 0) {
-        throw new Error('O projeto precisa ter milestones para receber funding.')
+        throw new Error('O projeto precisa ter etapas para receber contribuições.')
       }
 
       const milestonesCreated = await createMilestones(transactionId)
@@ -134,15 +134,15 @@ export function useCreateProjectOnChain({
 
       await onPrepared?.()
 
-      setMessage('Projeto e milestones registrados on-chain.')
+      setMessage('Projeto e etapas registrados na Solana. As contribuições estão abertas.')
       transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Projeto e milestones registrados on-chain.',
+        message: 'Projeto e etapas registrados na Solana.',
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
         caughtError,
-        'Não foi possível preparar o projeto on-chain.',
+        'Não foi possível registrar o projeto.',
       )
 
       setError(errorMessage)

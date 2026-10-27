@@ -38,15 +38,15 @@ export function useFinalizeVoteOnChain({
     setError(null)
     setTransactionStatus({
       status: 'pending',
-      title: 'Finalizando votacao',
-      message: 'A transacao de fechamento da votacao esta sendo montada.',
+      title: 'Encerrando votação',
+      message: 'Montando a transação que encerra a votação.',
     })
 
     const transactionId = transactionStore.addTransaction({
       type: 'finalize-vote',
       status: 'pending',
-      title: 'Finalizacao de votacao',
-      message: 'Preparando transacao on-chain de finalize.',
+      title: 'Encerramento da votação',
+      message: 'Preparando a transação que encerra a votação.',
       projectId,
       milestoneId,
     })
@@ -55,7 +55,7 @@ export function useFinalizeVoteOnChain({
       await ensureWalletSession(
         walletAddress,
         signMessage,
-        'Conecte sua wallet para finalizar a votacao.',
+        'Conecte sua wallet para encerrar a votação.',
       )
 
       const response = await blockchainService.finalizeMilestoneVote(
@@ -65,7 +65,7 @@ export function useFinalizeVoteOnChain({
       setTransactionStatus({
         status: 'pending',
         title: 'Aguardando assinatura',
-        message: 'Confirme a transacao na sua wallet.',
+        message: 'Confirme a transação na sua wallet.',
       })
 
       const signature = await signAndSendTransaction(
@@ -82,13 +82,13 @@ export function useFinalizeVoteOnChain({
       if (confirmation.status !== 'CONFIRMED') {
         setTransactionStatus({
           status: 'pending',
-          title: 'Finalizacao enviada',
-          message: 'Aguardando confirmacao final do backend.',
+          title: 'Encerramento enviado',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         transactionStore.updateTransaction(transactionId, {
           status: 'pending',
-          message: 'Aguardando confirmacao final do backend.',
+          message: 'Aguardando a confirmação da rede.',
           transaction: signature,
         })
         return
@@ -98,25 +98,25 @@ export function useFinalizeVoteOnChain({
 
       setTransactionStatus({
         status: 'confirmed',
-        title: 'Votacao finalizada',
-        message: 'Finalizacao confirmada on-chain.',
+        title: 'Votação encerrada',
+        message: 'O contrato registrou o resultado da votação.',
         transaction: signature,
       })
       transactionStore.updateTransaction(transactionId, {
         status: 'confirmed',
-        message: 'Finalizacao confirmada on-chain.',
+        message: 'O contrato registrou o resultado da votação.',
         transaction: signature,
       })
     } catch (caughtError) {
       const errorMessage = getApiErrorMessage(
         caughtError,
-        'Nao foi possivel finalizar a votacao on-chain.',
+        'Não foi possível encerrar a votação.',
       )
 
       setError(errorMessage)
       setTransactionStatus({
         status: 'failed',
-        title: 'Finalizacao falhou',
+        title: 'Encerramento não concluído',
         message: errorMessage,
       })
       transactionStore.updateTransaction(transactionId, {

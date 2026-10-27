@@ -41,12 +41,12 @@ export function CreateResearchPreview({
   return (
     <Card glow="cyan" className="sticky top-24 space-y-5">
       <div>
-        <p className="font-mono text-xs uppercase text-cyan-300">Previa da pesquisa</p>
+        <p className="font-mono text-xs uppercase text-cyan-300">Prévia da pesquisa</p>
         <h2 className="mt-2 text-lg font-semibold text-slate-100">
-          {title || 'Pesquisa sem titulo'}
+          {title || 'Pesquisa sem título'}
         </h2>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Badge status="AI" label="IA pronta para analise" />
+          <Badge status="AI" label="IA pronta para análise" />
           <Badge status="DRAFT" label={category || 'Sem categoria'} />
         </div>
       </div>
@@ -93,7 +93,7 @@ export function CreateResearchPreview({
         <p className="rounded-lg border border-purple-300/25 bg-purple-300/10 p-3 text-xs leading-5 text-purple-100">
           {difference > 0
             ? `Faltam ${formatAmount(difference)} USDC para fechar o total.`
-            : `As milestones excedem o total em ${formatAmount(
+            : `As etapas excedem o total em ${formatAmount(
                 Math.abs(difference),
               )} USDC.`}
         </p>

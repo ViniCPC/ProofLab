@@ -4,6 +4,8 @@ import { MilestoneCard } from './MilestoneCard'
 
 interface MilestoneTimelineProps {
   milestones: Milestone[]
+  isCreator: boolean
+  projectActive: boolean
   loading?: boolean
   onSubmitReview: (
     milestoneId: string,
@@ -13,7 +15,7 @@ interface MilestoneTimelineProps {
       evidenceText: string
     },
   ) => Promise<void>
-  onPrepareOnChain: (milestoneId: string) => Promise<void>
+  onOpenVoting: (milestoneId: string) => Promise<void>
   onReanalyze?: (milestoneId: string) => void
   reanalyzingMilestoneId?: string | null
 }
@@ -24,9 +26,11 @@ function sortMilestones(milestones: Milestone[]) {
 
 export function MilestoneTimeline({
   milestones,
+  isCreator,
+  projectActive,
   loading,
   onSubmitReview,
-  onPrepareOnChain,
+  onOpenVoting,
   onReanalyze,
   reanalyzingMilestoneId,
 }: MilestoneTimelineProps) {
@@ -35,15 +39,15 @@ export function MilestoneTimeline({
   return (
     <Card glow="cyan" className="space-y-5">
       <div>
-        <p className="font-mono text-xs uppercase text-cyan-300">timeline</p>
+        <p className="font-mono text-xs uppercase text-cyan-300">etapas</p>
         <h2 className="mt-2 text-lg font-semibold text-slate-100">
-          Andamento das milestones
+          Andamento das etapas
         </h2>
       </div>
 
       {orderedMilestones.length === 0 ? (
         <p className="text-sm text-slate-500">
-          Nenhuma milestone cadastrada para esta pesquisa.
+          Nenhuma etapa cadastrada para esta pesquisa.
         </p>
       ) : (
         <div className="space-y-4">
@@ -52,9 +56,11 @@ export function MilestoneTimeline({
               key={milestone.id}
               milestone={milestone}
               orderedMilestones={orderedMilestones}
+              isCreator={isCreator}
+              projectActive={projectActive}
               loading={loading}
               onSubmitReview={onSubmitReview}
-              onPrepareOnChain={onPrepareOnChain}
+              onOpenVoting={onOpenVoting}
               onReanalyze={onReanalyze}
               reanalyzingMilestoneId={reanalyzingMilestoneId}
             />

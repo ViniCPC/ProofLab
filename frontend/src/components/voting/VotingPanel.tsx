@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Vote } from 'lucide-react'
 import { TransactionStatusToast } from '@/components/blockchain/TransactionStatusToast'
+import { isVotingOpen } from '@/components/milestones/milestoneStatus'
 import { Card } from '@/components/ui/Card'
 import { useFinalizeVoteOnChain } from '@/hooks/useFinalizeVoteOnChain'
 import { useVoteMilestone } from '@/hooks/useVoteMilestone'
@@ -13,10 +14,6 @@ interface VotingPanelProps {
   milestones: Milestone[]
   funding: FundingStats | null
   onFinalized?: () => Promise<void> | void
-}
-
-function isVotingMilestone(milestone: Milestone) {
-  return milestone.status === 'PENDING_REVIEW' || milestone.status === 'SUBMITTED'
 }
 
 function getWalletIsContributor(
@@ -46,7 +43,7 @@ export function VotingPanel({
   const { walletAddress, connectionStatus } = useWalletStore()
   const connected = connectionStatus === 'connected'
   const votingMilestones = useMemo(
-    () => milestones.filter(isVotingMilestone),
+    () => milestones.filter(isVotingOpen),
     [milestones],
   )
   const orderedMilestones = useMemo(
@@ -86,7 +83,7 @@ export function VotingPanel({
           <h2 className="text-lg font-semibold">Votação DAO</h2>
         </div>
         <p className="text-sm leading-6 text-slate-400">
-          Nenhuma milestone está em votação no momento.
+          Nenhuma etapa está em votação no momento.
         </p>
       </Card>
     )

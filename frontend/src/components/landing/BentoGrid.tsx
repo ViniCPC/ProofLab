@@ -25,7 +25,16 @@ export function BentoGrid() {
             title={vote.title}
             description={vote.description}
           >
-            <VoteProgress summary={{ approved: 3, rejected: 1, total: 4 }} />
+            <VoteProgress
+              summary={{
+                approved: 3,
+                rejected: 1,
+                total: 4,
+                approvedWeight: '750',
+                rejectedWeight: '250',
+                votingEndsAt: null,
+              }}
+            />
           </BentoCard>
           <BentoCard
             size="lg"

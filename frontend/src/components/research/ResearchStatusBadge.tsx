@@ -6,7 +6,7 @@ interface ResearchStatusBadgeProps {
 }
 
 const statusLabels: Record<ResearchDisplayStatus, string> = {
-  FUNDING: 'Funding',
+  FUNDING: 'Captando',
   ACTIVE: 'Ativo',
   IN_REVIEW: 'Em revisão',
   COMPLETED: 'Concluído',

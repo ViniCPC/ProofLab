@@ -73,9 +73,9 @@ export const landingContent = {
       },
       {
         browserLabel: 'ProofLab · financiar',
-        statusLabel: 'Funding',
+        statusLabel: 'Captando',
         stageStatus: 'Aportes abertos',
-        eyebrow: 'funding',
+        eyebrow: 'financiamento',
         title: 'Progresso financeiro',
         goalLabel: 'Meta total',
         goal: 12000,
@@ -108,7 +108,14 @@ export const landingContent = {
         title: 'Votação DAO',
         milestone: 'Etapa 1: Coleta de campo',
         badge: 'Em revisão',
-        votes: { total: 32, approved: 25, rejected: 7 },
+        votes: {
+          total: 32,
+          approved: 25,
+          rejected: 7,
+          approvedWeight: '6800',
+          rejectedWeight: '1600',
+          votingEndsAt: null,
+        },
       },
       {
         browserLabel: 'ProofLab · liberação',
@@ -119,7 +126,7 @@ export const landingContent = {
         amount: 4000,
         badge: 'Aprovada',
         toastTitle: 'Fundos liberados',
-        toastMessage: 'Release confirmado on-chain.',
+        toastMessage: 'O valor da etapa foi transferido para a sua wallet.',
         signature:
           '5Hq2xVb8NcLm3RtY7kPw9JdF4sGzA6eUoQ1iTnBhXyC2vM8rKjL5pWq7ZaE3fD9tWd',
       },

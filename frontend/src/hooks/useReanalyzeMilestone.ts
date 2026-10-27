@@ -25,7 +25,7 @@ export function useReanalyzeMilestone({
       await onReanalyzed?.()
     } catch (caughtError) {
       setError(
-        getApiErrorMessage(caughtError, 'Não foi possível reanalisar a milestone.'),
+        getApiErrorMessage(caughtError, 'Não foi possível reanalisar a etapa.'),
       )
     } finally {
       setLoadingMilestoneId(null)

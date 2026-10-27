@@ -19,12 +19,3 @@ export interface FundingStats {
   investors: Contribution[]
   meta: PaginationMeta
 }
-
-export interface ContributePayload {
-  amount: string
-}
-
-export interface ContributionResponse {
-  funding: FundingStats
-  contribution: Contribution
-}

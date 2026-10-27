@@ -1,6 +1,10 @@
-import { Vote } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Clock, Vote } from 'lucide-react'
 import { MilestoneStatusBadge } from '@/components/milestones/MilestoneStatusBadge'
-import { getMilestoneDisplayStatus } from '@/components/milestones/milestoneStatus'
+import {
+  getMilestoneDisplayStatus,
+  isVotingOpen,
+} from '@/components/milestones/milestoneStatus'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import type { Milestone, MilestoneVoteResult } from '@/types'
@@ -27,11 +31,34 @@ const emptyVoteResult: MilestoneVoteResult = {
     total: 0,
     approved: 0,
     rejected: 0,
+    approvedWeight: '0',
+    rejectedWeight: '0',
+    votingEndsAt: null,
   },
 }
 
-function isVotingOpen(milestone: Milestone) {
-  return milestone.status === 'PENDING_REVIEW' || milestone.status === 'SUBMITTED'
+function useNow(enabled: boolean) {
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (!enabled) return
+    const interval = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(interval)
+  }, [enabled])
+
+  return now
+}
+
+function formatRemaining(milliseconds: number) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000))
+  const days = Math.floor(totalSeconds / 86_400)
+  const hours = Math.floor((totalSeconds % 86_400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  if (days > 0) return `${days}d ${hours}h`
+  if (hours > 0) return `${hours}h ${minutes}min`
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
 }
 
 export function DAOVotingCard({
@@ -46,8 +73,18 @@ export function DAOVotingCard({
   onVote,
   onFinalizeVote,
 }: DAOVotingCardProps) {
+  const endsAt = voteResult.summary.votingEndsAt
+    ? new Date(voteResult.summary.votingEndsAt).getTime()
+    : null
+  const now = useNow(endsAt !== null)
+  // The contract accepts votes until the deadline and finalization only after it.
+  // If the deadline could not be read, both actions stay available.
+  const deadlinePassed = endsAt !== null && now > endsAt
+  const showVoting = endsAt === null || !deadlinePassed
+  const showFinalize = endsAt === null || deadlinePassed
   const displayStatus = getMilestoneDisplayStatus(milestone, orderedMilestones)
-  const canVote = connected && isContributor && !isCreator && isVotingOpen(milestone)
+  const canVote =
+    connected && isContributor && !isCreator && isVotingOpen(milestone) && !deadlinePassed
 
   return (
     <Card glow="purple" className="space-y-4">
@@ -64,30 +101,46 @@ export function DAOVotingCard({
         <MilestoneStatusBadge status={displayStatus} />
       </div>
 
+      {endsAt !== null && (
+        <p className="flex items-center gap-2 text-xs text-slate-400">
+          <Clock className="size-3.5 text-purple-200" />
+          {deadlinePassed
+            ? 'Prazo encerrado. Qualquer pessoa pode registrar o resultado.'
+            : `A votação fecha em ${formatRemaining(endsAt - now)}.`}
+        </p>
+      )}
+
       <VoteProgress summary={voteResult.summary} />
 
-      <VotingEligibilityNotice
-        connected={connected}
-        isContributor={isContributor}
-        isCreator={isCreator}
-        canVote={canVote}
-      />
+      {showVoting && (
+        <>
+          <VotingEligibilityNotice
+            connected={connected}
+            isContributor={isContributor}
+            isCreator={isCreator}
+            canVote={canVote}
+          />
 
-      <VoteButtons
-        loading={loading}
-        disabled={!canVote}
-        onVote={(approve) => onVote(milestone, approve)}
-      />
-      <Button
-        type="button"
-        variant="secondary"
-        className="w-full"
-        loading={finalizeLoading}
-        disabled={!connected || finalizeLoading}
-        onClick={() => void onFinalizeVote(milestone)}
-      >
-        Finalizar votação on-chain
-      </Button>
+          <VoteButtons
+            loading={loading}
+            disabled={!canVote}
+            onVote={(approve) => onVote(milestone, approve)}
+          />
+        </>
+      )}
+
+      {showFinalize && (
+        <Button
+          type="button"
+          variant={deadlinePassed ? 'primary' : 'secondary'}
+          className="w-full"
+          loading={finalizeLoading}
+          disabled={!connected || finalizeLoading}
+          onClick={() => void onFinalizeVote(milestone)}
+        >
+          Encerrar votação
+        </Button>
+      )}
     </Card>
   )
 }

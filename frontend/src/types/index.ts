@@ -1,11 +1,6 @@
 export type { ApiError, PaginationMeta, TransactionResponse } from './api'
 export type { RiskLevel, ResearchAIAnalysis, MilestoneAIReview } from './ai'
-export type {
-  Contribution,
-  ContributionResponse,
-  ContributePayload,
-  FundingStats,
-} from './contribution'
+export type { Contribution, FundingStats } from './contribution'
 export type {
   CreateMilestonePayload,
   Milestone,
@@ -21,9 +16,4 @@ export type {
   ResearchStats,
 } from './research'
 export type { AuthUser, UserSummary, WalletLoginResponse } from './user'
-export type {
-  MilestoneVoteResult,
-  Vote,
-  VoteMilestonePayload,
-  VoteSummary,
-} from './voting'
+export type { MilestoneVoteResult, Vote, VoteSummary } from './voting'
