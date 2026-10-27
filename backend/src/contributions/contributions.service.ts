@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import type { PublicUser } from '../users/users.service';
-import type { CreateContributionDto } from './dto/create-contribution.dto';
 import type { ListContributionsQueryDto } from './dto/list-contributions-query.dto';
 
 type ContributionWithFunder = Prisma.ContributionGetPayload<{
@@ -23,43 +21,6 @@ type ContributionWithFunder = Prisma.ContributionGetPayload<{
 @Injectable()
 export class ContributionsService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async contribute(
-    projectId: string,
-    dto: CreateContributionDto,
-    user: PublicUser,
-  ) {
-    const project = await this.findProjectOrThrow(projectId);
-    const amount = new Prisma.Decimal(dto.amount);
-
-    const contribution = await this.prisma.contribution.upsert({
-      where: {
-        wallet_projectId: {
-          wallet: user.walletAddress,
-          projectId,
-        },
-      },
-      update: {
-        amount: {
-          increment: amount,
-        },
-      },
-      create: {
-        amount,
-        wallet: user.walletAddress,
-        projectId,
-      },
-      include: this.contributionInclude(),
-    });
-
-    return {
-      contribution: this.serializeContribution(contribution),
-      funding: await this.getFunding(project.id, project.totalAmount, {
-        page: 1,
-        limit: 10,
-      }),
-    };
-  }
 
   async findByProject(projectId: string, query: ListContributionsQueryDto) {
     const project = await this.findProjectOrThrow(projectId);

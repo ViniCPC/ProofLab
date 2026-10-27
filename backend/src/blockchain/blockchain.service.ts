@@ -13,7 +13,7 @@ import {
   deriveProjectPda,
   deriveVotePda,
 } from './blockchain.pda';
-import { BlockchainTx } from './blockchain.tx';
+import { BlockchainTx, type OnChainProjectStatus } from './blockchain.tx';
 import { ChainAmount, toBN, toPublicKey } from './blockchain.utils';
 
 type VerificationStatus = 'PENDING' | 'CONFIRMED' | 'FAILED';
@@ -410,6 +410,30 @@ export class BlockchainService {
     ).toBase58();
   }
 
+  /** Cumulative amount (USDC base units) recorded in the Contribution account. */
+  async getContributionAmount(contributionPda: string): Promise<bigint> {
+    return this.tx.wrapChainCall(() =>
+      this.tx.fetchContributionAmount(toPublicKey(contributionPda)),
+    );
+  }
+
+  /** Unix timestamp (seconds) after which the milestone vote can be finalized. */
+  async getMilestoneDeadline(milestonePda: string): Promise<number> {
+    return this.tx.wrapChainCall(async () => {
+      const account = await this.tx.fetchMilestone(toPublicKey(milestonePda));
+
+      return account.deadline;
+    });
+  }
+
+  async getProjectStatus(projectPda: string): Promise<OnChainProjectStatus> {
+    return this.tx.wrapChainCall(async () => {
+      const account = await this.tx.fetchProject(toPublicKey(projectPda));
+
+      return account.status;
+    });
+  }
+
   async getMilestoneStatus(
     milestonePda: string,
   ): Promise<OnChainMilestoneStatus> {
@@ -510,8 +534,7 @@ export class BlockchainService {
       accountKeys.map(({ pubkey }) => pubkey.toBase58()),
     );
     const signedByWallet = accountKeys.some(
-      ({ pubkey, signer }) =>
-        signer && pubkey.toBase58() === expected.wallet,
+      ({ pubkey, signer }) => signer && pubkey.toBase58() === expected.wallet,
     );
 
     if (!signedByWallet) {

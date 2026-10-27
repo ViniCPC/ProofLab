@@ -135,6 +135,18 @@ export class MilestonesService {
       );
     }
 
+    // Voting can only be opened on-chain once the escrow is fully funded.
+    if (
+      !project.onChainProjectAddress ||
+      (await this.blockchain.getProjectStatus(
+        project.onChainProjectAddress,
+      )) !== 'Active'
+    ) {
+      throw new BadRequestException(
+        'Milestone reports can be submitted once the project is fully funded',
+      );
+    }
+
     await this.prisma.milestone.update({
       where: { id: milestoneId },
       data: {
@@ -155,11 +167,13 @@ export class MilestonesService {
       user.walletAddress,
     );
 
+    // SUBMITTED: report and AI review saved. The milestone moves to
+    // PENDING_REVIEW once voting is opened on-chain (submit-on-chain).
     return this.prisma.milestone.update({
       where: { id: milestoneId },
       data: {
         ...analysis,
-        status: 'PENDING_REVIEW',
+        status: 'SUBMITTED',
       },
     });
   }
@@ -210,8 +224,7 @@ export class MilestonesService {
 
     return this.prisma.milestone.update({
       where: { id: milestoneId },
-      data:
-        analysis.aiStatus === 'FAILED' ? { aiStatus: 'FAILED' } : analysis,
+      data: analysis.aiStatus === 'FAILED' ? { aiStatus: 'FAILED' } : analysis,
     });
   }
 
@@ -340,9 +353,9 @@ export class MilestonesService {
       throw new NotFoundException('Milestone not found');
     }
 
-    if (milestone.status !== 'APPROVED') {
+    if (milestone.status !== 'SUBMITTED') {
       throw new BadRequestException(
-        'Only APPROVED milestones can be submitted on-chain',
+        'Only milestones with a submitted report can open voting on-chain',
       );
     }
 

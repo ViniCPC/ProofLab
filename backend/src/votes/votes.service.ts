@@ -2,13 +2,14 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { BlockchainService } from '../blockchain/blockchain.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { PublicUser } from '../users/users.service';
-import type { CreateVoteDto } from './dto/create-vote.dto';
 import type { VoteOnChainDto } from './dto/vote-on-chain.dto';
 
 const OnChainOperation = {
@@ -34,65 +35,81 @@ interface CreatePendingTransactionInput {
 
 @Injectable()
 export class VotesService {
+  private readonly logger = new Logger(VotesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly blockchain: BlockchainService,
   ) {}
 
-  async vote(
-    projectId: string,
-    milestoneId: string,
-    dto: CreateVoteDto,
-    user: PublicUser,
-  ) {
-    const milestone = await this.findMilestoneOrThrow(projectId, milestoneId);
-
-    if (
-      milestone.status !== 'SUBMITTED' &&
-      milestone.status !== 'PENDING_REVIEW'
-    ) {
-      throw new ForbiddenException(
-        'Can only vote on milestones pending review',
-      );
-    }
-
-    if (milestone.project.creatorId === user.id) {
-      throw new ForbiddenException(
-        'Project creator cannot vote on their own milestones',
-      );
-    }
-
-    return this.prisma.vote.upsert({
-      where: {
-        voterWallet_milestoneId: {
-          voterWallet: user.walletAddress,
-          milestoneId,
-        },
-      },
-      update: { approve: dto.approve },
-      create: {
-        approve: dto.approve,
-        voterWallet: user.walletAddress,
-        milestoneId,
-      },
-    });
-  }
-
   async findByMilestone(projectId: string, milestoneId: string) {
-    await this.findMilestoneOrThrow(projectId, milestoneId);
+    const milestone = await this.findMilestoneOrThrow(projectId, milestoneId);
 
     const votes = await this.prisma.vote.findMany({
       where: { milestoneId },
       orderBy: { createdAt: 'desc' },
     });
 
-    const approved = votes.filter((v) => v.approve).length;
-    const rejected = votes.filter((v) => !v.approve).length;
+    // The contract weighs each vote by the voter's contribution. Funding is
+    // closed once the project is active, so the stored contribution (synced
+    // from chain) is exactly the weight the contract used.
+    const contributions = await this.prisma.contribution.findMany({
+      where: {
+        projectId,
+        wallet: { in: votes.map((vote) => vote.voterWallet) },
+      },
+      select: { wallet: true, amount: true },
+    });
+    const weightByWallet = new Map(
+      contributions.map((contribution) => [
+        contribution.wallet,
+        contribution.amount,
+      ]),
+    );
+
+    let approvedWeight = new Prisma.Decimal(0);
+    let rejectedWeight = new Prisma.Decimal(0);
+
+    for (const vote of votes) {
+      const weight = weightByWallet.get(vote.voterWallet) ?? 0;
+
+      if (vote.approve) {
+        approvedWeight = approvedWeight.plus(weight);
+      } else {
+        rejectedWeight = rejectedWeight.plus(weight);
+      }
+    }
 
     return {
       votes,
-      summary: { total: votes.length, approved, rejected },
+      summary: {
+        total: votes.length,
+        approved: votes.filter((vote) => vote.approve).length,
+        rejected: votes.filter((vote) => !vote.approve).length,
+        approvedWeight: approvedWeight.toFixed(6),
+        rejectedWeight: rejectedWeight.toFixed(6),
+        votingEndsAt: await this.getVotingEndsAt(
+          milestone.onChainMilestoneAddress,
+        ),
+      },
     };
+  }
+
+  private async getVotingEndsAt(milestonePda: string | null) {
+    if (!milestonePda) return null;
+
+    try {
+      const deadline = await this.blockchain.getMilestoneDeadline(milestonePda);
+
+      return new Date(deadline * 1000).toISOString();
+    } catch (error) {
+      this.logger.warn(
+        `Could not read milestone deadline: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return null;
+    }
   }
 
   async voteOnChain(
@@ -109,10 +126,7 @@ export class VotesService {
       );
     }
 
-    if (
-      milestone.status !== 'SUBMITTED' &&
-      milestone.status !== 'PENDING_REVIEW'
-    ) {
+    if (milestone.status !== 'PENDING_REVIEW') {
       throw new BadRequestException(
         'Can only vote on milestones pending review',
       );
@@ -172,10 +186,7 @@ export class VotesService {
   ) {
     const milestone = await this.findMilestoneOrThrow(projectId, milestoneId);
 
-    if (
-      milestone.status !== 'SUBMITTED' &&
-      milestone.status !== 'PENDING_REVIEW'
-    ) {
+    if (milestone.status !== 'PENDING_REVIEW') {
       throw new BadRequestException(
         'Can only finalize milestones pending review',
       );

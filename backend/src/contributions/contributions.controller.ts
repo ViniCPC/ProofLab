@@ -1,34 +1,10 @@
-import { ApiBearerAuth } from '@nestjs/swagger';
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import { AuthGuard } from '../auth/auth.guard';
-import type { AuthenticatedRequest } from '../auth/types/authenticated-request';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ContributionsService } from './contributions.service';
-import { CreateContributionDto } from './dto/create-contribution.dto';
 import { ListContributionsQueryDto } from './dto/list-contributions-query.dto';
 
 @Controller('research/:id')
 export class ContributionsController {
   constructor(private readonly contributionsService: ContributionsService) {}
-
-  @Post('contribute')
-  @ApiBearerAuth('wallet-jwt')
-  @UseGuards(AuthGuard)
-  contribute(
-    @Param('id') projectId: string,
-    @Body() body: CreateContributionDto,
-    @Req() request: AuthenticatedRequest,
-  ) {
-    return this.contributionsService.contribute(projectId, body, request.user!);
-  }
 
   @Get('contributions')
   findByProject(

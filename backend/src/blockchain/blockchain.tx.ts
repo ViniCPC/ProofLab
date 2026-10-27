@@ -17,16 +17,54 @@ import {
 import { BlockchainProvider } from './blockchain.provider';
 import { publicKeyField, toPublicKey } from './blockchain.utils';
 
+export type OnChainProjectStatus =
+  | 'Funding'
+  | 'Active'
+  | 'Completed'
+  | 'Cancelled';
+
 export interface ResearchProjectAccount {
   usdcMint: PublicKey;
   escrowTokenAccount: PublicKey;
+  status: OnChainProjectStatus;
 }
 
 export interface MilestoneAccount {
   status: unknown;
+  /** Unix timestamp (seconds) when voting closes. */
+  deadline: number;
 }
 
+// discriminator + project + order + amount
 const MILESTONE_STATUS_OFFSET = 8 + 32 + 8 + 8;
+// status (1) + votes_yes (8) + votes_no (8)
+const MILESTONE_DEADLINE_OFFSET = MILESTONE_STATUS_OFFSET + 1 + 8 + 8;
+// discriminator + project + contributor
+const CONTRIBUTION_AMOUNT_OFFSET = 8 + 32 + 32;
+const PROJECT_STATUSES: Record<string, OnChainProjectStatus> = {
+  funding: 'Funding',
+  active: 'Active',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+function normalizeProjectStatus(status: unknown): OnChainProjectStatus {
+  const rawStatus =
+    typeof status === 'string'
+      ? status
+      : status && typeof status === 'object'
+        ? Object.keys(status)[0]
+        : null;
+  const normalized = rawStatus
+    ? PROJECT_STATUSES[rawStatus.toLowerCase()]
+    : null;
+
+  if (!normalized) {
+    throw new BadRequestException('Unknown on-chain project status');
+  }
+
+  return normalized;
+}
 const TOKEN_PROGRAM_ID = new PublicKey(
   'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
 );
@@ -104,6 +142,9 @@ export class BlockchainTx {
           'escrowTokenAccount',
           'escrow_token_account',
         ),
+        status: normalizeProjectStatus(
+          (account as Record<string, unknown>).status,
+        ),
       };
     } catch (error) {
       throw this.mapChainError(
@@ -126,13 +167,34 @@ export class BlockchainTx {
       throw new BadRequestException('Milestone account owner is invalid');
     }
 
-    if (account.data.length <= MILESTONE_STATUS_OFFSET) {
+    if (account.data.length < MILESTONE_DEADLINE_OFFSET + 8) {
       throw new BadRequestException('Milestone account data is invalid');
     }
 
     return {
       status: account.data[MILESTONE_STATUS_OFFSET],
+      deadline: Number(account.data.readBigInt64LE(MILESTONE_DEADLINE_OFFSET)),
     };
+  }
+
+  async fetchContributionAmount(contribution: PublicKey): Promise<bigint> {
+    const account = await this.provider.connection.getAccountInfo(contribution);
+
+    if (!account) {
+      throw new NotFoundException(
+        `Contribution not found on-chain: ${contribution.toBase58()}`,
+      );
+    }
+
+    if (!account.owner.equals(this.provider.programId)) {
+      throw new BadRequestException('Contribution account owner is invalid');
+    }
+
+    if (account.data.length < CONTRIBUTION_AMOUNT_OFFSET + 8) {
+      throw new BadRequestException('Contribution account data is invalid');
+    }
+
+    return account.data.readBigUInt64LE(CONTRIBUTION_AMOUNT_OFFSET);
   }
 
   async createAtaIfMissing(
@@ -147,21 +209,11 @@ export class BlockchainTx {
       return [];
     }
 
-    return [
-      createAssociatedTokenAccountInstruction(
-        payer,
-        ata,
-        owner,
-        mint,
-      ),
-    ];
+    return [createAssociatedTokenAccountInstruction(payer, ata, owner, mint)];
   }
 
   getAssociatedTokenAccount(mint: PublicKey, owner: PublicKey) {
-    return getAssociatedTokenAddressSync(
-      mint,
-      owner,
-    );
+    return getAssociatedTokenAddressSync(mint, owner);
   }
 
   getUsdcMint(): PublicKey {

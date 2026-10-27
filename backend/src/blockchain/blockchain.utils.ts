@@ -17,9 +17,7 @@ export function toUsdcBaseUnits(
   const text = value.toString();
 
   if (!/^\d+(\.\d{1,6})?$/.test(text)) {
-    throw new BadRequestException(
-      'Amount must have at most 6 decimal places',
-    );
+    throw new BadRequestException('Amount must have at most 6 decimal places');
   }
 
   const [whole, fraction = ''] = text.split('.');
@@ -28,10 +26,11 @@ export function toUsdcBaseUnits(
     USDC_DECIMALS,
   );
 
-  return (
-    BigInt(whole) * USDC_BASE +
-    BigInt(paddedFraction || '0')
-  ).toString();
+  return (BigInt(whole) * USDC_BASE + BigInt(paddedFraction || '0')).toString();
+}
+
+export function fromUsdcBaseUnits(units: bigint): Prisma.Decimal {
+  return new Prisma.Decimal(units.toString()).div(USDC_BASE.toString());
 }
 
 export function toBN(value: ChainAmount): BN {

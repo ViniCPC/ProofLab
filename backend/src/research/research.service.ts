@@ -7,13 +7,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { Prisma } from '@prisma/client';
+import { Prisma, type ProjectStatus } from '@prisma/client';
 import { AiService } from '../ai/ai.service';
 import {
   BlockchainService,
   TransactionVerificationResult,
 } from '../blockchain/blockchain.service';
-import { toUsdcBaseUnits } from '../blockchain/blockchain.utils';
+import type { OnChainProjectStatus } from '../blockchain/blockchain.tx';
+import {
+  fromUsdcBaseUnits,
+  toUsdcBaseUnits,
+} from '../blockchain/blockchain.utils';
 import { PrismaService } from '../prisma/prisma.service';
 import type { PublicUser } from '../users/users.service';
 import type { ConfirmTransactionDto } from './dto/confirm-transaction.dto';
@@ -41,6 +45,16 @@ const OnChainOperation = {
 
 type OnChainOperation =
   (typeof OnChainOperation)[keyof typeof OnChainOperation];
+
+const projectStatusByOnChainStatus: Record<
+  OnChainProjectStatus,
+  ProjectStatus | undefined
+> = {
+  Funding: undefined,
+  Active: 'ACTIVE',
+  Completed: 'COMPLETED',
+  Cancelled: 'CANCELLED',
+};
 
 const OnChainTransactionStatus = {
   PENDING_SIGNATURE: 'PENDING_SIGNATURE',
@@ -201,8 +215,7 @@ export class ResearchService {
 
     const updated = await this.prisma.researchProject.update({
       where: { id: projectId },
-      data:
-        analysis.aiStatus === 'FAILED' ? { aiStatus: 'FAILED' } : analysis,
+      data: analysis.aiStatus === 'FAILED' ? { aiStatus: 'FAILED' } : analysis,
       include: {
         creator: { select: creatorSelect },
         milestones: { orderBy: { order: 'asc' } },
@@ -695,9 +708,23 @@ export class ResearchService {
     pending: OnChainTransaction,
     verification: TransactionVerificationResult,
   ) {
-    if (!pending.amount) {
-      throw new BadRequestException('Funding transaction amount is missing');
+    if (
+      !pending.expectedContributionAddress ||
+      !pending.expectedProjectAddress
+    ) {
+      throw new BadRequestException('Funding transaction accounts are missing');
     }
+
+    // The Contribution account holds the cumulative amount actually
+    // transferred, so it is the source of truth, not the requested amount.
+    const onChainAmount = fromUsdcBaseUnits(
+      await this.blockchain.getContributionAmount(
+        pending.expectedContributionAddress,
+      ),
+    );
+    const projectStatus = await this.blockchain.getProjectStatus(
+      pending.expectedProjectAddress,
+    );
 
     return this.prisma.$transaction(async (tx) => {
       await tx.contribution.upsert({
@@ -708,21 +735,20 @@ export class ResearchService {
           },
         },
         create: {
-          amount: pending.amount!,
+          amount: onChainAmount,
           wallet: pending.wallet,
           projectId: pending.projectId,
           transactionHash: verification.signature,
           onChainContributionAddress: pending.expectedContributionAddress,
         },
         update: {
-          amount: {
-            increment: pending.amount!,
-          },
+          amount: onChainAmount,
           transactionHash: verification.signature,
           onChainContributionAddress: pending.expectedContributionAddress,
         },
       });
 
+      await this.syncProjectStatus(tx, pending.projectId, projectStatus);
       await this.markConfirmed(tx, pending, verification);
 
       return {
@@ -890,9 +916,13 @@ export class ResearchService {
     pending: OnChainTransaction,
     verification: TransactionVerificationResult,
   ) {
-    if (!pending.milestoneId) {
+    if (!pending.milestoneId || !pending.expectedProjectAddress) {
       throw new BadRequestException('Release transaction milestone is missing');
     }
+
+    const projectStatus = await this.blockchain.getProjectStatus(
+      pending.expectedProjectAddress,
+    );
 
     return this.prisma.$transaction(async (tx) => {
       await tx.milestone.update({
@@ -902,6 +932,7 @@ export class ResearchService {
         },
       });
 
+      await this.syncProjectStatus(tx, pending.projectId, projectStatus);
       await this.markConfirmed(tx, pending, verification);
 
       return {
@@ -947,6 +978,19 @@ export class ResearchService {
         operation: pending.operation,
         signature: verification.signature,
       };
+    });
+  }
+
+  private async syncProjectStatus(
+    tx: Prisma.TransactionClient,
+    projectId: string,
+    onChainStatus: OnChainProjectStatus,
+  ) {
+    const status = projectStatusByOnChainStatus[onChainStatus];
+
+    await tx.researchProject.update({
+      where: { id: projectId },
+      data: { onChainStatus, ...(status ? { status } : {}) },
     });
   }
 
