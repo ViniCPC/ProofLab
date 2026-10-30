@@ -3,6 +3,7 @@ import {
   type HttpException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -60,7 +61,7 @@ function normalizeProjectStatus(status: unknown): OnChainProjectStatus {
     : null;
 
   if (!normalized) {
-    throw new BadRequestException('Unknown on-chain project status');
+    throw new BadRequestException('Status do projeto desconhecido na Solana.');
   }
 
   return normalized;
@@ -77,7 +78,9 @@ function getAssociatedTokenAddressSync(
   owner: PublicKey,
 ): PublicKey {
   if (!PublicKey.isOnCurve(owner.toBuffer())) {
-    throw new BadRequestException('Token account owner must be on curve');
+    throw new BadRequestException(
+      'A conta de token precisa pertencer a uma wallet válida.',
+    );
   }
 
   const [address] = PublicKey.findProgramAddressSync(
@@ -110,6 +113,8 @@ function createAssociatedTokenAccountInstruction(
 
 @Injectable()
 export class BlockchainTx {
+  private readonly logger = new Logger(BlockchainTx.name);
+
   constructor(
     private readonly provider: BlockchainProvider,
     private readonly config: ConfigService,
@@ -149,7 +154,7 @@ export class BlockchainTx {
     } catch (error) {
       throw this.mapChainError(
         error,
-        `Project not found on-chain: ${project.toBase58()}`,
+        `Projeto não encontrado na Solana: ${project.toBase58()}.`,
       );
     }
   }
@@ -159,16 +164,20 @@ export class BlockchainTx {
 
     if (!account) {
       throw new NotFoundException(
-        `Milestone not found on-chain: ${milestone.toBase58()}`,
+        `Etapa não encontrada na Solana: ${milestone.toBase58()}.`,
       );
     }
 
     if (!account.owner.equals(this.provider.programId)) {
-      throw new BadRequestException('Milestone account owner is invalid');
+      throw new BadRequestException(
+        'A conta da etapa não pertence ao programa ProofLab.',
+      );
     }
 
     if (account.data.length < MILESTONE_DEADLINE_OFFSET + 8) {
-      throw new BadRequestException('Milestone account data is invalid');
+      throw new BadRequestException(
+        'Os dados da conta da etapa são inválidos.',
+      );
     }
 
     return {
@@ -182,16 +191,20 @@ export class BlockchainTx {
 
     if (!account) {
       throw new NotFoundException(
-        `Contribution not found on-chain: ${contribution.toBase58()}`,
+        `Contribuição não encontrada na Solana: ${contribution.toBase58()}.`,
       );
     }
 
     if (!account.owner.equals(this.provider.programId)) {
-      throw new BadRequestException('Contribution account owner is invalid');
+      throw new BadRequestException(
+        'A conta da contribuição não pertence ao programa ProofLab.',
+      );
     }
 
     if (account.data.length < CONTRIBUTION_AMOUNT_OFFSET + 8) {
-      throw new BadRequestException('Contribution account data is invalid');
+      throw new BadRequestException(
+        'Os dados da conta da contribuição são inválidos.',
+      );
     }
 
     return account.data.readBigUInt64LE(CONTRIBUTION_AMOUNT_OFFSET);
@@ -220,7 +233,9 @@ export class BlockchainTx {
     const mint = this.config.get<string>('USDC_MINT_ADDRESS');
 
     if (!mint) {
-      throw new ServiceUnavailableException('USDC_MINT_ADDRESS is required');
+      throw new ServiceUnavailableException(
+        'Servidor sem USDC_MINT_ADDRESS configurado.',
+      );
     }
 
     return toPublicKey(mint);
@@ -246,18 +261,23 @@ export class BlockchainTx {
     const message =
       error instanceof Error ? error.message : 'Unknown Solana RPC error';
 
+    // Raw RPC messages stay in the logs; the client gets a readable one.
+    this.logger.warn(`Solana call failed: ${message}`);
+
     if (
       message.includes('Account does not exist') ||
       message.includes('has no data')
     ) {
-      return new NotFoundException(notFoundMessage ?? message);
+      return new NotFoundException(
+        notFoundMessage ?? 'Conta não encontrada na Solana.',
+      );
     }
 
     if (
       message.includes('Invalid public key') ||
       message.includes('Non-base58')
     ) {
-      return new BadRequestException(message);
+      return new BadRequestException('Endereço Solana inválido.');
     }
 
     if (
@@ -265,9 +285,13 @@ export class BlockchainTx {
       message.includes('fetch failed') ||
       message.includes('429')
     ) {
-      return new ServiceUnavailableException(message);
+      return new ServiceUnavailableException(
+        'A rede Solana não respondeu. Tente novamente em instantes.',
+      );
     }
 
-    return new InternalServerErrorException(message);
+    return new InternalServerErrorException(
+      'Não foi possível montar a transação na Solana. Tente novamente.',
+    );
   }
 }

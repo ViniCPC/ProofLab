@@ -1,6 +1,7 @@
-import { ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { FallbackExceptionFilter } from './common/fallback-exception.filter';
 import { configureSwagger } from './docs/swagger';
 
 async function bootstrap() {
@@ -15,7 +16,16 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       whitelist: true,
+      exceptionFactory: (errors) =>
+        new BadRequestException(
+          `Dados inválidos. Verifique: ${errors
+            .map((error) => error.property)
+            .join(', ')}.`,
+        ),
     }),
+  );
+  app.useGlobalFilters(
+    new FallbackExceptionFilter(app.get(HttpAdapterHost).httpAdapter),
   );
   configureSwagger(app);
   await app.listen(process.env.PORT ?? 3000);

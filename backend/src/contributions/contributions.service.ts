@@ -38,7 +38,7 @@ export class ContributionsService {
     });
 
     if (!project) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     return project;

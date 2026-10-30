@@ -115,12 +115,12 @@ export class AiClient {
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         throw new BadGatewayException(
-          `OpenAI request timed out after ${REQUEST_TIMEOUT_MS}ms`,
+          `A IA não respondeu em ${REQUEST_TIMEOUT_MS} ms.`,
         );
       }
 
       throw new BadGatewayException(
-        `OpenAI request failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Falha ao consultar a IA: ${error instanceof Error ? error.message : String(error)}`,
       );
     } finally {
       clearTimeout(timeout);
@@ -128,7 +128,7 @@ export class AiClient {
 
     if (!response.ok) {
       throw new BadGatewayException(
-        `OpenAI request failed: ${await response.text()}`,
+        `Falha ao consultar a IA: ${await response.text()}`,
       );
     }
 
@@ -139,7 +139,7 @@ export class AiClient {
     }
 
     if (data.status && data.status !== 'completed') {
-      throw new BadGatewayException(`OpenAI response status: ${data.status}`);
+      throw new BadGatewayException(`A IA retornou o status ${data.status}.`);
     }
 
     return data;
@@ -155,7 +155,7 @@ export class AiClient {
       .find((content) => content.type === 'output_text' && content.text)?.text;
 
     if (!text) {
-      throw new BadGatewayException('OpenAI response did not include text');
+      throw new BadGatewayException('A resposta da IA veio sem texto.');
     }
 
     return text;
@@ -170,12 +170,14 @@ export class AiClient {
     try {
       parsed = JSON.parse(output);
     } catch {
-      throw new BadGatewayException('OpenAI response was not valid JSON');
+      throw new BadGatewayException(
+        'A resposta da IA não veio em JSON válido.',
+      );
     }
 
     if (!guard(parsed)) {
       throw new BadGatewayException(
-        'OpenAI response did not match the expected schema',
+        'A resposta da IA não seguiu o formato esperado.',
       );
     }
 
@@ -186,7 +188,9 @@ export class AiClient {
     const apiKey = this.config.get<string>('OPENAI_API_KEY')?.trim();
 
     if (!apiKey) {
-      throw new ServiceUnavailableException('OPENAI_API_KEY is not configured');
+      throw new ServiceUnavailableException(
+        'Servidor sem OPENAI_API_KEY configurada.',
+      );
     }
 
     return apiKey;

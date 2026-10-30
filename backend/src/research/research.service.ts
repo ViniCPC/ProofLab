@@ -129,8 +129,8 @@ export class ResearchService {
       const difference = totalAmount.minus(milestoneTotal);
       throw new BadRequestException(
         difference.greaterThan(0)
-          ? `Milestone total is missing ${difference.toFixed(6)} USDC`
-          : `Milestone total exceeds the project total by ${difference
+          ? `Faltam ${difference.toFixed(6)} USDC nas etapas para fechar o total do projeto.`
+          : `As etapas excedem o total do projeto em ${difference
               .abs()
               .toFixed(6)} USDC`,
       );
@@ -189,12 +189,12 @@ export class ResearchService {
     });
 
     if (!project) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can request a new AI analysis',
+        'Só quem criou o projeto pode pedir uma nova análise da IA.',
       );
     }
 
@@ -347,7 +347,7 @@ export class ResearchService {
     });
 
     if (!research) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     return this.serializeResearch(research);
@@ -366,17 +366,17 @@ export class ResearchService {
     });
 
     if (!project) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can register it on-chain',
+        'Só quem criou o projeto pode registrá-lo na Solana.',
       );
     }
 
     if (project.onChainProjectAddress) {
-      throw new ConflictException('Project is already registered on-chain');
+      throw new ConflictException('Este projeto já está registrado na Solana.');
     }
 
     const nonce = BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
@@ -423,12 +423,12 @@ export class ResearchService {
     });
 
     if (!project) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
@@ -472,18 +472,18 @@ export class ResearchService {
     });
 
     if (!project) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
     if (project.onChainStatus !== 'Cancelled') {
       throw new BadRequestException(
-        'Refunds are only available for cancelled projects',
+        'O reembolso só fica disponível para projetos cancelados.',
       );
     }
 
@@ -523,18 +523,16 @@ export class ResearchService {
     });
 
     if (!project) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     if (project.creatorId !== user.id) {
-      throw new ForbiddenException(
-        'Only the project creator can cancel the project on-chain',
-      );
+      throw new ForbiddenException('Só quem criou o projeto pode cancelá-lo.');
     }
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
@@ -542,14 +540,16 @@ export class ResearchService {
       project.status === 'COMPLETED' ||
       project.onChainStatus === 'Completed'
     ) {
-      throw new BadRequestException('Completed projects cannot be cancelled');
+      throw new BadRequestException(
+        'Projetos concluídos não podem ser cancelados.',
+      );
     }
 
     if (
       project.status === 'CANCELLED' ||
       project.onChainStatus === 'Cancelled'
     ) {
-      throw new BadRequestException('Project is already cancelled');
+      throw new BadRequestException('Este projeto já foi cancelado.');
     }
 
     const transaction = await this.blockchain.cancelProjectOnChain(
@@ -579,18 +579,18 @@ export class ResearchService {
     const pending = await this.findPendingTransaction(dto.requestId);
 
     if (!pending) {
-      throw new NotFoundException('Pending transaction not found');
+      throw new NotFoundException('Transação pendente não encontrada.');
     }
 
     if (pending.projectId !== projectId) {
       throw new BadRequestException(
-        'Transaction does not belong to this project',
+        'Esta transação não pertence a este projeto.',
       );
     }
 
     if (pending.userId !== user.id || pending.wallet !== user.walletAddress) {
       throw new ForbiddenException(
-        'Transaction does not belong to this wallet session',
+        'Esta transação não pertence à wallet conectada.',
       );
     }
 
@@ -606,13 +606,13 @@ export class ResearchService {
 
     if (pending.status === OnChainTransactionStatus.CONFIRMED) {
       throw new ConflictException(
-        'Pending transaction is already confirmed with another signature',
+        'Esta transação já foi confirmada com outra assinatura.',
       );
     }
 
     if (pending.signature && pending.signature !== dto.signature) {
       throw new BadRequestException(
-        'Pending transaction already has a different signature',
+        'Esta transação já tem outra assinatura registrada.',
       );
     }
 
@@ -622,7 +622,7 @@ export class ResearchService {
 
     if (existingSignature && existingSignature.id !== pending.id) {
       throw new ConflictException(
-        'Signature is already attached to another transaction',
+        'Esta assinatura já está vinculada a outra transação.',
       );
     }
 
@@ -643,7 +643,7 @@ export class ResearchService {
     if (verification.status === 'FAILED') {
       await this.markFailed(pending.id, dto.signature, verification);
 
-      throw new BadRequestException('On-chain transaction failed');
+      throw new BadRequestException('A transação falhou na Solana.');
     }
 
     return this.applyConfirmedTransaction(pending, verification);
@@ -673,7 +673,7 @@ export class ResearchService {
       case OnChainOperation.CLAIM_REFUND:
         return this.confirmRefund(pending, verification);
       default:
-        throw new BadRequestException('Unsupported on-chain operation');
+        throw new BadRequestException('Operação não suportada.');
     }
   }
 
@@ -712,7 +712,7 @@ export class ResearchService {
       !pending.expectedContributionAddress ||
       !pending.expectedProjectAddress
     ) {
-      throw new BadRequestException('Funding transaction accounts are missing');
+      throw new BadRequestException('Dados da contribuição incompletos.');
     }
 
     // The Contribution account holds the cumulative amount actually
@@ -765,9 +765,7 @@ export class ResearchService {
     verification: TransactionVerificationResult,
   ) {
     if (!pending.milestoneId || !pending.expectedMilestoneAddress) {
-      throw new BadRequestException(
-        'Milestone creation transaction data is missing',
-      );
+      throw new BadRequestException('Dados do registro da etapa incompletos.');
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -795,7 +793,7 @@ export class ResearchService {
   ) {
     if (!pending.milestoneId) {
       throw new BadRequestException(
-        'Milestone submission transaction data is missing',
+        'Dados da abertura da votação incompletos.',
       );
     }
 
@@ -825,7 +823,7 @@ export class ResearchService {
     verification: TransactionVerificationResult,
   ) {
     if (!pending.milestoneId) {
-      throw new BadRequestException('Vote transaction milestone is missing');
+      throw new BadRequestException('A transação de voto não indica a etapa.');
     }
 
     const approve = this.getPendingVoteApproval(pending);
@@ -863,7 +861,7 @@ export class ResearchService {
   ) {
     if (!pending.milestoneId || !pending.expectedMilestoneAddress) {
       throw new BadRequestException(
-        'Vote finalization transaction data is missing',
+        'Dados do encerramento da votação incompletos.',
       );
     }
 
@@ -881,7 +879,7 @@ export class ResearchService {
 
     if (!milestoneStatus) {
       throw new BadRequestException(
-        `Unexpected finalized milestone status: ${onChainStatus}`,
+        `Status inesperado da etapa após a votação: ${onChainStatus}.`,
       );
     }
 
@@ -917,7 +915,9 @@ export class ResearchService {
     verification: TransactionVerificationResult,
   ) {
     if (!pending.milestoneId || !pending.expectedProjectAddress) {
-      throw new BadRequestException('Release transaction milestone is missing');
+      throw new BadRequestException(
+        'A transação de liberação não indica a etapa.',
+      );
     }
 
     const projectStatus = await this.blockchain.getProjectStatus(
@@ -998,13 +998,15 @@ export class ResearchService {
     const metadata = pending.metadata;
 
     if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
-      throw new BadRequestException('Vote transaction metadata is missing');
+      throw new BadRequestException('Dados do voto incompletos.');
     }
 
     const approve = (metadata as Record<string, unknown>).approve;
 
     if (typeof approve !== 'boolean') {
-      throw new BadRequestException('Vote transaction approval is missing');
+      throw new BadRequestException(
+        'A transação de voto não indica se aprova ou rejeita.',
+      );
     }
 
     return approve;

@@ -122,25 +122,25 @@ export class VotesService {
 
     if (milestone.project.creatorId === user.id) {
       throw new ForbiddenException(
-        'Project creator cannot vote on their own milestones',
+        'Quem criou o projeto não pode votar nas próprias etapas.',
       );
     }
 
     if (milestone.status !== 'PENDING_REVIEW') {
       throw new BadRequestException(
-        'Can only vote on milestones pending review',
+        'Só é possível votar em etapas com votação aberta.',
       );
     }
 
     if (!milestone.project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
     if (!milestone.onChainMilestoneAddress) {
       throw new BadRequestException(
-        'Milestone has not been submitted on-chain yet',
+        'A votação desta etapa ainda não foi aberta.',
       );
     }
 
@@ -188,19 +188,19 @@ export class VotesService {
 
     if (milestone.status !== 'PENDING_REVIEW') {
       throw new BadRequestException(
-        'Can only finalize milestones pending review',
+        'Só é possível encerrar etapas com votação aberta.',
       );
     }
 
     if (!milestone.project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
     if (!milestone.onChainMilestoneAddress) {
       throw new BadRequestException(
-        'Milestone has not been created on-chain yet',
+        'Esta etapa ainda não foi registrada na Solana.',
       );
     }
 
@@ -277,7 +277,7 @@ export class VotesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     return milestone;

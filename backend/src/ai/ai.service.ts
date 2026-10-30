@@ -96,7 +96,7 @@ export class AiService {
 
     if (recentCalls.length >= RATE_LIMIT_MAX_CALLS) {
       throw new HttpException(
-        'Too many AI analysis requests, try again in a minute',
+        'Muitas análises seguidas. Tente novamente em um minuto.',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }

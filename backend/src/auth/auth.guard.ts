@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     const [type, token] = authorizationHeader?.split(' ') ?? [];
 
     if (type !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Bearer token is required');
+      throw new UnauthorizedException('Conecte sua wallet para continuar.');
     }
 
     return token;

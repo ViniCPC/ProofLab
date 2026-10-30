@@ -17,7 +17,9 @@ export function toUsdcBaseUnits(
   const text = value.toString();
 
   if (!/^\d+(\.\d{1,6})?$/.test(text)) {
-    throw new BadRequestException('Amount must have at most 6 decimal places');
+    throw new BadRequestException(
+      'O valor deve ter no máximo 6 casas decimais.',
+    );
   }
 
   const [whole, fraction = ''] = text.split('.');
@@ -53,7 +55,7 @@ export function toPublicKey(value: string | PublicKey): PublicKey {
   try {
     return new PublicKey(value);
   } catch {
-    throw new BadRequestException(`Invalid Solana public key: ${value}`);
+    throw new BadRequestException(`Endereço Solana inválido: ${value}.`);
   }
 }
 
@@ -73,6 +75,6 @@ export function publicKeyField(
   }
 
   throw new ServiceUnavailableException(
-    `Project account field ${camelCaseField} is missing`,
+    `Campo ${camelCaseField} ausente na conta do projeto.`,
   );
 }

@@ -48,12 +48,12 @@ export class AuthService {
     if (!record || record.expiresAt < Date.now()) {
       this.nonces.delete(walletAddress);
       throw new UnauthorizedException(
-        'Nonce expired or not found, request a new one',
+        'A solicitação de login expirou. Conecte a wallet novamente.',
       );
     }
 
     if (!this.verifySignature(walletAddress, record.message, signature)) {
-      throw new UnauthorizedException('Invalid wallet signature');
+      throw new UnauthorizedException('Assinatura da wallet inválida.');
     }
 
     this.nonces.delete(walletAddress);
@@ -78,13 +78,17 @@ export class AuthService {
     try {
       payload = this.jwtService.verify<JwtPayload>(token);
     } catch {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException(
+        'Sua sessão expirou. Conecte a wallet novamente.',
+      );
     }
 
     const user = await this.usersService.findById(payload.sub);
 
     if (!user || user.walletAddress !== payload.walletAddress) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException(
+        'Sessão inválida. Conecte a wallet novamente.',
+      );
     }
 
     return user;

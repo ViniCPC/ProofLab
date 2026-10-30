@@ -54,7 +54,7 @@ export class MilestonesService {
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can add milestones',
+        'Só quem criou o projeto pode adicionar etapas.',
       );
     }
 
@@ -65,7 +65,7 @@ export class MilestonesService {
 
     if (dto.order !== expectedOrder) {
       throw new BadRequestException(
-        `Next milestone order must be ${expectedOrder}`,
+        `A próxima etapa deve ter a ordem ${expectedOrder}.`,
       );
     }
 
@@ -85,7 +85,7 @@ export class MilestonesService {
         error.code === 'P2002'
       ) {
         throw new ConflictException(
-          'Milestone order already exists for this project',
+          'Já existe uma etapa com essa ordem neste projeto.',
         );
       }
 
@@ -112,7 +112,7 @@ export class MilestonesService {
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can submit milestone reviews',
+        'Só quem criou o projeto pode enviar relatórios das etapas.',
       );
     }
 
@@ -126,12 +126,12 @@ export class MilestonesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     if (milestone.status !== 'PENDING' && milestone.status !== 'REJECTED') {
       throw new BadRequestException(
-        'Only PENDING or REJECTED milestones can be submitted for review',
+        'Só etapas pendentes ou rejeitadas podem receber relatório.',
       );
     }
 
@@ -143,7 +143,7 @@ export class MilestonesService {
       )) !== 'Active'
     ) {
       throw new BadRequestException(
-        'Milestone reports can be submitted once the project is fully funded',
+        'O relatório só pode ser enviado quando o financiamento atingir 100%.',
       );
     }
 
@@ -183,7 +183,7 @@ export class MilestonesService {
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can request a new AI analysis',
+        'Só quem criou o projeto pode pedir uma nova análise da IA.',
       );
     }
 
@@ -199,7 +199,7 @@ export class MilestonesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     if (
@@ -207,9 +207,7 @@ export class MilestonesService {
       milestone.submittedProgress === null ||
       !milestone.submittedEvidence
     ) {
-      throw new BadRequestException(
-        'Milestone has not been submitted for review yet',
-      );
+      throw new BadRequestException('Esta etapa ainda não recebeu relatório.');
     }
 
     const analysis = await this.runMilestoneAnalysis(
@@ -283,24 +281,24 @@ export class MilestonesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     if (status === 'SUBMITTED') {
       if (project.creatorId !== user.id) {
         throw new ForbiddenException(
-          'Only the project creator can submit milestones',
+          'Só quem criou o projeto pode enviar etapas.',
         );
       }
       if (milestone.status !== 'PENDING') {
         throw new BadRequestException(
-          'Only PENDING milestones can be submitted',
+          'Só etapas pendentes podem ser enviadas.',
         );
       }
     } else {
       if (user.role !== 'ADMIN') {
         throw new ForbiddenException(
-          'Only admins can approve or reject milestones',
+          'Só administradores podem aprovar ou rejeitar etapas.',
         );
       }
       if (
@@ -308,7 +306,7 @@ export class MilestonesService {
         milestone.status !== 'PENDING_REVIEW'
       ) {
         throw new BadRequestException(
-          'Only submitted milestones can be approved or rejected',
+          'Só etapas enviadas podem ser aprovadas ou rejeitadas.',
         );
       }
     }
@@ -329,13 +327,13 @@ export class MilestonesService {
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can submit milestones on-chain',
+        'Só quem criou o projeto pode abrir a votação.',
       );
     }
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
@@ -350,12 +348,12 @@ export class MilestonesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     if (milestone.status !== 'SUBMITTED') {
       throw new BadRequestException(
-        'Only milestones with a submitted report can open voting on-chain',
+        'A votação só pode ser aberta depois do envio do relatório.',
       );
     }
 
@@ -366,7 +364,7 @@ export class MilestonesService {
 
     if (!milestone.onChainMilestoneAddress) {
       throw new BadRequestException(
-        'Milestone has not been created on-chain yet',
+        'Esta etapa ainda não foi registrada na Solana.',
       );
     }
 
@@ -404,13 +402,13 @@ export class MilestonesService {
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can create milestones on-chain',
+        'Só quem criou o projeto pode registrar as etapas.',
       );
     }
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
@@ -425,11 +423,11 @@ export class MilestonesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     if (milestone.onChainMilestoneAddress) {
-      throw new ConflictException('Milestone is already created on-chain');
+      throw new ConflictException('Esta etapa já está registrada na Solana.');
     }
 
     const deadline =
@@ -473,7 +471,7 @@ export class MilestonesService {
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
@@ -488,12 +486,12 @@ export class MilestonesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     if (!milestone.onChainMilestoneAddress) {
       throw new BadRequestException(
-        'Milestone has not been submitted on-chain yet',
+        'A votação desta etapa ainda não foi aberta.',
       );
     }
 
@@ -528,13 +526,13 @@ export class MilestonesService {
 
     if (project.creatorId !== user.id) {
       throw new ForbiddenException(
-        'Only the project creator can release funds on-chain',
+        'Só quem criou o projeto pode liberar os fundos.',
       );
     }
 
     if (!project.onChainProjectAddress) {
       throw new BadRequestException(
-        'Project has not been registered on-chain yet',
+        'O projeto ainda não foi registrado na Solana.',
       );
     }
 
@@ -549,18 +547,18 @@ export class MilestonesService {
     });
 
     if (!milestone) {
-      throw new NotFoundException('Milestone not found');
+      throw new NotFoundException('Etapa não encontrada.');
     }
 
     if (milestone.status !== 'APPROVED') {
       throw new BadRequestException(
-        'Only APPROVED milestones can have funds released',
+        'Só etapas aprovadas podem ter os fundos liberados.',
       );
     }
 
     if (!milestone.onChainMilestoneAddress) {
       throw new BadRequestException(
-        'Milestone has not been submitted on-chain yet',
+        'A votação desta etapa ainda não foi aberta.',
       );
     }
 
@@ -633,7 +631,7 @@ export class MilestonesService {
     });
 
     if (!project) {
-      throw new NotFoundException('Research project not found');
+      throw new NotFoundException('Pesquisa não encontrada.');
     }
 
     return project;

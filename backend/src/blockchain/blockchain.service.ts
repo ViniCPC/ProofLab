@@ -526,7 +526,7 @@ export class BlockchainService {
     expected: ExpectedOnChainTransaction,
   ) {
     if (!transaction) {
-      throw new BadRequestException('Solana transaction was not found');
+      throw new BadRequestException('Transação não encontrada na Solana.');
     }
 
     const accountKeys = transaction.transaction.message.accountKeys;
@@ -539,7 +539,7 @@ export class BlockchainService {
 
     if (!signedByWallet) {
       throw new BadRequestException(
-        'Transaction was not signed by the expected wallet',
+        'A transação não foi assinada pela wallet conectada.',
       );
     }
 
@@ -550,7 +550,7 @@ export class BlockchainService {
 
     if (!calledProgram) {
       throw new BadRequestException(
-        'Transaction did not call the ProofLab program',
+        'A transação não chamou o programa ProofLab.',
       );
     }
 
@@ -559,7 +559,7 @@ export class BlockchainService {
 
     if (!logs.some((log) => log.includes(expectedLog))) {
       throw new BadRequestException(
-        `Transaction did not execute ${expected.operation}`,
+        `A transação não executou a operação esperada (${expected.operation}).`,
       );
     }
 
@@ -567,27 +567,27 @@ export class BlockchainService {
     this.assertAccountPresent(
       accountKeySet,
       expected.expectedProjectAddress,
-      'project',
+      'projeto',
     );
     this.assertAccountPresent(
       accountKeySet,
       expected.expectedEscrowVaultAddress,
-      'escrow vault',
+      'cofre do escrow',
     );
     this.assertAccountPresent(
       accountKeySet,
       expected.expectedContributionAddress,
-      'contribution',
+      'contribuição',
     );
     this.assertAccountPresent(
       accountKeySet,
       expected.expectedMilestoneAddress,
-      'milestone',
+      'etapa',
     );
     this.assertAccountPresent(
       accountKeySet,
       expected.expectedVoteAddress,
-      'vote',
+      'voto',
     );
   }
 
@@ -600,7 +600,7 @@ export class BlockchainService {
 
     if (!accountKeys.has(account)) {
       throw new BadRequestException(
-        `Transaction does not include the expected ${label ?? 'account'}`,
+        `A transação não inclui a conta esperada (${label ?? 'conta'}).`,
       );
     }
   }
@@ -619,7 +619,9 @@ export class BlockchainService {
         case 4:
           return 'RELEASED';
         default:
-          throw new BadRequestException('Unknown on-chain milestone status');
+          throw new BadRequestException(
+            'Status da etapa desconhecido na Solana.',
+          );
       }
     }
 
@@ -648,7 +650,9 @@ export class BlockchainService {
       case 'Released':
         return 'RELEASED';
       default:
-        throw new BadRequestException('Unknown on-chain milestone status');
+        throw new BadRequestException(
+          'Status da etapa desconhecido na Solana.',
+        );
     }
   }
 }

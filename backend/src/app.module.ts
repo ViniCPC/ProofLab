@@ -15,7 +15,11 @@ import { ThrottlerModule } from '@nestjs/throttler';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
-    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 60 }]),
+    ThrottlerModule.forRoot({
+      throttlers: [{ name: 'default', ttl: 60_000, limit: 60 }],
+      errorMessage:
+        'Muitas requisições em pouco tempo. Aguarde um minuto e tente novamente.',
+    }),
     AiModule,
     AuthModule,
     BlockchainModule,

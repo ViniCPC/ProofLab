@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
+import { ThrottlerModule } from '@nestjs/throttler';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { AiClient } from '../src/ai/ai.client';
@@ -28,18 +29,18 @@ describe('Missing AI key (e2e, isolated database)', () => {
         .mockImplementation(({ data }: { data: object }) =>
           Promise.resolve({ id: 'project', ...data }),
         ),
-      findUnique: jest
-        .fn()
-        .mockResolvedValue({ id: 'project', creatorId: user.id }),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'project',
+        creatorId: user.id,
+        onChainProjectAddress: 'project-pda',
+      }),
     },
     milestone: {
-      findFirst: jest
-        .fn()
-        .mockResolvedValue({
-          id: 'milestone',
-          description: 'Experiment',
-          status: 'PENDING',
-        }),
+      findFirst: jest.fn().mockResolvedValue({
+        id: 'milestone',
+        description: 'Experiment',
+        status: 'PENDING',
+      }),
       update: jest
         .fn()
         .mockImplementation(({ data }: { data: object }) =>
@@ -50,6 +51,7 @@ describe('Missing AI key (e2e, isolated database)', () => {
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
+      imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }])],
       controllers: [AiController, ResearchController, MilestonesController],
       providers: [
         AiClient,
@@ -58,7 +60,11 @@ describe('Missing AI key (e2e, isolated database)', () => {
         MilestonesService,
         { provide: ConfigService, useValue: { get: () => undefined } },
         { provide: PrismaService, useValue: prisma },
-        { provide: BlockchainService, useValue: {} },
+        {
+          provide: BlockchainService,
+          // A fully funded project: reports can only be sent once it is active.
+          useValue: { getProjectStatus: jest.fn().mockResolvedValue('Active') },
+        },
       ],
     })
       .overrideGuard(AuthGuard)
@@ -108,6 +114,14 @@ describe('Missing AI key (e2e, isolated database)', () => {
         title: 'Proposal',
         description: 'Research proposal',
         totalAmount: '1000',
+        milestones: [
+          {
+            title: 'Experiment',
+            description: 'Run the experiment',
+            amount: '1000',
+            order: 1,
+          },
+        ],
       })
       .expect(201);
 
@@ -117,7 +131,7 @@ describe('Missing AI key (e2e, isolated database)', () => {
     expect(prisma.researchProject.create).toHaveBeenCalled();
   });
 
-  it('keeps a submitted milestone in community review without invented scores', async () => {
+  it('keeps a submitted milestone waiting for the on-chain vote without invented scores', async () => {
     const response = await request(app.getHttpServer())
       .post('/research/project/milestones/milestone/submit-review')
       .send({
@@ -127,7 +141,8 @@ describe('Missing AI key (e2e, isolated database)', () => {
       })
       .expect(201);
 
-    expect(response.body.status).toBe('PENDING_REVIEW');
+    // Voting opens (PENDING_REVIEW) only after the on-chain submit.
+    expect(response.body.status).toBe('SUBMITTED');
     expect(response.body.aiStatus).toBe('FAILED');
     expect(response.body.aiSummary).toContain('indisponível');
     expect(response.body.completionEstimate).toBeNull();
