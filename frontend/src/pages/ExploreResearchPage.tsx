@@ -22,7 +22,7 @@ export default function ExploreResearchPage() {
       <PageHeader
         title="Explorar pesquisas"
         subtitle="Projetos científicos disponíveis para financiamento transparente, com etapas e validação comunitária."
-        action={<LinkButton to="/create">Enviar pesquisa</LinkButton>}
+        action={<LinkButton to="/create">Criar pesquisa</LinkButton>}
       />
 
       {loading && (

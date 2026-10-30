@@ -10,6 +10,7 @@ import {
   Vote,
   WalletCards,
 } from 'lucide-react'
+import { brand } from './brand'
 
 const githubUrl = 'https://github.com/ViniCPC/ProofLab'
 const presentationVideoUrl = import.meta.env.VITE_PRESENTATION_VIDEO_URL?.trim()
@@ -300,7 +301,7 @@ export const landingContent = {
     videoUrl: presentationVideoUrl || githubUrl,
   },
   footer: {
-    description: 'Financiamento científico com regras que podem ser verificadas.',
+    description: brand.description,
     columns: [
       {
         title: 'Produto',
@@ -324,7 +325,7 @@ export const landingContent = {
         ],
       },
     ],
-    network: 'Rede: Solana Devnet',
+    network: brand.network,
     copyright: 'ProofLab. Feito para ciência aberta.',
   },
 } as const
